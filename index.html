@@ -47,8 +47,7 @@ body.static {
 /* ===== SCREENOVI ===== */
 .screen {
   position: absolute;
-  inset: 0; /* top right bottom left = 0 */
-
+  inset: 0;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -120,7 +119,7 @@ body.static {
   background: rgba(255,255,255,0.95);
 }
 
-/* ===== POVRATAK GORE DESNO ===== */
+/* ===== POVRATAK ===== */
 .back-top {
   position: absolute;
   top: 1rem;
@@ -156,14 +155,14 @@ body.static {
 
   <!-- SCREEN 2: GLAVNI IZBORNIK -->
   <div id="screen-menu" class="screen">
-    <button class="back-top" onclick="goBack()">← Povratak</button>
+    <button id="backBtn" class="back-top" onclick="goBack()">← Povratak</button>
 
     <div class="content">
       <div class="buttons">
-        <button class="btn" onclick="placeholder('Dnevnik')">📔 Dnevnik</button>
-        <button class="btn" onclick="placeholder('Obitelj i prijatelji')">👨‍👩‍👧 Obitelj i prijatelji</button>
-        <button class="btn" onclick="placeholder('Zdravlje')">❤️ Zdravlje</button>
-        <button class="btn" onclick="placeholder('Financije')">💰 Financije</button>
+        <button id="btnDiary" class="btn">📔</button>
+        <button id="btnFamily" class="btn">👨‍👩‍👧</button>
+        <button id="btnHealth" class="btn">❤️</button>
+        <button id="btnFinance" class="btn">💰</button>
       </div>
     </div>
   </div>
@@ -171,23 +170,56 @@ body.static {
 </div>
 
 <script>
-function selectLang(lang) {
-  localStorage.setItem('selectedLanguage', lang);
-  document.body.className = 'static';
+const translations = {
+  hr: {
+    back: "← Povratak",
+    diary: "📔 Dnevnik",
+    family: "👨‍👩‍👧 Obitelj i prijatelji",
+    health: "❤️ Zdravlje",
+    finance: "💰 Financije"
+  },
+  de: {
+    back: "← Zurück",
+    diary: "📔 Tagebuch",
+    family: "👨‍👩‍👧 Familie & Freunde",
+    health: "❤️ Gesundheit",
+    finance: "💰 Finanzen"
+  },
+  en: {
+    back: "← Back",
+    diary: "📔 Diary",
+    family: "👨‍👩‍👧 Family & Friends",
+    health: "❤️ Health",
+    finance: "💰 Finance"
+  }
+};
 
-  document.getElementById('screen-lang').classList.remove('active');
-  document.getElementById('screen-menu').classList.add('active');
+let currentLang = "hr";
+
+function applyLanguage(lang) {
+  currentLang = lang;
+  const t = translations[lang];
+
+  document.getElementById("backBtn").textContent = t.back;
+  document.getElementById("btnDiary").textContent = t.diary;
+  document.getElementById("btnFamily").textContent = t.family;
+  document.getElementById("btnHealth").textContent = t.health;
+  document.getElementById("btnFinance").textContent = t.finance;
+}
+
+function selectLang(lang) {
+  localStorage.setItem("selectedLanguage", lang);
+  applyLanguage(lang);
+
+  document.body.className = "static";
+  document.getElementById("screen-lang").classList.remove("active");
+  document.getElementById("screen-menu").classList.add("active");
 }
 
 function goBack() {
-  document.body.className = 'home';
-
-  document.getElementById('screen-menu').classList.remove('active');
-  document.getElementById('screen-lang').classList.add('active');
-}
-
-function placeholder(name) {
-  alert(name + ' – sadržaj dolazi uskoro 🙂');
+  document.body.className = "home";
+  document.getElementById("screen-menu").classList.remove("active");
+  document.getElementById("screen-lang").classList.add("active");
 }
 </script>
 

@@ -37,30 +37,40 @@ body.static {
   100% { background-position: 0% 50%; }
 }
 
-/* ===== LAYOUT ===== */
+/* ===== APP KONTEJNER ===== */
 .app {
+  position: relative;
+  width: 100%;
   height: 100%;
+}
+
+/* ===== SCREENOVI ===== */
+.screen {
+  position: absolute;
+  inset: 0; /* top right bottom left = 0 */
+
   display: flex;
   justify-content: center;
   align-items: center;
-}
-
-.screen {
-  width: 100%;
-  max-width: 420px;
-  padding: 2rem 1.5rem;
-  text-align: center;
 
   opacity: 0;
   transform: translateY(20px);
   pointer-events: none;
-  transition: all 0.4s ease;
+  transition: opacity 0.4s ease, transform 0.4s ease;
 }
 
 .screen.active {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
+}
+
+/* ===== CONTENT ===== */
+.content {
+  width: 100%;
+  max-width: 420px;
+  padding: 2rem 1.5rem;
+  text-align: center;
 }
 
 /* ===== NASLOV ===== */
@@ -91,9 +101,12 @@ body.static {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  align-items: center;
 }
 
 .btn {
+  width: 100%;
+  max-width: 280px;
   padding: 0.9rem;
   border-radius: 50px;
   border: none;
@@ -107,16 +120,17 @@ body.static {
   background: rgba(255,255,255,0.95);
 }
 
-/* ===== POVRATAK ===== */
+/* ===== POVRATAK GORE DESNO ===== */
 .back-top {
   position: absolute;
   top: 1rem;
   right: 1rem;
-  background: rgba(255,255,255,0.8);
-  border: none;
+  padding: 0.4rem 0.9rem;
   border-radius: 20px;
-  padding: 0.4rem 0.8rem;
+  border: none;
+  background: rgba(255,255,255,0.85);
   font-weight: 600;
+  cursor: pointer;
 }
 </style>
 </head>
@@ -124,29 +138,33 @@ body.static {
 <body class="home">
 <div class="app">
 
-  <!-- SCREEN 1 -->
+  <!-- SCREEN 1: ODABIR JEZIKA -->
   <div id="screen-lang" class="screen active">
-    <h1 class="title">
-      <span>Life</span>
-      <span>Kompas</span>
-    </h1>
+    <div class="content">
+      <h1 class="title">
+        <span>Life</span>
+        <span>Kompas</span>
+      </h1>
 
-    <div class="buttons">
-      <button class="btn" onclick="selectLang('hr')">🇭🇷 Hrvatski</button>
-      <button class="btn" onclick="selectLang('de')">🇩🇪 Deutsch</button>
-      <button class="btn" onclick="selectLang('en')">🇬🇧 English</button>
+      <div class="buttons">
+        <button class="btn" onclick="selectLang('hr')">🇭🇷 Hrvatski</button>
+        <button class="btn" onclick="selectLang('de')">🇩🇪 Deutsch</button>
+        <button class="btn" onclick="selectLang('en')">🇬🇧 English</button>
+      </div>
     </div>
   </div>
 
-  <!-- SCREEN 2 -->
+  <!-- SCREEN 2: GLAVNI IZBORNIK -->
   <div id="screen-menu" class="screen">
     <button class="back-top" onclick="goBack()">← Povratak</button>
 
-    <div class="buttons">
-      <button class="btn" onclick="placeholder('Dnevnik')">📔 Dnevnik</button>
-      <button class="btn" onclick="placeholder('Obitelj i prijatelji')">👨‍👩‍👧 Obitelj i prijatelji</button>
-      <button class="btn" onclick="placeholder('Zdravlje')">❤️ Zdravlje</button>
-      <button class="btn" onclick="placeholder('Financije')">💰 Financije</button>
+    <div class="content">
+      <div class="buttons">
+        <button class="btn" onclick="placeholder('Dnevnik')">📔 Dnevnik</button>
+        <button class="btn" onclick="placeholder('Obitelj i prijatelji')">👨‍👩‍👧 Obitelj i prijatelji</button>
+        <button class="btn" onclick="placeholder('Zdravlje')">❤️ Zdravlje</button>
+        <button class="btn" onclick="placeholder('Financije')">💰 Financije</button>
+      </div>
     </div>
   </div>
 

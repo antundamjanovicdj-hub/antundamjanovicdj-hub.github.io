@@ -16,7 +16,7 @@
 }
 
 html, body {
-  min-height: 100%;
+  height: 100%;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
@@ -31,14 +31,16 @@ body.home {
   );
   background-size: 400% 400%;
   animation: bgMove 12s ease-in-out infinite;
+
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-/* ===== MIRNA POZADINA (OSTALI EKRANI) ===== */
+/* ===== MIRNA POZADINA ===== */
 body.static {
   background: linear-gradient(to top, #d0f0c0, #a8e6cf, #61c09a, #2e8b57);
+
   display: flex;
   justify-content: center;
   align-items: center;
@@ -50,9 +52,17 @@ body.static {
   100% { background-position: 0% 50%; }
 }
 
+/* ===== CENTRIRANI CONTENT ===== */
 .content {
+  width: 100%;
+  max-width: 420px;
+  padding: 2rem 1.5rem;
   text-align: center;
-  padding: 1.5rem;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 /* ===== VATRENI NASLOV ===== */
@@ -78,9 +88,18 @@ body.static {
 }
 
 @keyframes fireGlow {
-  0% { background-position: 0% 0%; text-shadow: 0 0 6px rgba(255,140,0,.4); }
-  50% { background-position: 0% 100%; text-shadow: 0 0 12px rgba(255,69,0,.6); }
-  100% { background-position: 0% 0%; text-shadow: 0 0 6px rgba(255,140,0,.4); }
+  0% {
+    background-position: 0% 0%;
+    text-shadow: 0 0 6px rgba(255,140,0,.4);
+  }
+  50% {
+    background-position: 0% 100%;
+    text-shadow: 0 0 12px rgba(255,69,0,.6);
+  }
+  100% {
+    background-position: 0% 0%;
+    text-shadow: 0 0 6px rgba(255,140,0,.4);
+  }
 }
 
 /* ===== BUTTONI ===== */

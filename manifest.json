@@ -1,20 +1,20 @@
 {
   "name": "LifeKompas",
-  "short_name": "Kompas",
+  "short_name": "LK",
   "description": "Osobni kompas za zdravlje, financije i obitelj",
-  "start_url": "/",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#2e8b57",
   "theme_color": "#2e8b57",
   "lang": "hr",
   "icons": [
     {
-      "src": "/icon-192.png",
+      "src": "icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/icon-512.png",
+      "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }

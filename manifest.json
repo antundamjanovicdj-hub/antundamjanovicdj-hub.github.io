@@ -6,7 +6,6 @@
   "display": "standalone",
   "background_color": "#2e8b57",
   "theme_color": "#2e8b57",
-  "lang": "hr",
   "icons": [
     {
       "src": "icon-192.png",

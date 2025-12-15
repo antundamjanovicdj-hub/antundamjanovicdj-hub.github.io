@@ -30,16 +30,10 @@ body {
   width: 100%;
   max-width: 420px;
   padding: 20px;
-  animation: fade 0.35s ease;
 }
 .screen.active { display: block; }
 
-@keyframes fade {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* FIRE TITLE – VERTICAL */
+/* TITLE – STABILNO NA ANDROID + IOS */
 .fire {
   font-size: 3.4rem;
   font-weight: 900;
@@ -47,20 +41,15 @@ body {
   background: linear-gradient(
     to top,
     #ff8c00 0%,
-    #ffae42 35%,
-    #000000 85%
+    #ff8c00 35%,
+    #000000 100%
   );
-  background-size: 100% 200%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: fireMove 6s ease-in-out infinite;
+  text-shadow:
+    0 0 6px rgba(255,140,0,0.6),
+    0 0 12px rgba(255,69,0,0.4);
   margin-bottom: 2rem;
-}
-
-@keyframes fireMove {
-  0% { background-position: 0% 0%; }
-  50% { background-position: 0% 100%; }
-  100% { background-position: 0% 0%; }
 }
 
 /* BUTTONS */
@@ -234,20 +223,19 @@ function setMood(m){
 }
 
 function saveEntry(){
-  const d = date.value;
-  const data = { title: title.value, text: text.value, mood };
-  localStorage.setItem("diary-"+d, JSON.stringify(data));
+  localStorage.setItem(
+    "diary-"+date.value,
+    JSON.stringify({ title: title.value, text: text.value, mood })
+  );
   alert("Spremljeno");
 }
 
 function editEntry(){
   loadEntry();
-  alert("Možeš urediti zapis");
 }
 
 function loadEntry(){
-  const d = date.value;
-  const s = localStorage.getItem("diary-"+d);
+  const s = localStorage.getItem("diary-"+date.value);
   if(!s){ title.value=""; text.value=""; mood=""; return; }
   const e = JSON.parse(s);
   title.value = e.title;

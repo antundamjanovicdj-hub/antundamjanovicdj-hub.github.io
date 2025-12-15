@@ -10,8 +10,12 @@
 
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+}
 body {
-  min-height: 100vh;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background: linear-gradient(135deg, #1f6f4a, #2e8b57);
   display: flex;
@@ -20,14 +24,14 @@ body {
   color: white;
 }
 
+/* SCREENS */
 .screen {
   display: none;
   width: 100%;
   max-width: 420px;
   padding: 20px;
-  animation: fade 0.4s ease;
+  animation: fade 0.35s ease;
 }
-
 .screen.active { display: block; }
 
 @keyframes fade {
@@ -35,50 +39,66 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
-h1 {
+/* FIRE TITLE */
+.fire {
+  font-size: 3.2rem;
+  font-weight: 900;
   text-align: center;
-  font-size: 3rem;
-  margin-bottom: 1.5rem;
+  background: linear-gradient(90deg, #ff8c00, #ffd700, #ff4500);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: fire 6s linear infinite;
+  margin-bottom: 2rem;
+}
+@keyframes fire {
+  to { background-position: 200% center; }
 }
 
+/* BUTTONS */
 .buttons {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
-
 button {
   padding: 14px;
   font-size: 1.1rem;
   border-radius: 30px;
   border: none;
   cursor: pointer;
-  background: rgba(255,255,255,0.85);
+  background: rgba(255,255,255,0.9);
 }
 
+/* TOP RIGHT */
 .top-right {
   position: absolute;
   top: 15px;
   right: 15px;
 }
 
-textarea, input[type="text"], input[type="date"] {
+/* FORM */
+input, textarea {
   width: 100%;
-  padding: 10px;
+  padding: 12px;
   margin: 8px 0;
-  border-radius: 10px;
+  border-radius: 12px;
   border: none;
+  font-size: 1rem;
 }
 
+textarea { resize: vertical; }
+
+/* MOODS */
 .moods {
   display: flex;
   justify-content: space-around;
-  font-size: 2rem;
-  margin: 10px 0;
+  font-size: 2.2rem;
+  margin: 12px 0;
 }
 .moods span {
   cursor: pointer;
-  opacity: 0.5;
+  opacity: 0.4;
 }
 .moods span.active { opacity: 1; }
 </style>
@@ -88,7 +108,7 @@ textarea, input[type="text"], input[type="date"] {
 
 <!-- HOME -->
 <div id="home" class="screen active">
-  <h1>LifeKompas</h1>
+  <div class="fire">LifeKompas</div>
   <div class="buttons">
     <button onclick="selectLang('hr')">🇭🇷 Hrvatski</button>
     <button onclick="selectLang('de')">🇩🇪 Deutsch</button>
@@ -100,10 +120,10 @@ textarea, input[type="text"], input[type="date"] {
 <div id="menu" class="screen">
   <button class="top-right" onclick="goHome()">←</button>
   <div class="buttons">
-    <button onclick="openDiary()">📔 Dnevnik</button>
-    <button disabled>👨‍👩‍👧 Obitelj i prijatelji</button>
-    <button disabled>❤️ Zdravlje</button>
-    <button disabled>💰 Financije</button>
+    <button onclick="openDiary()"><span id="btnDiary"></span></button>
+    <button disabled id="btnFamily"></button>
+    <button disabled id="btnHealth"></button>
+    <button disabled id="btnFinance"></button>
   </div>
 </div>
 
@@ -112,8 +132,8 @@ textarea, input[type="text"], input[type="date"] {
   <button class="top-right" onclick="goMenu()">←</button>
 
   <input type="date" id="date">
-  <input type="text" id="title" placeholder="Naslov dana">
-  <textarea id="text" rows="6" placeholder="Događanja..."></textarea>
+  <input type="text" id="title">
+  <textarea id="text" rows="6"></textarea>
 
   <div class="moods">
     <span onclick="setMood('😊')">😊</span>
@@ -121,18 +141,45 @@ textarea, input[type="text"], input[type="date"] {
     <span onclick="setMood('😞')">😞</span>
   </div>
 
-  <button onclick="saveEntry()">💾 Spremi</button>
-  <button onclick="deleteEntry()">🗑 Obriši</button>
+  <button onclick="saveEntry()" id="btnSave"></button>
+  <button onclick="deleteEntry()" id="btnDelete"></button>
 </div>
 
 <script>
 let lang = localStorage.getItem("lang") || "hr";
 let mood = "";
 
-const texts = {
-  hr: { diary: "📔 Dnevnik" },
-  de: { diary: "📔 Tagebuch" },
-  en: { diary: "📔 Diary" }
+const T = {
+  hr: {
+    diary: "📔 Dnevnik",
+    family: "👨‍👩‍👧 Obitelj i prijatelji",
+    health: "❤️ Zdravlje",
+    finance: "💰 Financije",
+    title: "Naslov dana",
+    text: "Događanja...",
+    save: "💾 Spremi",
+    del: "🗑 Obriši"
+  },
+  de: {
+    diary: "📔 Tagebuch",
+    family: "👨‍👩‍👧 Familie & Freunde",
+    health: "❤️ Gesundheit",
+    finance: "💰 Finanzen",
+    title: "Titel des Tages",
+    text: "Ereignisse...",
+    save: "💾 Speichern",
+    del: "🗑 Löschen"
+  },
+  en: {
+    diary: "📔 Diary",
+    family: "👨‍👩‍👧 Family & Friends",
+    health: "❤️ Health",
+    finance: "💰 Finance",
+    title: "Day title",
+    text: "Events...",
+    save: "💾 Save",
+    del: "🗑 Delete"
+  }
 };
 
 function show(id) {
@@ -140,56 +187,63 @@ function show(id) {
   document.getElementById(id).classList.add("active");
 }
 
+function applyLang() {
+  btnDiary.textContent = T[lang].diary;
+  btnFamily.textContent = T[lang].family;
+  btnHealth.textContent = T[lang].health;
+  btnFinance.textContent = T[lang].finance;
+  title.placeholder = T[lang].title;
+  text.placeholder = T[lang].text;
+  btnSave.textContent = T[lang].save;
+  btnDelete.textContent = T[lang].del;
+}
+
 function selectLang(l) {
   lang = l;
   localStorage.setItem("lang", l);
+  applyLang();
   show("menu");
 }
 
-function goHome() { show("home"); }
-function goMenu() { show("menu"); }
+function goHome(){ show("home"); }
+function goMenu(){ show("menu"); }
 
-function openDiary() {
-  document.getElementById("date").value = new Date().toISOString().slice(0,10);
+function openDiary(){
+  date.value = new Date().toISOString().slice(0,10);
   loadEntry();
   show("diary");
 }
 
-function setMood(m) {
+function setMood(m){
   mood = m;
-  document.querySelectorAll(".moods span").forEach(s => s.classList.remove("active"));
-  [...document.querySelectorAll(".moods span")].find(s => s.textContent === m).classList.add("active");
+  document.querySelectorAll(".moods span").forEach(s=>s.classList.remove("active"));
+  [...document.querySelectorAll(".moods span")].find(s=>s.textContent===m).classList.add("active");
 }
 
-function saveEntry() {
-  const date = date.value;
-  const data = {
-    title: title.value,
-    text: text.value,
-    mood
-  };
-  localStorage.setItem("diary-" + date, JSON.stringify(data));
-  alert("Spremljeno");
+function saveEntry(){
+  const d = date.value;
+  const data = { title: title.value, text: text.value, mood };
+  localStorage.setItem("diary-"+d, JSON.stringify(data));
+  alert("OK");
 }
 
-function loadEntry() {
-  const date = document.getElementById("date").value;
-  const saved = localStorage.getItem("diary-" + date);
-  if (!saved) return;
-  const d = JSON.parse(saved);
-  title.value = d.title;
-  text.value = d.text;
-  if (d.mood) setMood(d.mood);
+function loadEntry(){
+  const d = date.value;
+  const s = localStorage.getItem("diary-"+d);
+  if(!s){ title.value=""; text.value=""; mood=""; return; }
+  const e = JSON.parse(s);
+  title.value = e.title;
+  text.value = e.text;
+  if(e.mood) setMood(e.mood);
 }
 
-function deleteEntry() {
-  const date = document.getElementById("date").value;
-  localStorage.removeItem("diary-" + date);
-  title.value = "";
-  text.value = "";
-  mood = "";
-  document.querySelectorAll(".moods span").forEach(s => s.classList.remove("active"));
+function deleteEntry(){
+  localStorage.removeItem("diary-"+date.value);
+  title.value=""; text.value=""; mood="";
+  document.querySelectorAll(".moods span").forEach(s=>s.classList.remove("active"));
 }
+
+applyLang();
 </script>
 
 </body>

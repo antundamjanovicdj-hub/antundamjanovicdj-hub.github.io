@@ -39,20 +39,28 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* FIRE TITLE */
+/* FIRE TITLE – VERTICAL */
 .fire {
-  font-size: 3.2rem;
+  font-size: 3.4rem;
   font-weight: 900;
   text-align: center;
-  background: linear-gradient(90deg, #ff8c00, #ffd700, #ff4500);
-  background-size: 200% auto;
+  background: linear-gradient(
+    to top,
+    #ff8c00 0%,
+    #ffae42 35%,
+    #000000 85%
+  );
+  background-size: 100% 200%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: fire 6s linear infinite;
+  animation: fireMove 6s ease-in-out infinite;
   margin-bottom: 2rem;
 }
-@keyframes fire {
-  to { background-position: 200% center; }
+
+@keyframes fireMove {
+  0% { background-position: 0% 0%; }
+  50% { background-position: 0% 100%; }
+  100% { background-position: 0% 0%; }
 }
 
 /* BUTTONS */
@@ -120,7 +128,7 @@ textarea { resize: vertical; }
 <div id="menu" class="screen">
   <button class="top-right" onclick="goHome()">←</button>
   <div class="buttons">
-    <button onclick="openDiary()"><span id="btnDiary"></span></button>
+    <button onclick="openDiary()" id="btnDiary"></button>
     <button disabled id="btnFamily"></button>
     <button disabled id="btnHealth"></button>
     <button disabled id="btnFinance"></button>
@@ -142,6 +150,7 @@ textarea { resize: vertical; }
   </div>
 
   <button onclick="saveEntry()" id="btnSave"></button>
+  <button onclick="editEntry()" id="btnEdit"></button>
   <button onclick="deleteEntry()" id="btnDelete"></button>
 </div>
 
@@ -158,6 +167,7 @@ const T = {
     title: "Naslov dana",
     text: "Događanja...",
     save: "💾 Spremi",
+    edit: "✏️ Uredi",
     del: "🗑 Obriši"
   },
   de: {
@@ -168,6 +178,7 @@ const T = {
     title: "Titel des Tages",
     text: "Ereignisse...",
     save: "💾 Speichern",
+    edit: "✏️ Bearbeiten",
     del: "🗑 Löschen"
   },
   en: {
@@ -178,16 +189,17 @@ const T = {
     title: "Day title",
     text: "Events...",
     save: "💾 Save",
+    edit: "✏️ Edit",
     del: "🗑 Delete"
   }
 };
 
-function show(id) {
-  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+function show(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
   document.getElementById(id).classList.add("active");
 }
 
-function applyLang() {
+function applyLang(){
   btnDiary.textContent = T[lang].diary;
   btnFamily.textContent = T[lang].family;
   btnHealth.textContent = T[lang].health;
@@ -195,10 +207,11 @@ function applyLang() {
   title.placeholder = T[lang].title;
   text.placeholder = T[lang].text;
   btnSave.textContent = T[lang].save;
+  btnEdit.textContent = T[lang].edit;
   btnDelete.textContent = T[lang].del;
 }
 
-function selectLang(l) {
+function selectLang(l){
   lang = l;
   localStorage.setItem("lang", l);
   applyLang();
@@ -224,7 +237,12 @@ function saveEntry(){
   const d = date.value;
   const data = { title: title.value, text: text.value, mood };
   localStorage.setItem("diary-"+d, JSON.stringify(data));
-  alert("OK");
+  alert("Spremljeno");
+}
+
+function editEntry(){
+  loadEntry();
+  alert("Možeš urediti zapis");
 }
 
 function loadEntry(){

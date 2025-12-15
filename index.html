@@ -10,226 +10,228 @@
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{
-  width:100%;
-  height:100%;
-  overflow-x:hidden;
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+
+/* ===== BACKGROUNDS ===== */
+body.home{
+  background:linear-gradient(120deg,#1f6b4a,#2e8b57,#3fa37a,#2e8b57);
+  background-size:400% 400%;
+  animation:bgMove 12s ease-in-out infinite;
 }
-body{
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  background:linear-gradient(135deg,#1f6f4a,#2e8b57);
+body.static{
+  background:linear-gradient(to top,#d0f0c0,#a8e6cf,#61c09a,#2e8b57);
+}
+@keyframes bgMove{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+
+/* ===== APP ===== */
+.app{position:relative;width:100%;height:100%}
+
+/* ===== SCREENS ===== */
+.screen{
+  position:absolute;
+  inset:0;
   display:flex;
   justify-content:center;
   align-items:center;
-  color:white;
+  opacity:0;
+  transform:translateY(20px);
+  pointer-events:none;
+  transition:.4s ease;
+}
+.screen.active{
+  opacity:1;
+  transform:translateY(0);
+  pointer-events:auto;
 }
 
-/* SCREENS */
-.screen{
-  display:none;
+/* ===== CONTENT ===== */
+.content{
   width:100%;
   max-width:420px;
-  padding:20px;
-}
-.screen.active{display:block}
-
-/* 🔥 FIRE TITLE – STABILNO ANDROID + IOS */
-.fire{
-  font-size:3.6rem;
-  font-weight:900;
+  padding:2rem 1.5rem;
   text-align:center;
-  background:linear-gradient(
-    to bottom,
-    #000000 0%,
-    #000000 50%,
-    #ff7a00 50%,
-    #ff7a00 100%
-  );
+}
+
+/* ===== TITLE (NE DIRANO) ===== */
+.title{
+  font-size:4rem;
+  font-weight:900;
+  line-height:1;
+  margin-bottom:2rem;
+}
+.title span{
+  display:block;
+  background:linear-gradient(180deg,#000 40%,#ff8c00 60%,#ff4500);
+  background-size:100% 200%;
   -webkit-background-clip:text;
   -webkit-text-fill-color:transparent;
-  text-shadow:
-    0 0 6px rgba(255,140,0,0.9),
-    0 0 12px rgba(255,69,0,0.7),
-    0 0 18px rgba(255,0,0,0.4);
-  margin-bottom:2.2rem;
+  animation:fireGlow 3s ease-in-out infinite;
+}
+@keyframes fireGlow{
+  0%{background-position:0% 0%}
+  50%{background-position:0% 100%}
+  100%{background-position:0% 0%}
 }
 
-/* BUTTONS */
-.buttons{
-  display:flex;
-  flex-direction:column;
-  gap:14px;
-}
-button{
-  padding:14px;
-  font-size:1.05rem;
-  border-radius:30px;
+/* ===== BUTTONS ===== */
+.buttons{display:flex;flex-direction:column;gap:1rem;align-items:center}
+.btn{
+  width:100%;
+  max-width:280px;
+  padding:.9rem;
+  border-radius:50px;
   border:none;
-  cursor:pointer;
-  background:rgba(255,255,255,0.9);
+  font-size:1.1rem;
+  font-weight:600;
+  background:rgba(255,255,255,.85);
 }
 
-/* TOP RIGHT */
-.top-right{
+/* ===== TOP BACK ===== */
+.back-top{
   position:absolute;
-  top:15px;
-  right:15px;
+  top:1rem;
+  right:1rem;
+  padding:.4rem .9rem;
+  border-radius:20px;
+  border:none;
+  background:rgba(255,255,255,.85);
+  font-weight:600;
 }
 
-/* FORM */
+/* ===== DIARY ===== */
 input,textarea{
   width:100%;
   padding:12px;
   margin:8px 0;
   border-radius:12px;
   border:none;
-  font-size:1rem;
 }
 textarea{resize:vertical}
 
-/* MOODS */
-.moods{
-  display:flex;
-  justify-content:space-around;
-  font-size:2.2rem;
-  margin:12px 0;
-}
-.moods span{
-  cursor:pointer;
-  opacity:0.4;
-}
-.moods span.active{opacity:1}
-
-/* ACTION BUTTONS */
 .actions{
   display:flex;
   gap:6px;
-  flex-wrap:nowrap; /* 🔑 NEMA LOMLJENJA */
+  margin-top:10px;
+  flex-wrap:nowrap;
 }
 .actions button{
   flex:1;
-  padding:12px;
-  font-size:0.95rem;
+  padding:10px;
   white-space:nowrap;
 }
-
-/* 🇩🇪 ONLY */
 .actions.de button{
-  font-size:0.8rem;
-  padding:10px 6px;
+  font-size:.8rem;
+  padding:8px 4px;
 }
 </style>
 </head>
 
-<body>
+<body class="home">
+<div class="app">
 
-<!-- HOME -->
-<div id="home" class="screen active">
-  <div class="fire">LifeKompas</div>
-  <div class="buttons">
-    <button onclick="selectLang('hr')">🇭🇷 Hrvatski</button>
-    <button onclick="selectLang('de')">🇩🇪 Deutsch</button>
-    <button onclick="selectLang('en')">🇬🇧 English</button>
+<!-- LANG -->
+<div id="screen-lang" class="screen active">
+  <div class="content">
+    <h1 class="title"><span>Life</span><span>Kompas</span></h1>
+    <div class="buttons">
+      <button class="btn" onclick="selectLang('hr')">🇭🇷 Hrvatski</button>
+      <button class="btn" onclick="selectLang('de')">🇩🇪 Deutsch</button>
+      <button class="btn" onclick="selectLang('en')">🇬🇧 English</button>
+    </div>
   </div>
 </div>
 
 <!-- MENU -->
-<div id="menu" class="screen">
-  <button class="top-right" onclick="show('home')">←</button>
-  <div class="buttons">
-    <button onclick="openDiary()" id="btnDiary"></button>
+<div id="screen-menu" class="screen">
+  <button class="back-top" onclick="goBack()">←</button>
+  <div class="content">
+    <div class="buttons">
+      <button id="btnDiary" class="btn" onclick="openDiary()">📔</button>
+    </div>
   </div>
 </div>
 
 <!-- DIARY -->
-<div id="diary" class="screen">
-  <button class="top-right" onclick="show('menu')">←</button>
+<div id="screen-diary" class="screen">
+  <button class="back-top" onclick="backToMenu()">←</button>
+  <div class="content">
+    <input type="date" id="date">
+    <input type="text" id="title">
+    <textarea id="text" rows="6"></textarea>
 
-  <input type="date" id="date">
-  <input type="text" id="title">
-  <textarea id="text" rows="6"></textarea>
-
-  <div class="moods">
-    <span onclick="setMood('😊')">😊</span>
-    <span onclick="setMood('😐')">😐</span>
-    <span onclick="setMood('😞')">😞</span>
-  </div>
-
-  <div id="actions" class="actions">
-    <button id="btnSave" onclick="saveEntry()"></button>
-    <button id="btnEdit" onclick="loadEntry()"></button>
-    <button id="btnDelete" onclick="deleteEntry()"></button>
+    <div id="actions" class="actions">
+      <button id="btnSave" onclick="saveEntry()"></button>
+      <button id="btnEdit" onclick="loadEntry()"></button>
+      <button id="btnDelete" onclick="deleteEntry()"></button>
+    </div>
   </div>
 </div>
 
+</div>
+
 <script>
-let lang=localStorage.getItem("lang")||"hr";
-let mood="";
+let lang="hr";
 
 const T={
-  hr:{diary:"📔 Dnevnik",title:"Naslov dana",text:"Događanja...",save:"💾 Spremi",edit:"✏️ Uredi",del:"🗑 Obriši"},
-  de:{diary:"📔 Tagebuch",title:"Titel des Tages",text:"Ereignisse...",save:"💾 Speichern",edit:"✏️ Bearbeiten",del:"🗑 Löschen"},
-  en:{diary:"📔 Diary",title:"Day title",text:"Events...",save:"💾 Save",edit:"✏️ Edit",del:"🗑 Delete"}
+ hr:{diary:"📔 Dnevnik",save:"💾 Spremi",edit:"✏️ Uredi",del:"🗑 Obriši"},
+ de:{diary:"📔 Tagebuch",save:"💾 Speichern",edit:"✏️ Bearbeiten",del:"🗑 Löschen"},
+ en:{diary:"📔 Diary",save:"💾 Save",edit:"✏️ Edit",del:"🗑 Delete"}
 };
 
-function show(id){
-  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
+function selectLang(l){
+ lang=l;
+ localStorage.setItem("lang",l);
+ applyLang();
+ document.body.className="static";
+ show("screen-menu");
 }
 
 function applyLang(){
-  btnDiary.textContent=T[lang].diary;
-  title.placeholder=T[lang].title;
-  text.placeholder=T[lang].text;
-  btnSave.textContent=T[lang].save;
-  btnEdit.textContent=T[lang].edit;
-  btnDelete.textContent=T[lang].del;
-
-  document.getElementById("actions")
-    .classList.toggle("de",lang==="de");
+ btnDiary.textContent=T[lang].diary;
+ btnSave.textContent=T[lang].save;
+ btnEdit.textContent=T[lang].edit;
+ btnDelete.textContent=T[lang].del;
+ document.getElementById("actions").classList.toggle("de",lang==="de");
 }
 
-function selectLang(l){
-  lang=l;
-  localStorage.setItem("lang",l);
-  applyLang();
-  show("menu");
+function show(id){
+ document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
+}
+
+function goBack(){
+ document.body.className="home";
+ show("screen-lang");
 }
 
 function openDiary(){
-  date.value=new Date().toISOString().slice(0,10);
-  loadEntry();
-  show("diary");
+ date.value=new Date().toISOString().slice(0,10);
+ loadEntry();
+ show("screen-diary");
 }
 
-function setMood(m){
-  mood=m;
-  document.querySelectorAll(".moods span").forEach(s=>s.classList.remove("active"));
-  [...document.querySelectorAll(".moods span")].find(s=>s.textContent===m).classList.add("active");
-}
+function backToMenu(){show("screen-menu")}
 
 function saveEntry(){
-  localStorage.setItem("diary-"+date.value,JSON.stringify({title:title.value,text:text.value,mood}));
-  alert("OK");
+ localStorage.setItem("d-"+date.value,JSON.stringify({t:title.value,x:text.value}));
+ alert("OK");
 }
-
 function loadEntry(){
-  const s=localStorage.getItem("diary-"+date.value);
-  if(!s)return;
-  const e=JSON.parse(s);
-  title.value=e.title;
-  text.value=e.text;
-  if(e.mood)setMood(e.mood);
+ const s=localStorage.getItem("d-"+date.value);
+ if(!s)return;
+ const e=JSON.parse(s);
+ title.value=e.t;
+ text.value=e.x;
 }
-
 function deleteEntry(){
-  localStorage.removeItem("diary-"+date.value);
-  title.value="";
-  text.value="";
-  mood="";
-  document.querySelectorAll(".moods span").forEach(s=>s.classList.remove("active"));
+ localStorage.removeItem("d-"+date.value);
+ title.value="";
+ text.value="";
 }
-
 applyLang();
 </script>
 

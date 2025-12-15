@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="hr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>LifeKompas</title>
 
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon-192.png">
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 
-/* ===== BACKGROUNDS ===== */
+/* POZADINE */
 body.home{
   background:linear-gradient(120deg,#1f6b4a,#2e8b57,#3fa37a,#2e8b57);
   background-size:400% 400%;
@@ -27,40 +27,32 @@ body.static{
   100%{background-position:0% 50%}
 }
 
-/* ===== APP ===== */
+/* APP */
 .app{position:relative;width:100%;height:100%}
 
-/* ===== SCREENS ===== */
+/* SCREEN */
 .screen{
-  position:absolute;
-  inset:0;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  opacity:0;
-  transform:translateY(20px);
+  position:absolute;inset:0;
+  display:flex;justify-content:center;align-items:center;
+  opacity:0;transform:translateY(20px);
   pointer-events:none;
   transition:.4s ease;
 }
 .screen.active{
-  opacity:1;
-  transform:translateY(0);
+  opacity:1;transform:translateY(0);
   pointer-events:auto;
 }
 
-/* ===== CONTENT ===== */
+/* CONTENT */
 .content{
-  width:100%;
-  max-width:420px;
+  width:100%;max-width:420px;
   padding:2rem 1.5rem;
   text-align:center;
 }
 
-/* ===== TITLE (NE DIRANO) ===== */
+/* NASLOV */
 .title{
-  font-size:4rem;
-  font-weight:900;
-  line-height:1;
+  font-size:4rem;font-weight:900;line-height:1;
   margin-bottom:2rem;
 }
 .title span{
@@ -77,32 +69,30 @@ body.static{
   100%{background-position:0% 0%}
 }
 
-/* ===== BUTTONS ===== */
-.buttons{display:flex;flex-direction:column;gap:1rem;align-items:center}
+/* BUTTONI */
+.buttons{
+  display:flex;flex-direction:column;
+  gap:1rem;align-items:center;
+}
 .btn{
-  width:100%;
-  max-width:280px;
+  width:100%;max-width:280px;
   padding:.9rem;
-  border-radius:50px;
-  border:none;
-  font-size:1.1rem;
-  font-weight:600;
+  border:none;border-radius:50px;
+  font-size:1.1rem;font-weight:600;
   background:rgba(255,255,255,.85);
+  cursor:pointer;
 }
 
-/* ===== TOP BACK ===== */
+/* POVRATAK */
 .back-top{
-  position:absolute;
-  top:1rem;
-  right:1rem;
+  position:absolute;top:1rem;right:1rem;
   padding:.4rem .9rem;
-  border-radius:20px;
-  border:none;
-  background:rgba(255,255,255,.85);
+  border:none;border-radius:20px;
+  background:rgba(255,255,255,.9);
   font-weight:600;
 }
 
-/* ===== DIARY ===== */
+/* DNEVNIK */
 input,textarea{
   width:100%;
   padding:12px;
@@ -120,8 +110,8 @@ textarea{resize:vertical}
 }
 .actions button{
   flex:1;
-  padding:10px;
   white-space:nowrap;
+  padding:10px;
 }
 .actions.de button{
   font-size:.8rem;
@@ -133,7 +123,7 @@ textarea{resize:vertical}
 <body class="home">
 <div class="app">
 
-<!-- LANG -->
+<!-- JEZIK -->
 <div id="screen-lang" class="screen active">
   <div class="content">
     <h1 class="title"><span>Life</span><span>Kompas</span></h1>
@@ -147,21 +137,24 @@ textarea{resize:vertical}
 
 <!-- MENU -->
 <div id="screen-menu" class="screen">
-  <button class="back-top" onclick="goBack()">←</button>
+  <button id="backBtn" class="back-top"></button>
   <div class="content">
     <div class="buttons">
-      <button id="btnDiary" class="btn" onclick="openDiary()">📔</button>
+      <button id="btnDiary" class="btn"></button>
+      <button id="btnFamily" class="btn"></button>
+      <button id="btnHealth" class="btn"></button>
+      <button id="btnFinance" class="btn"></button>
     </div>
   </div>
 </div>
 
-<!-- DIARY -->
+<!-- DNEVNIK -->
 <div id="screen-diary" class="screen">
   <button class="back-top" onclick="backToMenu()">←</button>
   <div class="content">
     <input type="date" id="date">
-    <input type="text" id="title">
-    <textarea id="text" rows="6"></textarea>
+    <input type="text" id="titleInput">
+    <textarea id="textInput" rows="6"></textarea>
 
     <div id="actions" class="actions">
       <button id="btnSave" onclick="saveEntry()"></button>
@@ -174,28 +167,33 @@ textarea{resize:vertical}
 </div>
 
 <script>
+const T={
+ hr:{back:"← Povratak",diary:"📔 Dnevnik",family:"👨‍👩‍👧 Obitelj i prijatelji",health:"❤️ Zdravlje",finance:"💰 Financije",save:"💾 Spremi",edit:"✏️ Uredi",del:"🗑 Obriši"},
+ de:{back:"← Zurück",diary:"📔 Tagebuch",family:"👨‍👩‍👧 Familie & Freunde",health:"❤️ Gesundheit",finance:"💰 Finanzen",save:"💾 Speichern",edit:"✏️ Bearbeiten",del:"🗑 Löschen"},
+ en:{back:"← Back",diary:"📔 Diary",family:"👨‍👩‍👧 Family & Friends",health:"❤️ Health",finance:"💰 Finance",save:"💾 Save",edit:"✏️ Edit",del:"🗑 Delete"}
+};
+
 let lang="hr";
 
-const T={
- hr:{diary:"📔 Dnevnik",save:"💾 Spremi",edit:"✏️ Uredi",del:"🗑 Obriši"},
- de:{diary:"📔 Tagebuch",save:"💾 Speichern",edit:"✏️ Bearbeiten",del:"🗑 Löschen"},
- en:{diary:"📔 Diary",save:"💾 Save",edit:"✏️ Edit",del:"🗑 Delete"}
-};
+function applyLang(){
+ const t=T[lang];
+ backBtn.textContent=t.back;
+ btnDiary.textContent=t.diary;
+ btnFamily.textContent=t.family;
+ btnHealth.textContent=t.health;
+ btnFinance.textContent=t.finance;
+ btnSave.textContent=t.save;
+ btnEdit.textContent=t.edit;
+ btnDelete.textContent=t.del;
+ document.getElementById("actions").classList.toggle("de",lang==="de");
+}
 
 function selectLang(l){
  lang=l;
- localStorage.setItem("lang",l);
+ localStorage.setItem("selectedLanguage",l);
  applyLang();
  document.body.className="static";
  show("screen-menu");
-}
-
-function applyLang(){
- btnDiary.textContent=T[lang].diary;
- btnSave.textContent=T[lang].save;
- btnEdit.textContent=T[lang].edit;
- btnDelete.textContent=T[lang].del;
- document.getElementById("actions").classList.toggle("de",lang==="de");
 }
 
 function show(id){
@@ -208,31 +206,35 @@ function goBack(){
  show("screen-lang");
 }
 
-function openDiary(){
- date.value=new Date().toISOString().slice(0,10);
- loadEntry();
- show("screen-diary");
-}
-
 function backToMenu(){show("screen-menu")}
 
+btnDiary.onclick=()=>{date.value=new Date().toISOString().slice(0,10);loadEntry();show("screen-diary")};
+backBtn.onclick=goBack;
+
 function saveEntry(){
- localStorage.setItem("d-"+date.value,JSON.stringify({t:title.value,x:text.value}));
+ localStorage.setItem("d-"+date.value,JSON.stringify({
+  t:titleInput.value,x:textInput.value
+ }));
  alert("OK");
 }
 function loadEntry(){
  const s=localStorage.getItem("d-"+date.value);
  if(!s)return;
  const e=JSON.parse(s);
- title.value=e.t;
- text.value=e.x;
+ titleInput.value=e.t;
+ textInput.value=e.x;
 }
 function deleteEntry(){
  localStorage.removeItem("d-"+date.value);
- title.value="";
- text.value="";
+ titleInput.value="";
+ textInput.value="";
 }
-applyLang();
+
+window.addEventListener("load",()=>{
+ const saved=localStorage.getItem("selectedLanguage");
+ if(saved){lang=saved;}
+ applyLang();
+});
 </script>
 
 </body>

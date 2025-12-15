@@ -9,95 +9,109 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html, body {
-  width: 100%;
-  height: 100%;
-  overflow-x: hidden;
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{
+  width:100%;
+  height:100%;
+  overflow-x:hidden;
 }
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: linear-gradient(135deg, #1f6f4a, #2e8b57);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: white;
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:linear-gradient(135deg,#1f6f4a,#2e8b57);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  color:white;
 }
 
 /* SCREENS */
-.screen {
-  display: none;
-  width: 100%;
-  max-width: 420px;
-  padding: 20px;
+.screen{
+  display:none;
+  width:100%;
+  max-width:420px;
+  padding:20px;
 }
-.screen.active { display: block; }
+.screen.active{display:block}
 
-/* TITLE – STABILNO NA ANDROID + IOS */
-.fire {
-  font-size: 3.4rem;
-  font-weight: 900;
-  text-align: center;
-  background: linear-gradient(
-    to top,
-    #ff8c00 0%,
-    #ff8c00 35%,
-    #000000 100%
+/* 🔥 TITLE – IDENTIČAN NA ANDROID + IOS */
+.fire{
+  font-size:3.4rem;
+  font-weight:900;
+  text-align:center;
+  background:linear-gradient(
+    to bottom,
+    #000000 0%,
+    #000000 50%,
+    #ff8c00 50%,
+    #ff8c00 100%
   );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
   text-shadow:
     0 0 6px rgba(255,140,0,0.6),
     0 0 12px rgba(255,69,0,0.4);
-  margin-bottom: 2rem;
+  margin-bottom:2rem;
 }
 
 /* BUTTONS */
-.buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+.buttons{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
 }
-button {
-  padding: 14px;
-  font-size: 1.1rem;
-  border-radius: 30px;
-  border: none;
-  cursor: pointer;
-  background: rgba(255,255,255,0.9);
+button{
+  padding:14px;
+  font-size:1.05rem;
+  border-radius:30px;
+  border:none;
+  cursor:pointer;
+  background:rgba(255,255,255,0.9);
 }
 
 /* TOP RIGHT */
-.top-right {
-  position: absolute;
-  top: 15px;
-  right: 15px;
+.top-right{
+  position:absolute;
+  top:15px;
+  right:15px;
 }
 
 /* FORM */
-input, textarea {
-  width: 100%;
-  padding: 12px;
-  margin: 8px 0;
-  border-radius: 12px;
-  border: none;
-  font-size: 1rem;
+input,textarea{
+  width:100%;
+  padding:12px;
+  margin:8px 0;
+  border-radius:12px;
+  border:none;
+  font-size:1rem;
 }
-
-textarea { resize: vertical; }
+textarea{resize:vertical}
 
 /* MOODS */
-.moods {
-  display: flex;
-  justify-content: space-around;
-  font-size: 2.2rem;
-  margin: 12px 0;
+.moods{
+  display:flex;
+  justify-content:space-around;
+  font-size:2.2rem;
+  margin:12px 0;
 }
-.moods span {
-  cursor: pointer;
-  opacity: 0.4;
+.moods span{
+  cursor:pointer;
+  opacity:0.4;
 }
-.moods span.active { opacity: 1; }
+.moods span.active{opacity:1}
+
+/* ACTION BUTTONS (SPREMI / UREDI / OBRIŠI) */
+.actions{
+  display:flex;
+  gap:8px;
+}
+.actions button{
+  flex:1;
+  padding:12px;
+  font-size:0.95rem;
+}
+.actions.de button{
+  font-size:0.85rem; /* samo njemački */
+}
 </style>
 </head>
 
@@ -115,18 +129,15 @@ textarea { resize: vertical; }
 
 <!-- MENU -->
 <div id="menu" class="screen">
-  <button class="top-right" onclick="goHome()">←</button>
+  <button class="top-right" onclick="show('home')">←</button>
   <div class="buttons">
     <button onclick="openDiary()" id="btnDiary"></button>
-    <button disabled id="btnFamily"></button>
-    <button disabled id="btnHealth"></button>
-    <button disabled id="btnFinance"></button>
   </div>
 </div>
 
 <!-- DIARY -->
 <div id="diary" class="screen">
-  <button class="top-right" onclick="goMenu()">←</button>
+  <button class="top-right" onclick="show('menu')">←</button>
 
   <input type="date" id="date">
   <input type="text" id="title">
@@ -138,49 +149,21 @@ textarea { resize: vertical; }
     <span onclick="setMood('😞')">😞</span>
   </div>
 
-  <button onclick="saveEntry()" id="btnSave"></button>
-  <button onclick="editEntry()" id="btnEdit"></button>
-  <button onclick="deleteEntry()" id="btnDelete"></button>
+  <div id="actions" class="actions">
+    <button id="btnSave" onclick="saveEntry()"></button>
+    <button id="btnEdit" onclick="loadEntry()"></button>
+    <button id="btnDelete" onclick="deleteEntry()"></button>
+  </div>
 </div>
 
 <script>
-let lang = localStorage.getItem("lang") || "hr";
-let mood = "";
+let lang=localStorage.getItem("lang")||"hr";
+let mood="";
 
-const T = {
-  hr: {
-    diary: "📔 Dnevnik",
-    family: "👨‍👩‍👧 Obitelj i prijatelji",
-    health: "❤️ Zdravlje",
-    finance: "💰 Financije",
-    title: "Naslov dana",
-    text: "Događanja...",
-    save: "💾 Spremi",
-    edit: "✏️ Uredi",
-    del: "🗑 Obriši"
-  },
-  de: {
-    diary: "📔 Tagebuch",
-    family: "👨‍👩‍👧 Familie & Freunde",
-    health: "❤️ Gesundheit",
-    finance: "💰 Finanzen",
-    title: "Titel des Tages",
-    text: "Ereignisse...",
-    save: "💾 Speichern",
-    edit: "✏️ Bearbeiten",
-    del: "🗑 Löschen"
-  },
-  en: {
-    diary: "📔 Diary",
-    family: "👨‍👩‍👧 Family & Friends",
-    health: "❤️ Health",
-    finance: "💰 Finance",
-    title: "Day title",
-    text: "Events...",
-    save: "💾 Save",
-    edit: "✏️ Edit",
-    del: "🗑 Delete"
-  }
+const T={
+  hr:{diary:"📔 Dnevnik",title:"Naslov dana",text:"Događanja...",save:"💾 Spremi",edit:"✏️ Uredi",del:"🗑 Obriši"},
+  de:{diary:"📔 Tagebuch",title:"Titel des Tages",text:"Ereignisse...",save:"💾 Speichern",edit:"✏️ Bearbeiten",del:"🗑 Löschen"},
+  en:{diary:"📔 Diary",title:"Day title",text:"Events...",save:"💾 Save",edit:"✏️ Edit",del:"🗑 Delete"}
 };
 
 function show(id){
@@ -189,63 +172,55 @@ function show(id){
 }
 
 function applyLang(){
-  btnDiary.textContent = T[lang].diary;
-  btnFamily.textContent = T[lang].family;
-  btnHealth.textContent = T[lang].health;
-  btnFinance.textContent = T[lang].finance;
-  title.placeholder = T[lang].title;
-  text.placeholder = T[lang].text;
-  btnSave.textContent = T[lang].save;
-  btnEdit.textContent = T[lang].edit;
-  btnDelete.textContent = T[lang].del;
+  btnDiary.textContent=T[lang].diary;
+  title.placeholder=T[lang].title;
+  text.placeholder=T[lang].text;
+  btnSave.textContent=T[lang].save;
+  btnEdit.textContent=T[lang].edit;
+  btnDelete.textContent=T[lang].del;
+
+  const actions=document.getElementById("actions");
+  actions.classList.toggle("de",lang==="de");
 }
 
 function selectLang(l){
-  lang = l;
-  localStorage.setItem("lang", l);
+  lang=l;
+  localStorage.setItem("lang",l);
   applyLang();
   show("menu");
 }
 
-function goHome(){ show("home"); }
-function goMenu(){ show("menu"); }
-
 function openDiary(){
-  date.value = new Date().toISOString().slice(0,10);
+  date.value=new Date().toISOString().slice(0,10);
   loadEntry();
   show("diary");
 }
 
 function setMood(m){
-  mood = m;
+  mood=m;
   document.querySelectorAll(".moods span").forEach(s=>s.classList.remove("active"));
   [...document.querySelectorAll(".moods span")].find(s=>s.textContent===m).classList.add("active");
 }
 
 function saveEntry(){
-  localStorage.setItem(
-    "diary-"+date.value,
-    JSON.stringify({ title: title.value, text: text.value, mood })
-  );
-  alert("Spremljeno");
-}
-
-function editEntry(){
-  loadEntry();
+  localStorage.setItem("diary-"+date.value,JSON.stringify({title:title.value,text:text.value,mood}));
+  alert("OK");
 }
 
 function loadEntry(){
-  const s = localStorage.getItem("diary-"+date.value);
-  if(!s){ title.value=""; text.value=""; mood=""; return; }
-  const e = JSON.parse(s);
-  title.value = e.title;
-  text.value = e.text;
-  if(e.mood) setMood(e.mood);
+  const s=localStorage.getItem("diary-"+date.value);
+  if(!s)return;
+  const e=JSON.parse(s);
+  title.value=e.title;
+  text.value=e.text;
+  if(e.mood)setMood(e.mood);
 }
 
 function deleteEntry(){
   localStorage.removeItem("diary-"+date.value);
-  title.value=""; text.value=""; mood="";
+  title.value="";
+  text.value="";
+  mood="";
   document.querySelectorAll(".moods span").forEach(s=>s.classList.remove("active"));
 }
 

@@ -19,7 +19,6 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sa
   body{position:fixed;inset:0}
 }
 
-/* BACKGROUND */
 body.home{
   background:linear-gradient(120deg,#1f6b4a,#2e8b57,#3fa37a,#2e8b57);
   background-size:400% 400%;
@@ -109,8 +108,8 @@ textarea{resize:vertical}
 <body class="home">
 <div class="app">
 
-<!-- JEZIK -->
-<div id="lang" class="screen active">
+<!-- LANGUAGE -->
+<div id="screen-lang" class="screen active">
   <div class="content">
     <h1 class="title"><span>Life</span><span>Kompas</span></h1>
     <div class="buttons">
@@ -122,28 +121,47 @@ textarea{resize:vertical}
 </div>
 
 <!-- MENU -->
-<div id="menu" class="screen">
+<div id="screen-menu" class="screen">
   <button class="back" onclick="goHome()">←</button>
   <div class="content">
     <div class="buttons">
-      <button class="btn" onclick="openDiary()">📔 Dnevnik</button>
-      <button class="btn" onclick="openTasks()">📋 Obveze</button>
+      <button class="btn" id="btnDiary" onclick="openDiary()"></button>
+      <button class="btn" id="btnTasks" onclick="openTasks()"></button>
     </div>
   </div>
 </div>
 
-<!-- OBVEZE -->
-<div id="tasks" class="screen">
-  <button class="back" onclick="show('menu')">←</button>
+<!-- DIARY -->
+<div id="screen-diary" class="screen">
+  <button class="back" onclick="show('screen-menu')">←</button>
+  <div class="content">
+    <label id="lblDate"></label>
+    <input type="date" id="dDate">
+    <label id="lblTitle"></label>
+    <input id="dTitle">
+    <label id="lblText"></label>
+    <textarea id="dText" rows="6"></textarea>
+
+    <div class="buttons">
+      <button class="btn" onclick="saveDiary()" id="btnSaveDiary"></button>
+      <button class="btn" onclick="loadDiary()" id="btnEditDiary"></button>
+      <button class="btn" onclick="deleteDiary()" id="btnDeleteDiary"></button>
+    </div>
+  </div>
+</div>
+
+<!-- TASKS -->
+<div id="screen-tasks" class="screen">
+  <button class="back" onclick="show('screen-menu')">←</button>
   <div class="content">
 
-    <label>Obveza</label>
+    <label id="lblTask"></label>
     <input id="taskTitle">
 
-    <label>Bilješka</label>
+    <label id="lblNote"></label>
     <textarea id="taskNote" rows="3"></textarea>
 
-    <label>Kategorija</label>
+    <label id="lblCategory"></label>
     <select id="taskCategory">
       <option>Zdravlje</option>
       <option>Obitelj</option>
@@ -152,22 +170,22 @@ textarea{resize:vertical}
       <option>Ostalo</option>
     </select>
 
-    <label>Datum</label>
+    <label id="lblTaskDate"></label>
     <input type="date" id="taskDate">
 
-    <label>Vrijeme</label>
+    <label id="lblTaskTime"></label>
     <input type="time" id="taskTime">
 
-    <label>Podsjetnik</label>
+    <label id="lblReminder"></label>
     <select id="taskReminder">
-      <option value="0">Bez podsjetnika</option>
+      <option value="0">—</option>
       <option value="15">15 min</option>
       <option value="30">30 min</option>
       <option value="60">1 sat</option>
       <option value="1440">1 dan</option>
     </select>
 
-    <button class="btn" onclick="saveTask()">💾 Spremi obvezu</button>
+    <button class="btn" onclick="saveTask()" id="btnSaveTask"></button>
 
     <div id="taskList"></div>
   </div>
@@ -176,109 +194,143 @@ textarea{resize:vertical}
 </div>
 
 <script>
-let tasks=[],editId=null;
+/* ===== TRANSLATIONS ===== */
+const T={
+ hr:{
+  diary:"📔 Dnevnik", tasks:"📋 Obveze",
+  date:"Datum", title:"Naslov", text:"Tekst",
+  save:"💾 Spremi", edit:"✏️ Uredi", del:"🗑 Izbriši",
+  task:"Obveza", note:"Bilješka", cat:"Kategorija",
+  tdate:"Datum", ttime:"Vrijeme", rem:"Podsjetnik",
+  saveTask:"💾 Spremi obvezu"
+ },
+ de:{
+  diary:"📔 Tagebuch", tasks:"📋 Aufgaben",
+  date:"Datum", title:"Titel", text:"Text",
+  save:"💾 Speichern", edit:"✏️ Bearbeiten", del:"🗑 Löschen",
+  task:"Aufgabe", note:"Notiz", cat:"Kategorie",
+  tdate:"Datum", ttime:"Zeit", rem:"Erinnerung",
+  saveTask:"💾 Aufgabe speichern"
+ },
+ en:{
+  diary:"📔 Diary", tasks:"📋 Tasks",
+  date:"Date", title:"Title", text:"Text",
+  save:"💾 Save", edit:"✏️ Edit", del:"🗑 Delete",
+  task:"Task", note:"Note", cat:"Category",
+  tdate:"Date", ttime:"Time", rem:"Reminder",
+  saveTask:"💾 Save task"
+ }
+};
 
+let lang="hr";
+let tasks=[];
+
+/* ===== NAV ===== */
 function show(id){
  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
  document.getElementById(id).classList.add('active');
 }
-function selectLang(){
+function selectLang(l){
+ lang=l;
+ localStorage.setItem("lang",l);
+ applyLang();
  document.body.className="static";
- show('menu');
+ show('screen-menu');
 }
 function goHome(){
  document.body.className="home";
- show('lang');
+ show('screen-lang');
 }
 
-/* TASKS */
+/* ===== APPLY LANG ===== */
+function applyLang(){
+ btnDiary.textContent=T[lang].diary;
+ btnTasks.textContent=T[lang].tasks;
+
+ lblDate.textContent=T[lang].date;
+ lblTitle.textContent=T[lang].title;
+ lblText.textContent=T[lang].text;
+
+ btnSaveDiary.textContent=T[lang].save;
+ btnEditDiary.textContent=T[lang].edit;
+ btnDeleteDiary.textContent=T[lang].del;
+
+ lblTask.textContent=T[lang].task;
+ lblNote.textContent=T[lang].note;
+ lblCategory.textContent=T[lang].cat;
+ lblTaskDate.textContent=T[lang].tdate;
+ lblTaskTime.textContent=T[lang].ttime;
+ lblReminder.textContent=T[lang].rem;
+
+ btnSaveTask.textContent=T[lang].saveTask;
+}
+
+/* ===== DIARY ===== */
+function openDiary(){
+ dDate.value=new Date().toISOString().slice(0,10);
+ loadDiary();
+ show('screen-diary');
+}
+function saveDiary(){
+ localStorage.setItem("d-"+dDate.value,JSON.stringify({t:dTitle.value,x:dText.value}));
+}
+function loadDiary(){
+ const s=localStorage.getItem("d-"+dDate.value);
+ if(!s)return;
+ const e=JSON.parse(s);
+ dTitle.value=e.t||"";dText.value=e.x||"";
+}
+function deleteDiary(){
+ localStorage.removeItem("d-"+dDate.value);
+ dTitle.value="";dText.value="";
+}
+
+/* ===== TASKS ===== */
 function openTasks(){
  tasks=JSON.parse(localStorage.getItem("tasks")||"[]");
  renderTasks();
- show('tasks');
+ show('screen-tasks');
 }
-
 function saveTask(){
- const t={
-  id:editId||Date.now(),
+ tasks.push({
+  id:Date.now(),
   title:taskTitle.value,
   note:taskNote.value,
   cat:taskCategory.value,
   date:taskDate.value,
   time:taskTime.value,
-  rem:taskReminder.value,
-  status:"plan"
- };
- if(editId){
-  tasks=tasks.map(x=>x.id===editId?t:x);
-  editId=null;
- }else tasks.push(t);
-
+  rem:taskReminder.value
+ });
  localStorage.setItem("tasks",JSON.stringify(tasks));
- taskTitle.value=taskNote.value="";
+
+ taskTitle.value="";
+ taskNote.value="";
+ taskCategory.value="Zdravlje";
+ taskDate.value="";
+ taskTime.value="";
+ taskReminder.value="0";
+
  renderTasks();
 }
-
 function renderTasks(){
  taskList.innerHTML="";
- tasks.filter(t=>t.status==="plan").forEach(t=>{
+ tasks.forEach(t=>{
   const d=document.createElement("div");
   d.className="task";
   d.innerHTML=`
    <strong>${t.title}</strong> <small>(${t.cat})</small><br>
-   <small>${t.date} ${t.time}</small><br>
-   <small>${t.note||""}</small>
-   <div class="task-actions">
-     <button onclick="editTask(${t.id})">✏️</button>
-     <button onclick="doneTask(${t.id})">✔</button>
-     <button onclick="cancelTask(${t.id})">❌</button>
-     <button onclick="downloadICS(${t.id})">📅</button>
-   </div>`;
+   <small>${t.date||""} ${t.time||""}</small><br>
+   <small>${t.note||""}</small>`;
   taskList.appendChild(d);
  });
 }
 
-function editTask(id){
- const t=tasks.find(x=>x.id===id);
- editId=id;
- taskTitle.value=t.title;
- taskNote.value=t.note;
- taskCategory.value=t.cat;
- taskDate.value=t.date;
- taskTime.value=t.time;
- taskReminder.value=t.rem;
-}
-
-function doneTask(id){
- tasks=tasks.map(t=>t.id===id?{...t,status:"done"}:t);
- localStorage.setItem("tasks",JSON.stringify(tasks));
- renderTasks();
-}
-function cancelTask(id){
- tasks=tasks.map(t=>t.id===id?{...t,status:"cancel"}:t);
- localStorage.setItem("tasks",JSON.stringify(tasks));
- renderTasks();
-}
-
-/* CALENDAR */
-function downloadICS(id){
- const t=tasks.find(x=>x.id===id);
- if(!t)return;
- const start=t.date.replace(/-/g,"")+t.time.replace(":","")+"00";
- const alarm=t.rem==="0"?"":"BEGIN:VALARM\nTRIGGER:-PT"+t.rem+"M\nACTION:DISPLAY\nDESCRIPTION:"+t.title+"\nEND:VALARM\n";
- const ics=`BEGIN:VCALENDAR
-VERSION:2.0
-BEGIN:VEVENT
-DTSTART:${start}
-SUMMARY:${t.title}
-${alarm}END:VEVENT
-END:VCALENDAR`;
- const blob=new Blob([ics],{type:"text/calendar"});
- const a=document.createElement("a");
- a.href=URL.createObjectURL(blob);
- a.download="obveza.ics";
- a.click();
-}
+/* INIT */
+window.addEventListener("load",()=>{
+ const s=localStorage.getItem("lang");
+ if(s) lang=s;
+ applyLang();
+});
 </script>
 
 </body>

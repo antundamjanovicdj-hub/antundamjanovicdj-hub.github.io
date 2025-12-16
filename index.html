@@ -11,13 +11,33 @@ content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
+
 html,body{
   height:100%;
   width:100%;
-  overflow:hidden;
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
 }
-body{position:fixed;inset:0}
+
+/* =====================
+   ANDROID + DESKTOP
+   ===================== */
+body{
+  overflow-y:auto;       /* ✅ pull-to-refresh radi */
+  -webkit-overflow-scrolling: touch;
+}
+
+/* =====================
+   iOS ONLY FIX
+   ===================== */
+@supports (-webkit-touch-callout: none) {
+  html, body {
+    overflow: hidden;
+  }
+  body {
+    position: fixed;
+    inset: 0;
+  }
+}
 
 /* BACKGROUNDS */
 body.home{
@@ -112,23 +132,15 @@ textarea{resize:vertical}
 /* TASKS */
 .task{
   display:flex;
-  align-items:center;
   justify-content:space-between;
+  align-items:center;
   background:rgba(255,255,255,.85);
   border-radius:12px;
   padding:10px;
   margin-top:8px;
 }
-.task span{
-  font-size:.95rem;
-  text-align:left;
-  flex:1;
-}
 .task button{
-  border:none;
-  background:none;
-  font-size:1.2rem;
-  cursor:pointer;
+  background:none;border:none;font-size:1.2rem;
 }
 </style>
 </head>
@@ -136,7 +148,7 @@ textarea{resize:vertical}
 <body class="home">
 <div class="app">
 
-<!-- LANG -->
+<!-- JEZIK -->
 <div id="screen-lang" class="screen active">
   <div class="content">
     <h1 class="title"><span>Life</span><span>Kompas</span></h1>
@@ -159,7 +171,7 @@ textarea{resize:vertical}
   </div>
 </div>
 
-<!-- DIARY -->
+<!-- DNEVNIK -->
 <div id="screen-diary" class="screen">
   <button class="back-top" onclick="show('screen-menu')">←</button>
   <div class="content">
@@ -170,7 +182,7 @@ textarea{resize:vertical}
   </div>
 </div>
 
-<!-- TASKS -->
+<!-- OBVEZE -->
 <div id="screen-tasks" class="screen">
   <button class="back-top" onclick="show('screen-menu')">←</button>
   <div class="content">
@@ -190,8 +202,7 @@ const T={
  de:{back:"← Zurück",diary:"📔 Tagebuch",tasks:"📋 Aufgaben"},
  en:{back:"← Back",diary:"📔 Diary",tasks:"📋 Tasks"}
 };
-let lang="hr";
-let tasks=[];
+let lang="hr",tasks=[];
 
 function show(id){
  document.activeElement.blur();
@@ -200,10 +211,8 @@ function show(id){
 }
 
 function selectLang(l){
- lang=l;
- localStorage.setItem("lang",l);
- applyLang();
- document.body.className="static";
+ lang=l;localStorage.setItem("lang",l);
+ applyLang();document.body.className="static";
  show("screen-menu");
 }
 
@@ -213,25 +222,13 @@ function applyLang(){
  btnTasks.textContent=T[lang].tasks;
 }
 
-btnDiary.onclick=()=>{
- dDate.value=new Date().toISOString().slice(0,10);
- show("screen-diary");
-};
-
-btnTasks.onclick=()=>{
- loadTasks();
- show("screen-tasks");
-};
-
-backBtn.onclick=()=>{
- document.body.className="home";
- show("screen-lang");
-};
+btnDiary.onclick=()=>{show("screen-diary")};
+btnTasks.onclick=()=>{loadTasks();show("screen-tasks")};
+backBtn.onclick=()=>{document.body.className="home";show("screen-lang")};
 
 /* DIARY */
 function saveDiary(){
- localStorage.setItem("diary-"+dDate.value,
- JSON.stringify({t:dTitle.value,x:dText.value}));
+ localStorage.setItem("diary-"+dDate.value,JSON.stringify({t:dTitle.value,x:dText.value}));
  alert("OK");
 }
 
@@ -242,12 +239,7 @@ function loadTasks(){
 }
 function addTask(){
  if(!taskTitle.value)return;
- tasks.push({
-  id:Date.now(),
-  t:taskTitle.value,
-  d:taskDate.value,
-  h:taskTime.value
- });
+ tasks.push({id:Date.now(),t:taskTitle.value,d:taskDate.value,h:taskTime.value});
  localStorage.setItem("tasks",JSON.stringify(tasks));
  taskTitle.value="";
  renderTasks();

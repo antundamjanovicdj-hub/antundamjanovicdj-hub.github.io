@@ -11,18 +11,22 @@ content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%;width:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+html,body{
+  height:100%;
+  width:100%;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif
+}
 
 /* ANDROID */
 body{overflow-y:auto;-webkit-overflow-scrolling:touch}
 
-/* iOS ONLY */
+/* iOS FIX */
 @supports (-webkit-touch-callout:none){
   html,body{overflow:hidden}
   body{position:fixed;inset:0}
 }
 
-/* BACKGROUNDS */
+/* BACKGROUND */
 body.home{
   background:linear-gradient(120deg,#1f6b4a,#2e8b57,#3fa37a,#2e8b57);
   background-size:400% 400%;
@@ -47,21 +51,18 @@ body.static{
   transition:.4s ease;
 }
 .screen.active{
-  opacity:1;transform:translateY(0);
-  pointer-events:auto;
+  opacity:1;transform:translateY(0);pointer-events:auto
 }
 
 /* CONTENT */
 .content{
   width:100%;max-width:420px;
-  padding:2rem 1.5rem;
-  text-align:center;
+  padding:2rem 1.5rem;text-align:center
 }
 
 /* TITLE */
 .title{
-  font-size:4rem;font-weight:900;line-height:1;
-  margin-bottom:2rem;
+  font-size:4rem;font-weight:900;line-height:1;margin-bottom:2rem
 }
 .title span{
   display:block;
@@ -69,7 +70,7 @@ body.static{
   background-size:100% 200%;
   -webkit-background-clip:text;
   -webkit-text-fill-color:transparent;
-  animation:fireGlow 3s ease-in-out infinite;
+  animation:fireGlow 3s ease-in-out infinite
 }
 @keyframes fireGlow{
   0%{background-position:0% 0%}
@@ -78,43 +79,74 @@ body.static{
 }
 
 /* BUTTONS */
-.buttons{display:flex;flex-direction:column;gap:1rem;align-items:center}
+.buttons{
+  display:flex;
+  flex-direction:column;
+  gap:1rem;
+  align-items:center
+}
 .btn{
-  width:100%;max-width:280px;
-  padding:.9rem;border:none;border-radius:50px;
-  font-size:1.1rem;font-weight:600;
-  background:rgba(255,255,255,.85);
+  width:100%;
+  max-width:280px;
+  padding:.9rem;
+  border:none;
+  border-radius:50px;
+  font-size:1.1rem;
+  font-weight:600;
+  background:rgba(255,255,255,.85)
 }
 
 /* BACK */
 .back-top{
-  position:absolute;top:1rem;right:1rem;
-  padding:.4rem .9rem;border:none;border-radius:20px;
-  background:rgba(255,255,255,.9);font-weight:600;
+  position:absolute;
+  top:1rem;
+  right:1rem;
+  padding:.4rem .9rem;
+  border:none;
+  border-radius:20px;
+  background:rgba(255,255,255,.9);
+  font-weight:600
 }
 
 /* INPUTS */
 input,textarea{
-  width:100%;padding:12px;margin:8px 0;
-  border-radius:12px;border:none;font-size:16px;
+  width:100%;
+  padding:12px;
+  margin:8px 0;
+  border-radius:12px;
+  border:none;
+  font-size:16px
 }
 textarea{resize:vertical}
 
 /* TASK */
 .task{
-  display:flex;gap:6px;align-items:center;
+  display:flex;
+  gap:6px;
+  align-items:center;
   background:rgba(255,255,255,.85);
-  border-radius:12px;padding:10px;margin-top:8px;
+  border-radius:12px;
+  padding:10px;
+  margin-top:8px
 }
-.task span{flex:1;text-align:left;font-size:.95rem}
-.task button{border:none;background:none;font-size:1.2rem}
+.task span{
+  flex:1;
+  text-align:left;
+  font-size:.95rem
+}
+.task button{
+  border:none;
+  background:none;
+  font-size:1.2rem;
+  cursor:pointer
+}
 </style>
 </head>
 
 <body class="home">
 <div class="app">
 
-<!-- LANGUAGE -->
+<!-- JEZIK -->
 <div id="screen-lang" class="screen active">
   <div class="content">
     <h1 class="title"><span>Life</span><span>Kompas</span></h1>
@@ -137,7 +169,7 @@ textarea{resize:vertical}
   </div>
 </div>
 
-<!-- DIARY -->
+<!-- DNEVNIK -->
 <div id="screen-diary" class="screen">
   <button class="back-top" onclick="show('screen-menu')">←</button>
   <div class="content">
@@ -146,14 +178,14 @@ textarea{resize:vertical}
     <textarea id="dText" rows="6"></textarea>
 
     <div class="buttons">
-      <button class="btn" onclick="saveDiary()">💾</button>
-      <button class="btn" onclick="loadDiary()">✏️</button>
-      <button class="btn" onclick="deleteDiary()">🗑</button>
+      <button class="btn" onclick="saveDiary()" id="btnSaveDiary"></button>
+      <button class="btn" onclick="loadDiary()" id="btnEditDiary"></button>
+      <button class="btn" onclick="deleteDiary()" id="btnDeleteDiary"></button>
     </div>
   </div>
 </div>
 
-<!-- TASKS -->
+<!-- OBVEZE -->
 <div id="screen-tasks" class="screen">
   <button class="back-top" onclick="show('screen-menu')">←</button>
   <div class="content">
@@ -169,13 +201,43 @@ textarea{resize:vertical}
 
 <script>
 const T={
- hr:{back:"← Povratak",diary:"📔 Dnevnik",tasks:"📋 Obveze",add:"➕ Dodaj"},
- de:{back:"← Zurück",diary:"📔 Tagebuch",tasks:"📋 Aufgaben",add:"➕ Hinzufügen"},
- en:{back:"← Back",diary:"📔 Diary",tasks:"📋 Tasks",add:"➕ Add"}
+ hr:{
+  back:"← Povratak",
+  diary:"📔 Dnevnik",
+  tasks:"📋 Obveze",
+  saveDiary:"💾 Spremi",
+  editDiary:"✏️ Uredi",
+  deleteDiary:"🗑 Izbriši",
+  addTask:"➕ Dodaj",
+  saveTask:"💾 Spremi"
+ },
+ de:{
+  back:"← Zurück",
+  diary:"📔 Tagebuch",
+  tasks:"📋 Aufgaben",
+  saveDiary:"💾 Speichern",
+  editDiary:"✏️ Bearbeiten",
+  deleteDiary:"🗑 Löschen",
+  addTask:"➕ Hinzufügen",
+  saveTask:"💾 Speichern"
+ },
+ en:{
+  back:"← Back",
+  diary:"📔 Diary",
+  tasks:"📋 Tasks",
+  saveDiary:"💾 Save",
+  editDiary:"✏️ Edit",
+  deleteDiary:"🗑 Delete",
+  addTask:"➕ Add",
+  saveTask:"💾 Save"
+ }
 };
 
-let lang="hr",tasks=[],editTaskId=null;
+let lang="hr";
+let tasks=[];
+let editTaskId=null;
 
+/* NAV */
 function show(id){
  document.activeElement.blur();
  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
@@ -194,7 +256,12 @@ function applyLang(){
  backBtn.textContent=T[lang].back;
  btnDiary.textContent=T[lang].diary;
  btnTasks.textContent=T[lang].tasks;
- btnAddTask.textContent=T[lang].add;
+
+ btnSaveDiary.textContent=T[lang].saveDiary;
+ btnEditDiary.textContent=T[lang].editDiary;
+ btnDeleteDiary.textContent=T[lang].deleteDiary;
+
+ btnAddTask.textContent = editTaskId ? T[lang].saveTask : T[lang].addTask;
  taskTitle.placeholder=T[lang].tasks;
 }
 
@@ -203,16 +270,13 @@ btnDiary.onclick=()=>{
  loadDiary();
  show("screen-diary");
 };
-btnTasks.onclick=()=>{
- loadTasks();
- show("screen-tasks");
-};
+btnTasks.onclick=()=>{loadTasks();show("screen-tasks")};
 backBtn.onclick=()=>{
  document.body.className="home";
  show("screen-lang");
 };
 
-/* DIARY */
+/* DNEVNIK */
 function saveDiary(){
  localStorage.setItem("diary-"+dDate.value,
  JSON.stringify({t:dTitle.value,x:dText.value}));
@@ -231,37 +295,51 @@ function deleteDiary(){
  dText.value="";
 }
 
-/* TASKS */
+/* OBVEZE */
 function loadTasks(){
  tasks=JSON.parse(localStorage.getItem("tasks")||"[]");
  renderTasks();
 }
 function saveTask(){
  if(!taskTitle.value)return;
+
  if(editTaskId){
   const t=tasks.find(x=>x.id===editTaskId);
-  if(t){t.t=taskTitle.value;t.d=taskDate.value;t.h=taskTime.value;}
+  if(t){
+    t.t=taskTitle.value;
+    t.d=taskDate.value;
+    t.h=taskTime.value;
+  }
   editTaskId=null;
  }else{
-  tasks.push({id:Date.now(),t:taskTitle.value,d:taskDate.value,h:taskTime.value});
+  tasks.push({
+    id:Date.now(),
+    t:taskTitle.value,
+    d:taskDate.value,
+    h:taskTime.value
+  });
  }
+
  localStorage.setItem("tasks",JSON.stringify(tasks));
  taskTitle.value="";taskDate.value="";taskTime.value="";
  renderTasks();
+ applyLang();
 }
+
 function renderTasks(){
  taskList.innerHTML="";
+ tasks.sort((a,b)=>(a.d+a.h).localeCompare(b.d+b.h));
  tasks.forEach(t=>{
   const div=document.createElement("div");
   div.className="task";
   div.innerHTML=
    `<span>${t.t}<br><small>${t.d} ${t.h}</small></span>
     <button onclick="editTask(${t.id})">✏️</button>
-    <button onclick="doneTask(${t.id})">✔</button>
     <button onclick="deleteTask(${t.id})">🗑</button>`;
   taskList.appendChild(div);
  });
 }
+
 function editTask(id){
  const t=tasks.find(x=>x.id===id);
  if(!t)return;
@@ -269,10 +347,9 @@ function editTask(id){
  taskTitle.value=t.t;
  taskDate.value=t.d;
  taskTime.value=t.h;
+ applyLang();
 }
-function doneTask(id){
- deleteTask(id);
-}
+
 function deleteTask(id){
  tasks=tasks.filter(t=>t.id!==id);
  localStorage.setItem("tasks",JSON.stringify(tasks));

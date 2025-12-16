@@ -13,12 +13,13 @@ content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 
-/* iOS fix */
+/* iOS FIX */
 @supports (-webkit-touch-callout:none){
   html,body{overflow:hidden}
   body{position:fixed;inset:0}
 }
 
+/* BACKGROUND */
 body.home{
   background:linear-gradient(120deg,#1f6b4a,#2e8b57,#3fa37a,#2e8b57);
   background-size:400% 400%;
@@ -65,37 +66,26 @@ body.static{
   100%{background-position:0% 0%}
 }
 
-/* BUTTONS */
+/* UI */
 .buttons{display:flex;flex-direction:column;gap:1rem}
 .btn{
-  padding:.9rem;
-  border:none;border-radius:50px;
+  padding:.9rem;border:none;border-radius:50px;
   font-size:1.1rem;font-weight:600;
   background:rgba(255,255,255,.85)
 }
-
 .back{
   position:absolute;top:1rem;right:1rem;
   border:none;border-radius:20px;
   padding:.4rem .9rem;
   background:rgba(255,255,255,.9)
 }
-
-/* INPUTS */
 label{
-  display:block;
-  text-align:left;
-  font-size:.9rem;
-  margin-top:1rem;
-  opacity:.8
+  display:block;text-align:left;
+  font-size:.9rem;margin-top:1rem;opacity:.8
 }
 input,textarea,select{
-  width:100%;
-  padding:12px;
-  margin-top:4px;
-  border-radius:12px;
-  border:none;
-  font-size:16px
+  width:100%;padding:12px;margin-top:4px;
+  border-radius:12px;border:none;font-size:16px
 }
 textarea{resize:vertical}
 
@@ -103,18 +93,15 @@ textarea{resize:vertical}
 .task{
   background:rgba(255,255,255,.9);
   border-radius:14px;
-  padding:12px;
-  margin-top:10px;
-  text-align:left
+  padding:12px;margin-top:12px;text-align:left
 }
+.task small{opacity:.7}
 .task-actions{
-  display:flex;
-  justify-content:space-between;
+  display:flex;justify-content:space-between;
   margin-top:8px
 }
 .task-actions button{
-  border:none;background:none;
-  font-size:1.1rem
+  border:none;background:none;font-size:1.1rem
 }
 </style>
 </head>
@@ -145,31 +132,25 @@ textarea{resize:vertical}
   </div>
 </div>
 
-<!-- DNEVNIK -->
-<div id="diary" class="screen">
-  <button class="back" onclick="show('menu')">←</button>
-  <div class="content">
-    <label>Datum</label>
-    <input type="date" id="dDate">
-    <label>Naslov</label>
-    <input id="dTitle">
-    <label>Tekst</label>
-    <textarea id="dText" rows="6"></textarea>
-
-    <div class="buttons">
-      <button class="btn" onclick="saveDiary()">💾 Spremi</button>
-      <button class="btn" onclick="loadDiary()">✏️ Uredi</button>
-      <button class="btn" onclick="deleteDiary()">🗑 Izbriši</button>
-    </div>
-  </div>
-</div>
-
 <!-- OBVEZE -->
 <div id="tasks" class="screen">
   <button class="back" onclick="show('menu')">←</button>
   <div class="content">
+
     <label>Obveza</label>
     <input id="taskTitle">
+
+    <label>Bilješka</label>
+    <textarea id="taskNote" rows="3"></textarea>
+
+    <label>Kategorija</label>
+    <select id="taskCategory">
+      <option>Zdravlje</option>
+      <option>Obitelj</option>
+      <option>Financije</option>
+      <option>Osobno</option>
+      <option>Ostalo</option>
+    </select>
 
     <label>Datum</label>
     <input type="date" id="taskDate">
@@ -187,6 +168,7 @@ textarea{resize:vertical}
     </select>
 
     <button class="btn" onclick="saveTask()">💾 Spremi obvezu</button>
+
     <div id="taskList"></div>
   </div>
 </div>
@@ -194,91 +176,108 @@ textarea{resize:vertical}
 </div>
 
 <script>
-let lang="hr";
-let tasks=[];
+let tasks=[],editId=null;
 
 function show(id){
  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
  document.getElementById(id).classList.add('active');
 }
-
-function selectLang(l){
- lang=l;
+function selectLang(){
  document.body.className="static";
  show('menu');
 }
-
 function goHome(){
  document.body.className="home";
  show('lang');
 }
 
-/* DNEVNIK */
-function openDiary(){
- dDate.value=new Date().toISOString().slice(0,10);
- loadDiary();
- show('diary');
-}
-function saveDiary(){
- localStorage.setItem("d-"+dDate.value,JSON.stringify({t:dTitle.value,x:dText.value}));
-}
-function loadDiary(){
- const s=localStorage.getItem("d-"+dDate.value);
- if(!s)return;
- const e=JSON.parse(s);
- dTitle.value=e.t||"";dText.value=e.x||"";
-}
-function deleteDiary(){
- localStorage.removeItem("d-"+dDate.value);
- dTitle.value="";dText.value="";
-}
-
-/* OBVEZE */
+/* TASKS */
 function openTasks(){
  tasks=JSON.parse(localStorage.getItem("tasks")||"[]");
  renderTasks();
  show('tasks');
 }
+
 function saveTask(){
- tasks.push({
-  id:Date.now(),
-  t:taskTitle.value,
-  d:taskDate.value,
-  h:taskTime.value,
-  r:taskReminder.value
- });
+ const t={
+  id:editId||Date.now(),
+  title:taskTitle.value,
+  note:taskNote.value,
+  cat:taskCategory.value,
+  date:taskDate.value,
+  time:taskTime.value,
+  rem:taskReminder.value,
+  status:"plan"
+ };
+ if(editId){
+  tasks=tasks.map(x=>x.id===editId?t:x);
+  editId=null;
+ }else tasks.push(t);
+
  localStorage.setItem("tasks",JSON.stringify(tasks));
- taskTitle.value="";taskDate.value="";taskTime.value="";
+ taskTitle.value=taskNote.value="";
  renderTasks();
 }
+
 function renderTasks(){
  taskList.innerHTML="";
- tasks.forEach(t=>{
-  const div=document.createElement("div");
-  div.className="task";
-  div.innerHTML=`
-   <strong>${t.t}</strong><br>
-   <small>${t.d} ${t.h}</small>
+ tasks.filter(t=>t.status==="plan").forEach(t=>{
+  const d=document.createElement("div");
+  d.className="task";
+  d.innerHTML=`
+   <strong>${t.title}</strong> <small>(${t.cat})</small><br>
+   <small>${t.date} ${t.time}</small><br>
+   <small>${t.note||""}</small>
    <div class="task-actions">
      <button onclick="editTask(${t.id})">✏️</button>
-     <button onclick="deleteTask(${t.id})">🗑</button>
-     <button onclick="calendar()">📅</button>
+     <button onclick="doneTask(${t.id})">✔</button>
+     <button onclick="cancelTask(${t.id})">❌</button>
+     <button onclick="downloadICS(${t.id})">📅</button>
    </div>`;
-  taskList.appendChild(div);
+  taskList.appendChild(d);
  });
 }
+
 function editTask(id){
  const t=tasks.find(x=>x.id===id);
- taskTitle.value=t.t;taskDate.value=t.d;taskTime.value=t.h;taskReminder.value=t.r;
- tasks=tasks.filter(x=>x.id!==id);
+ editId=id;
+ taskTitle.value=t.title;
+ taskNote.value=t.note;
+ taskCategory.value=t.cat;
+ taskDate.value=t.date;
+ taskTime.value=t.time;
+ taskReminder.value=t.rem;
 }
-function deleteTask(id){
- tasks=tasks.filter(x=>x.id!==id);
+
+function doneTask(id){
+ tasks=tasks.map(t=>t.id===id?{...t,status:"done"}:t);
  localStorage.setItem("tasks",JSON.stringify(tasks));
  renderTasks();
 }
-function calendar(){
- alert("📅 Kalendar će se dodati u sljedećem koraku");
+function cancelTask(id){
+ tasks=tasks.map(t=>t.id===id?{...t,status:"cancel"}:t);
+ localStorage.setItem("tasks",JSON.stringify(tasks));
+ renderTasks();
+}
+
+/* CALENDAR */
+function downloadICS(id){
+ const t=tasks.find(x=>x.id===id);
+ if(!t)return;
+ const start=t.date.replace(/-/g,"")+t.time.replace(":","")+"00";
+ const alarm=t.rem==="0"?"":"BEGIN:VALARM\nTRIGGER:-PT"+t.rem+"M\nACTION:DISPLAY\nDESCRIPTION:"+t.title+"\nEND:VALARM\n";
+ const ics=`BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+DTSTART:${start}
+SUMMARY:${t.title}
+${alarm}END:VEVENT
+END:VCALENDAR`;
+ const blob=new Blob([ics],{type:"text/calendar"});
+ const a=document.createElement("a");
+ a.href=URL.createObjectURL(blob);
+ a.download="obveza.ics";
+ a.click();
 }
 </script>
 

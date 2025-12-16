@@ -12,6 +12,7 @@
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 
+/* BACKGROUND */
 body.home{
   background:linear-gradient(120deg,#1f6b4a,#2e8b57,#3fa37a,#2e8b57);
   background-size:400% 400%;
@@ -28,6 +29,7 @@ body.static{
 
 .app{position:relative;height:100%}
 
+/* SCREENS */
 .screen{
   position:absolute;inset:0;
   display:flex;justify-content:center;align-items:center;
@@ -36,6 +38,7 @@ body.static{
 }
 .screen.active{opacity:1;pointer-events:auto}
 
+/* CONTENT */
 .content{
   width:100%;max-width:420px;
   padding:2rem 1.5rem;text-align:center;
@@ -46,6 +49,7 @@ body.static{
   -webkit-overflow-scrolling:touch;
 }
 
+/* TITLE */
 .title{
   font-size:4rem;font-weight:900;line-height:1;margin-bottom:2rem;
 }
@@ -63,6 +67,7 @@ body.static{
   100%{background-position:0% 0%}
 }
 
+/* UI */
 .buttons{display:flex;flex-direction:column;gap:1rem;align-items:center}
 .btn{
   width:100%;max-width:280px;
@@ -78,22 +83,24 @@ body.static{
   background:rgba(255,255,255,.9);
 }
 
+/* FORM */
 label{display:block;text-align:left;font-size:.9rem;margin-top:1rem;opacity:.8}
-input,textarea,select{
+input,textarea{
   width:100%;padding:12px;margin-top:4px;
   border-radius:12px;border:none;font-size:16px;
 }
 textarea{resize:vertical}
 
-.task{
+/* LIST */
+.item{
   background:rgba(255,255,255,.9);
   border-radius:14px;
   padding:12px;margin-top:12px;text-align:left;
 }
-.task-actions{
+.item-actions{
   display:flex;justify-content:space-between;margin-top:8px;
 }
-.task-actions button{
+.item-actions button{
   border:none;background:none;font-size:1.2rem;
 }
 </style>
@@ -119,8 +126,29 @@ textarea{resize:vertical}
   <button class="back" id="backMenu">←</button>
   <div class="content">
     <div class="buttons">
-      <button class="btn" id="btnTasks"></button>
+      <button class="btn" id="btnDiary">📔 Dnevnik</button>
+      <button class="btn" id="btnTasks">📋 Obveze</button>
     </div>
+  </div>
+</div>
+
+<!-- DIARY -->
+<div id="screen-diary" class="screen">
+  <button class="back" id="backDiary">←</button>
+  <div class="content scroll">
+
+    <label>Datum</label>
+    <input type="date" id="dDate">
+
+    <label>Naslov</label>
+    <input id="dTitle">
+
+    <label>Tekst</label>
+    <textarea id="dText" rows="6"></textarea>
+
+    <button class="btn" id="btnSaveDiary">💾 Spremi / Uredi</button>
+
+    <div id="diaryList"></div>
   </div>
 </div>
 
@@ -129,31 +157,28 @@ textarea{resize:vertical}
   <button class="back" id="backTasks">←</button>
   <div class="content scroll">
 
-    <label id="lblTask"></label>
+    <label>Obveza</label>
     <input id="taskTitle">
 
-    <label id="lblNote"></label>
+    <label>Bilješka</label>
     <textarea id="taskNote" rows="3"></textarea>
 
-    <label id="lblCategory"></label>
-    <select id="taskCategory"></select>
-
-    <label id="lblDate"></label>
-    <input type="date" id="taskDate">
-
-    <label id="lblTime"></label>
-    <input type="time" id="taskTime">
-
-    <label id="lblReminder"></label>
-    <select id="taskReminder">
-      <option value="0">—</option>
-      <option value="15">15 min</option>
-      <option value="30">30 min</option>
-      <option value="60">60 min</option>
-      <option value="1440">1 day</option>
+    <label>Kategorija</label>
+    <select id="taskCategory">
+      <option value="health">Zdravlje</option>
+      <option value="family">Obitelj</option>
+      <option value="finance">Financije</option>
+      <option value="personal">Osobno</option>
+      <option value="other">Ostalo</option>
     </select>
 
-    <button class="btn" id="btnSaveTask"></button>
+    <label>Datum</label>
+    <input type="date" id="taskDate">
+
+    <label>Vrijeme</label>
+    <input type="time" id="taskTime">
+
+    <button class="btn" id="btnSaveTask">💾 Spremi obvezu</button>
 
     <div id="taskList"></div>
   </div>
@@ -162,28 +187,7 @@ textarea{resize:vertical}
 </div>
 
 <script>
-const T={
- hr:{
-  tasks:"📋 Obveze",task:"Obveza",note:"Bilješka",cat:"Kategorija",
-  date:"Datum",time:"Vrijeme",rem:"Podsjetnik",
-  save:"💾 Spremi obvezu",saveEdit:"💾 Spremi izmjene",
-  cats:{health:"Zdravlje",family:"Obitelj",finance:"Financije",personal:"Osobno",other:"Ostalo"}
- },
- de:{
-  tasks:"📋 Aufgaben",task:"Aufgabe",note:"Notiz",cat:"Kategorie",
-  date:"Datum",time:"Zeit",rem:"Erinnerung",
-  save:"💾 Aufgabe speichern",saveEdit:"💾 Änderungen speichern",
-  cats:{health:"Gesundheit",family:"Familie",finance:"Finanzen",personal:"Persönlich",other:"Sonstiges"}
- },
- en:{
-  tasks:"📋 Tasks",task:"Task",note:"Note",cat:"Category",
-  date:"Date",time:"Time",rem:"Reminder",
-  save:"💾 Save task",saveEdit:"💾 Save changes",
-  cats:{health:"Health",family:"Family",finance:"Finance",personal:"Personal",other:"Other"}
- }
-};
-
-let lang="hr",tasks=[],editId=null;
+let tasks=[], diaries=[];
 
 /* NAV */
 function show(id){
@@ -191,121 +195,93 @@ function show(id){
  document.getElementById(id).classList.add("active");
 }
 
-/* LANG */
-function applyLang(){
- btnTasks.textContent=T[lang].tasks;
- lblTask.textContent=T[lang].task;
- lblNote.textContent=T[lang].note;
- lblCategory.textContent=T[lang].cat;
- lblDate.textContent=T[lang].date;
- lblTime.textContent=T[lang].time;
- lblReminder.textContent=T[lang].rem;
- btnSaveTask.textContent=editId?T[lang].saveEdit:T[lang].save;
+/* LANGUAGE */
+langHr.onclick=()=>{show("screen-menu");document.body.className="static"};
+langDe.onclick=langHr.onclick;
+langEn.onclick=langHr.onclick;
 
- taskCategory.innerHTML="";
- for(const k in T[lang].cats){
-  const o=document.createElement("option");
-  o.value=k;o.textContent=T[lang].cats[k];
-  taskCategory.appendChild(o);
- }
+backMenu.onclick=()=>{show("screen-lang");document.body.className="home"};
+btnDiary.onclick=()=>{loadDiary();show("screen-diary")};
+btnTasks.onclick=()=>{loadTasks();show("screen-tasks")};
+backDiary.onclick=()=>show("screen-menu");
+backTasks.onclick=()=>show("screen-menu");
+
+/* DIARY */
+function loadDiary(){
+ diaries=JSON.parse(localStorage.getItem("diaries")||"[]");
+ renderDiary();
+}
+btnSaveDiary.onclick=()=>{
+ const d={
+  date:dDate.value,
+  title:dTitle.value,
+  text:dText.value
+ };
+ diaries=diaries.filter(x=>x.date!==d.date);
+ diaries.push(d);
+ localStorage.setItem("diaries",JSON.stringify(diaries));
+ renderDiary();
+};
+
+function renderDiary(){
+ diaryList.innerHTML="";
+ diaries.sort((a,b)=>b.date.localeCompare(a.date));
+ diaries.forEach(d=>{
+  const el=document.createElement("div");
+  el.className="item";
+  el.innerHTML=`
+   <strong>${d.date}</strong><br>
+   <strong>${d.title}</strong><br>
+   <small>${d.text}</small>
+   <div class="item-actions">
+     <button onclick="editDiary('${d.date}')">✏️</button>
+   </div>`;
+  diaryList.appendChild(el);
+ });
+}
+function editDiary(date){
+ const d=diaries.find(x=>x.date===date);
+ dDate.value=d.date;
+ dTitle.value=d.title;
+ dText.value=d.text;
 }
 
 /* TASKS */
-function openTasks(){
+function loadTasks(){
  tasks=JSON.parse(localStorage.getItem("tasks")||"[]");
- editId=null;
- applyLang();
  renderTasks();
- show("screen-tasks");
 }
-
-function saveTask(){
- const data={
-  id:editId||Date.now(),
+btnSaveTask.onclick=()=>{
+ tasks.push({
+  id:Date.now(),
   title:taskTitle.value,
   note:taskNote.value,
   cat:taskCategory.value,
   date:taskDate.value,
-  time:taskTime.value,
-  rem:taskReminder.value
- };
- if(editId){
-  tasks=tasks.map(t=>t.id===editId?data:t);
-  editId=null;
- } else {
-  tasks.push(data);
- }
+  time:taskTime.value
+ });
  localStorage.setItem("tasks",JSON.stringify(tasks));
- clearForm();
  renderTasks();
- applyLang();
+};
+function renderTasks(){
+ taskList.innerHTML="";
+ tasks.forEach(t=>{
+  const el=document.createElement("div");
+  el.className="item";
+  el.innerHTML=`
+   <strong>${t.title}</strong><br>
+   <small>${t.date} ${t.time}</small>
+   <div class="item-actions">
+     <button onclick="deleteTask(${t.id})">🗑</button>
+   </div>`;
+  taskList.appendChild(el);
+ });
 }
-
-function editTask(id){
- const t=tasks.find(x=>x.id===id);
- editId=id;
- taskTitle.value=t.title;
- taskNote.value=t.note;
- taskCategory.value=t.cat;
- taskDate.value=t.date;
- taskTime.value=t.time;
- taskReminder.value=t.rem;
- applyLang();
-}
-
 function deleteTask(id){
  tasks=tasks.filter(t=>t.id!==id);
  localStorage.setItem("tasks",JSON.stringify(tasks));
  renderTasks();
 }
-
-function clearForm(){
- taskTitle.value="";
- taskNote.value="";
- taskDate.value="";
- taskTime.value="";
- taskReminder.value="0";
-}
-
-function renderTasks(){
- taskList.innerHTML="";
- tasks.forEach(t=>{
-  const d=document.createElement("div");
-  d.className="task";
-  d.innerHTML=`
-   <strong>${t.title}</strong> (${T[lang].cats[t.cat]})<br>
-   <small>${t.date} ${t.time}</small><br>
-   <small>${t.note||""}</small>
-   <div class="task-actions">
-     <button data-id="${t.id}" class="edit">✏️</button>
-     <button data-id="${t.id}" class="delete">🗑</button>
-   </div>`;
-  taskList.appendChild(d);
- });
-
- document.querySelectorAll(".edit").forEach(b=>{
-  b.addEventListener("click",()=>editTask(+b.dataset.id));
- });
- document.querySelectorAll(".delete").forEach(b=>{
-  b.addEventListener("click",()=>deleteTask(+b.dataset.id));
- });
-}
-
-/* INIT */
-window.addEventListener("load",()=>{
- const s=localStorage.getItem("lang");
- if(s&&T[s])lang=s;
- applyLang();
-
- document.getElementById("langHr").onclick=()=>{lang="hr";localStorage.setItem("lang","hr");applyLang();show("screen-menu");document.body.className="static"};
- document.getElementById("langDe").onclick=()=>{lang="de";localStorage.setItem("lang","de");applyLang();show("screen-menu");document.body.className="static"};
- document.getElementById("langEn").onclick=()=>{lang="en";localStorage.setItem("lang","en");applyLang();show("screen-menu");document.body.className="static"};
-
- btnTasks.addEventListener("click",openTasks);
- backMenu.addEventListener("click",()=>{document.body.className="home";show("screen-lang")});
- backTasks.addEventListener("click",()=>show("screen-menu"));
- btnSaveTask.addEventListener("click",saveTask);
-});
 </script>
 
 </body>

@@ -2,8 +2,7 @@
 <html lang="hr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>LifeKompas</title>
 
 <link rel="manifest" href="manifest.json">
@@ -11,12 +10,9 @@ content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{
-  height:100%;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 
-/* BACKGROUND */
+/* BACKGROUNDS */
 body.home{
   background:linear-gradient(120deg,#1f6b4a,#2e8b57,#3fa37a,#2e8b57);
   background-size:400% 400%;
@@ -31,26 +27,16 @@ body.static{
   100%{background-position:0% 50%}
 }
 
-.app{
-  position:relative;
-  height:100%;
-}
+.app{position:relative;height:100%}
 
 /* SCREENS */
 .screen{
-  position:absolute;
-  inset:0;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  opacity:0;
-  pointer-events:none;
-  transition:.3s ease;
+  position:absolute;inset:0;
+  display:flex;justify-content:center;align-items:center;
+  opacity:0;pointer-events:none;
+  transition:.25s ease;
 }
-.screen.active{
-  opacity:1;
-  pointer-events:auto;
-}
+.screen.active{opacity:1;pointer-events:auto}
 
 /* CONTENT */
 .content{
@@ -59,8 +45,6 @@ body.static{
   padding:2rem 1.5rem;
   text-align:center;
 }
-
-/* SCROLL ONLY CONTENT */
 .scroll{
   max-height:100%;
   overflow-y:auto;
@@ -69,10 +53,7 @@ body.static{
 
 /* TITLE */
 .title{
-  font-size:4rem;
-  font-weight:900;
-  line-height:1;
-  margin-bottom:2rem;
+  font-size:4rem;font-weight:900;line-height:1;margin-bottom:2rem;
 }
 .title span{
   display:block;
@@ -89,60 +70,55 @@ body.static{
 }
 
 /* UI */
-.buttons{
-  display:flex;
-  flex-direction:column;
-  gap:1rem;
-  align-items:center;
-}
+.buttons{display:flex;flex-direction:column;gap:1rem;align-items:center}
 .btn{
   width:100%;
   max-width:280px;
   padding:.9rem;
-  border:none;
-  border-radius:50px;
-  font-size:1.1rem;
-  font-weight:600;
+  border:none;border-radius:50px;
+  font-size:1.1rem;font-weight:600;
   background:rgba(255,255,255,.85);
 }
 
-/* BACK BUTTON – FIXED (iOS SAFE) */
+/* BACK BUTTON iOS-safe */
 .back{
   position:fixed;
-  top:1rem;
-  right:1rem;
-  z-index:1000;
-  border:none;
-  border-radius:20px;
+  top:1rem;right:1rem;
+  z-index:9999;
+  border:none;border-radius:20px;
   padding:.4rem .9rem;
   background:rgba(255,255,255,.9);
 }
 
 /* FORM */
 label{
-  display:block;
-  text-align:left;
-  font-size:.9rem;
-  margin-top:1rem;
-  opacity:.8;
+  display:block;text-align:left;
+  font-size:.9rem;margin-top:1rem;opacity:.8;
 }
 input,textarea,select{
   width:100%;
-  padding:12px;
-  margin-top:4px;
-  border-radius:12px;
-  border:none;
+  padding:12px;margin-top:4px;
+  border-radius:12px;border:none;
   font-size:16px;
 }
 textarea{resize:vertical}
 
-/* TASK */
+/* TASK CARD */
 .task{
   background:rgba(255,255,255,.9);
   border-radius:14px;
   padding:12px;
   margin-top:12px;
   text-align:left;
+}
+.task-actions{
+  display:flex;
+  justify-content:space-between;
+  margin-top:8px;
+}
+.task-actions button{
+  border:none;background:none;
+  font-size:1.1rem;
 }
 </style>
 </head>
@@ -155,9 +131,9 @@ textarea{resize:vertical}
   <div class="content">
     <h1 class="title"><span>Life</span><span>Kompas</span></h1>
     <div class="buttons">
-      <button class="btn" onclick="selectLang('hr')">🇭🇷 Hrvatski</button>
-      <button class="btn" onclick="selectLang('de')">🇩🇪 Deutsch</button>
-      <button class="btn" onclick="selectLang('en')">🇬🇧 English</button>
+      <button class="btn" id="langHr">🇭🇷 Hrvatski</button>
+      <button class="btn" id="langDe">🇩🇪 Deutsch</button>
+      <button class="btn" id="langEn">🇬🇧 English</button>
     </div>
   </div>
 </div>
@@ -183,7 +159,7 @@ textarea{resize:vertical}
     <input id="dTitle">
     <label id="lblDText"></label>
     <textarea id="dText" rows="6"></textarea>
-    <button class="btn" onclick="saveDiary()" id="btnSaveDiary"></button>
+    <button class="btn" id="btnSaveDiary"> </button>
   </div>
 </div>
 
@@ -212,11 +188,11 @@ textarea{resize:vertical}
       <option value="0">—</option>
       <option value="15">15 min</option>
       <option value="30">30 min</option>
-      <option value="60">1 h</option>
+      <option value="60">60 min</option>
       <option value="1440">1 day</option>
     </select>
 
-    <button class="btn" onclick="saveTask()" id="btnSaveTask"></button>
+    <button class="btn" id="btnSaveTask"></button>
 
     <div id="taskList"></div>
   </div>
@@ -227,133 +203,150 @@ textarea{resize:vertical}
 <script>
 /* ===== I18N ===== */
 const T={
- hr:{
-  diary:"📔 Dnevnik", tasks:"📋 Obveze",
-  ddate:"Datum", dtitle:"Naslov", dtext:"Tekst", save:"💾 Spremi",
-  task:"Obveza", note:"Bilješka", cat:"Kategorija",
-  date:"Datum", time:"Vrijeme", rem:"Podsjetnik",
-  saveTask:"💾 Spremi obvezu",
-  cats:{health:"Zdravlje",family:"Obitelj",finance:"Financije",personal:"Osobno",other:"Ostalo"}
- },
- de:{
-  diary:"📔 Tagebuch", tasks:"📋 Aufgaben",
-  ddate:"Datum", dtitle:"Titel", dtext:"Text", save:"💾 Speichern",
-  task:"Aufgabe", note:"Notiz", cat:"Kategorie",
-  date:"Datum", time:"Zeit", rem:"Erinnerung",
-  saveTask:"💾 Aufgabe speichern",
-  cats:{health:"Gesundheit",family:"Familie",finance:"Finanzen",personal:"Persönlich",other:"Sonstiges"}
- },
- en:{
-  diary:"📔 Diary", tasks:"📋 Tasks",
-  ddate:"Date", dtitle:"Title", dtext:"Text", save:"💾 Save",
-  task:"Task", note:"Note", cat:"Category",
-  date:"Date", time:"Time", rem:"Reminder",
-  saveTask:"💾 Save task",
-  cats:{health:"Health",family:"Family",finance:"Finance",personal:"Personal",other:"Other"}
- }
+  hr:{
+    diary:"📔 Dnevnik", tasks:"📋 Obveze",
+    ddate:"Datum", dtitle:"Naslov", dtext:"Tekst", save:"💾 Spremi",
+    task:"Obveza", note:"Bilješka", cat:"Kategorija",
+    date:"Datum", time:"Vrijeme", rem:"Podsjetnik",
+    saveTask:"💾 Spremi obvezu",
+    cats:{health:"Zdravlje",family:"Obitelj",finance:"Financije",personal:"Osobno",other:"Ostalo"}
+  },
+  de:{
+    diary:"📔 Tagebuch", tasks:"📋 Aufgaben",
+    ddate:"Datum", dtitle:"Titel", dtext:"Text", save:"💾 Speichern",
+    task:"Aufgabe", note:"Notiz", cat:"Kategorie",
+    date:"Datum", time:"Zeit", rem:"Erinnerung",
+    saveTask:"💾 Aufgabe speichern",
+    cats:{health:"Gesundheit",family:"Familie",finance:"Finanzen",personal:"Persönlich",other:"Sonstiges"}
+  },
+  en:{
+    diary:"📔 Diary", tasks:"📋 Tasks",
+    ddate:"Date", dtitle:"Title", dtext:"Text", save:"💾 Save",
+    task:"Task", note:"Note", cat:"Category",
+    date:"Date", time:"Time", rem:"Reminder",
+    saveTask:"💾 Save task",
+    cats:{health:"Health",family:"Family",finance:"Finance",personal:"Personal",other:"Other"}
+  }
 };
 
-let lang="hr",tasks=[];
+let lang="hr";
+let tasks=[];
 
-/* NAV */
+/* ===== HELPERS ===== */
 function show(id){
- document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
- document.getElementById(id).classList.add("active");
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+function applyLang(){
+  btnDiary.textContent = T[lang].diary;
+  btnTasks.textContent = T[lang].tasks;
+
+  lblDDate.textContent = T[lang].ddate;
+  lblDTitle.textContent = T[lang].dtitle;
+  lblDText.textContent = T[lang].dtext;
+  btnSaveDiary.textContent = T[lang].save;
+
+  lblTask.textContent = T[lang].task;
+  lblNote.textContent = T[lang].note;
+  lblCategory.textContent = T[lang].cat;
+  lblDate.textContent = T[lang].date;
+  lblTime.textContent = T[lang].time;
+  lblReminder.textContent = T[lang].rem;
+  btnSaveTask.textContent = T[lang].saveTask;
+
+  taskCategory.innerHTML="";
+  for(const k in T[lang].cats){
+    const o=document.createElement("option");
+    o.value=k;
+    o.textContent=T[lang].cats[k];
+    taskCategory.appendChild(o);
+  }
 }
 function selectLang(l){
- lang=l;
- localStorage.setItem("lang",l);
- applyLang();
- document.body.className="static";
- show("screen-menu");
+  lang=l;
+  localStorage.setItem("lang", l);
+  applyLang();
+  document.body.className="static";
+  show("screen-menu");
 }
 function goHome(){
- document.body.className="home";
- show("screen-lang");
+  document.body.className="home";
+  show("screen-lang");
 }
 
-/* APPLY LANG */
-function applyLang(){
- btnDiary.textContent=T[lang].diary;
- btnTasks.textContent=T[lang].tasks;
-
- lblDDate.textContent=T[lang].ddate;
- lblDTitle.textContent=T[lang].dtitle;
- lblDText.textContent=T[lang].dtext;
- btnSaveDiary.textContent=T[lang].save;
-
- lblTask.textContent=T[lang].task;
- lblNote.textContent=T[lang].note;
- lblCategory.textContent=T[lang].cat;
- lblDate.textContent=T[lang].date;
- lblTime.textContent=T[lang].time;
- lblReminder.textContent=T[lang].rem;
- btnSaveTask.textContent=T[lang].saveTask;
-
- taskCategory.innerHTML="";
- for(const k in T[lang].cats){
-  const o=document.createElement("option");
-  o.value=k;
-  o.textContent=T[lang].cats[k];
-  taskCategory.appendChild(o);
- }
-}
-
-/* DIARY */
+/* ===== DIARY ===== */
 function openDiary(){
- dDate.value=new Date().toISOString().slice(0,10);
- show("screen-diary");
+  dDate.value = new Date().toISOString().slice(0,10);
+  show("screen-diary");
 }
 function saveDiary(){
- localStorage.setItem("d-"+dDate.value,JSON.stringify({t:dTitle.value,x:dText.value}));
+  localStorage.setItem("d-"+dDate.value, JSON.stringify({t:dTitle.value, x:dText.value}));
 }
 
-/* TASKS */
+/* ===== TASKS ===== */
 function openTasks(){
- tasks=JSON.parse(localStorage.getItem("tasks")||"[]");
- renderTasks();
- show("screen-tasks");
+  tasks = JSON.parse(localStorage.getItem("tasks") || "[]");
+  renderTasks();
+  show("screen-tasks");
 }
 function saveTask(){
- tasks.push({
-  id:Date.now(),
-  title:taskTitle.value,
-  note:taskNote.value,
-  cat:taskCategory.value,
-  date:taskDate.value,
-  time:taskTime.value,
-  rem:taskReminder.value
- });
- localStorage.setItem("tasks",JSON.stringify(tasks));
- taskTitle.value=taskNote.value="";
- taskDate.value=taskTime.value="";
- taskReminder.value="0";
- renderTasks();
+  tasks.push({
+    id: Date.now(),
+    title: taskTitle.value,
+    note: taskNote.value,
+    cat: taskCategory.value,
+    date: taskDate.value,
+    time: taskTime.value,
+    rem: taskReminder.value
+  });
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+
+  taskTitle.value="";
+  taskNote.value="";
+  taskDate.value="";
+  taskTime.value="";
+  taskReminder.value="0";
+
+  renderTasks();
 }
 function renderTasks(){
- taskList.innerHTML="";
- tasks.forEach(t=>{
-  const d=document.createElement("div");
-  d.className="task";
-  d.innerHTML=`
-   <strong>${t.title}</strong> (${T[lang].cats[t.cat]})<br>
-   <small>${t.date} ${t.time}</small><br>
-   <small>${t.note||""}</small>`;
-  taskList.appendChild(d);
+  taskList.innerHTML="";
+  tasks.forEach(t=>{
+    const d=document.createElement("div");
+    d.className="task";
+    d.innerHTML = `
+      <strong>${t.title || ""}</strong> (${T[lang].cats[t.cat] || ""})<br>
+      <small>${t.date || ""} ${t.time || ""}</small><br>
+      <small>${t.note || ""}</small>
+    `;
+    taskList.appendChild(d);
+  });
 }
 
-/* INIT */
-window.addEventListener("load",()=>{
- const s=localStorage.getItem("lang");
- if(s) lang=s;
- applyLang();
+/* ===== INIT ===== */
+window.addEventListener("load", ()=>{
+  // bind language buttons
+  langHr.addEventListener("click", ()=>selectLang("hr"));
+  langDe.addEventListener("click", ()=>selectLang("de"));
+  langEn.addEventListener("click", ()=>selectLang("en"));
 
- btnDiary.onclick=openDiary;
- btnTasks.onclick=openTasks;
+  // bind nav
+  backMenu.addEventListener("click", goHome);
+  backDiary.addEventListener("click", ()=>show("screen-menu"));
+  backTasks.addEventListener("click", ()=>show("screen-menu"));
 
- backMenu.onclick=goHome;
- backDiary.onclick=()=>show("screen-menu");
- backTasks.onclick=()=>show("screen-menu");
+  // bind menu actions
+  btnDiary.addEventListener("click", openDiary);
+  btnTasks.addEventListener("click", openTasks);
+
+  // bind saves
+  btnSaveDiary.addEventListener("click", saveDiary);
+  btnSaveTask.addEventListener("click", saveTask);
+
+  // restore language
+  const saved = localStorage.getItem("lang");
+  if(saved && T[saved]) lang = saved;
+  applyLang();
 });
 </script>
 

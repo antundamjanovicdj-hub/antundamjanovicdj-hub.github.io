@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="hr">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8">
 <meta name="viewport"
-content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>LifeKompas</title>
 
 <link rel="manifest" href="manifest.json">
@@ -16,7 +16,7 @@ html,body{height:100%;width:100%;font-family:-apple-system,BlinkMacSystemFont,"S
 /* ANDROID */
 body{overflow-y:auto;-webkit-overflow-scrolling:touch}
 
-/* iOS FIX */
+/* iOS ONLY */
 @supports (-webkit-touch-callout:none){
   html,body{overflow:hidden}
   body{position:fixed;inset:0}
@@ -46,13 +46,23 @@ body.static{
   pointer-events:none;
   transition:.4s ease;
 }
-.screen.active{opacity:1;transform:translateY(0);pointer-events:auto}
+.screen.active{
+  opacity:1;transform:translateY(0);
+  pointer-events:auto;
+}
 
 /* CONTENT */
-.content{width:100%;max-width:420px;padding:2rem 1.5rem;text-align:center}
+.content{
+  width:100%;max-width:420px;
+  padding:2rem 1.5rem;
+  text-align:center;
+}
 
 /* TITLE */
-.title{font-size:4rem;font-weight:900;line-height:1;margin-bottom:2rem}
+.title{
+  font-size:4rem;font-weight:900;line-height:1;
+  margin-bottom:2rem;
+}
 .title span{
   display:block;
   background:linear-gradient(180deg,#000 40%,#ff8c00 60%,#ff4500);
@@ -92,32 +102,19 @@ textarea{resize:vertical}
 
 /* TASK */
 .task{
-  display:flex;
-  gap:6px;
-  align-items:center;
+  display:flex;gap:6px;align-items:center;
   background:rgba(255,255,255,.85);
-  border-radius:12px;
-  padding:10px;
-  margin-top:8px;
+  border-radius:12px;padding:10px;margin-top:8px;
 }
-.task span{
-  flex:1;
-  text-align:left;
-  font-size:.95rem;
-}
-.task button{
-  border:none;
-  background:none;
-  font-size:1.2rem;
-  cursor:pointer;
-}
+.task span{flex:1;text-align:left;font-size:.95rem}
+.task button{border:none;background:none;font-size:1.2rem}
 </style>
 </head>
 
 <body class="home">
 <div class="app">
 
-<!-- JEZIK -->
+<!-- LANGUAGE -->
 <div id="screen-lang" class="screen active">
   <div class="content">
     <h1 class="title"><span>Life</span><span>Kompas</span></h1>
@@ -140,7 +137,23 @@ textarea{resize:vertical}
   </div>
 </div>
 
-<!-- OBVEZE -->
+<!-- DIARY -->
+<div id="screen-diary" class="screen">
+  <button class="back-top" onclick="show('screen-menu')">←</button>
+  <div class="content">
+    <input type="date" id="dDate">
+    <input type="text" id="dTitle">
+    <textarea id="dText" rows="6"></textarea>
+
+    <div class="buttons">
+      <button class="btn" onclick="saveDiary()">💾</button>
+      <button class="btn" onclick="loadDiary()">✏️</button>
+      <button class="btn" onclick="deleteDiary()">🗑</button>
+    </div>
+  </div>
+</div>
+
+<!-- TASKS -->
 <div id="screen-tasks" class="screen">
   <button class="back-top" onclick="show('screen-menu')">←</button>
   <div class="content">
@@ -156,16 +169,13 @@ textarea{resize:vertical}
 
 <script>
 const T={
- hr:{back:"← Povratak",tasks:"📋 Obveze",add:"➕ Dodaj",save:"💾 Spremi"},
- de:{back:"← Zurück",tasks:"📋 Aufgaben",add:"➕ Hinzufügen",save:"💾 Speichern"},
- en:{back:"← Back",tasks:"📋 Tasks",add:"➕ Add",save:"💾 Save"}
+ hr:{back:"← Povratak",diary:"📔 Dnevnik",tasks:"📋 Obveze",add:"➕ Dodaj"},
+ de:{back:"← Zurück",diary:"📔 Tagebuch",tasks:"📋 Aufgaben",add:"➕ Hinzufügen"},
+ en:{back:"← Back",diary:"📔 Diary",tasks:"📋 Tasks",add:"➕ Add"}
 };
 
-let lang="hr";
-let tasks=[];
-let editTaskId=null;
+let lang="hr",tasks=[],editTaskId=null;
 
-/* NAV */
 function show(id){
  document.activeElement.blur();
  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
@@ -182,50 +192,65 @@ function selectLang(l){
 
 function applyLang(){
  backBtn.textContent=T[lang].back;
+ btnDiary.textContent=T[lang].diary;
  btnTasks.textContent=T[lang].tasks;
  btnAddTask.textContent=T[lang].add;
  taskTitle.placeholder=T[lang].tasks;
 }
 
-btnTasks.onclick=()=>{loadTasks();show("screen-tasks")};
-backBtn.onclick=()=>{document.body.className="home";show("screen-lang")};
+btnDiary.onclick=()=>{
+ dDate.value=new Date().toISOString().slice(0,10);
+ loadDiary();
+ show("screen-diary");
+};
+btnTasks.onclick=()=>{
+ loadTasks();
+ show("screen-tasks");
+};
+backBtn.onclick=()=>{
+ document.body.className="home";
+ show("screen-lang");
+};
+
+/* DIARY */
+function saveDiary(){
+ localStorage.setItem("diary-"+dDate.value,
+ JSON.stringify({t:dTitle.value,x:dText.value}));
+ alert("OK");
+}
+function loadDiary(){
+ const s=localStorage.getItem("diary-"+dDate.value);
+ if(!s)return;
+ const e=JSON.parse(s);
+ dTitle.value=e.t;
+ dText.value=e.x;
+}
+function deleteDiary(){
+ localStorage.removeItem("diary-"+dDate.value);
+ dTitle.value="";
+ dText.value="";
+}
 
 /* TASKS */
 function loadTasks(){
  tasks=JSON.parse(localStorage.getItem("tasks")||"[]");
  renderTasks();
 }
-
 function saveTask(){
  if(!taskTitle.value)return;
-
  if(editTaskId){
   const t=tasks.find(x=>x.id===editTaskId);
-  if(t){
-    t.t=taskTitle.value;
-    t.d=taskDate.value;
-    t.h=taskTime.value;
-  }
+  if(t){t.t=taskTitle.value;t.d=taskDate.value;t.h=taskTime.value;}
   editTaskId=null;
-  btnAddTask.textContent=T[lang].add;
  }else{
-  tasks.push({
-    id:Date.now(),
-    t:taskTitle.value,
-    d:taskDate.value,
-    h:taskTime.value
-  });
+  tasks.push({id:Date.now(),t:taskTitle.value,d:taskDate.value,h:taskTime.value});
  }
-
  localStorage.setItem("tasks",JSON.stringify(tasks));
  taskTitle.value="";taskDate.value="";taskTime.value="";
  renderTasks();
 }
-
 function renderTasks(){
  taskList.innerHTML="";
- tasks.sort((a,b)=>(a.d+a.h).localeCompare(b.d+b.h));
-
  tasks.forEach(t=>{
   const div=document.createElement("div");
   div.className="task";
@@ -237,7 +262,6 @@ function renderTasks(){
   taskList.appendChild(div);
  });
 }
-
 function editTask(id){
  const t=tasks.find(x=>x.id===id);
  if(!t)return;
@@ -245,15 +269,10 @@ function editTask(id){
  taskTitle.value=t.t;
  taskDate.value=t.d;
  taskTime.value=t.h;
- btnAddTask.textContent=T[lang].save;
 }
-
 function doneTask(id){
- tasks=tasks.filter(t=>t.id!==id);
- localStorage.setItem("tasks",JSON.stringify(tasks));
- renderTasks();
+ deleteTask(id);
 }
-
 function deleteTask(id){
  tasks=tasks.filter(t=>t.id!==id);
  localStorage.setItem("tasks",JSON.stringify(tasks));

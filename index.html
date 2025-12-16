@@ -60,7 +60,7 @@ body.static{
   text-align:center;
 }
 
-/* SCROLL (iOS SAFE) */
+/* SCROLL ONLY CONTENT */
 .scroll{
   max-height:100%;
   overflow-y:auto;
@@ -105,10 +105,13 @@ body.static{
   font-weight:600;
   background:rgba(255,255,255,.85);
 }
+
+/* BACK BUTTON – FIXED (iOS SAFE) */
 .back{
-  position:absolute;
+  position:fixed;
   top:1rem;
   right:1rem;
+  z-index:1000;
   border:none;
   border-radius:20px;
   padding:.4rem .9rem;
@@ -141,16 +144,6 @@ textarea{resize:vertical}
   margin-top:12px;
   text-align:left;
 }
-.task-actions{
-  display:flex;
-  justify-content:space-between;
-  margin-top:8px;
-}
-.task-actions button{
-  border:none;
-  background:none;
-  font-size:1.1rem;
-}
 </style>
 </head>
 
@@ -174,9 +167,8 @@ textarea{resize:vertical}
   <button class="back" id="backMenu">←</button>
   <div class="content">
     <div class="buttons">
-      <button class="btn" id="btnDiary">📔</button>
-      <button class="btn" id="btnTasks">📋</button>
-      <button class="btn" onclick="location.reload()">🔄 Osvježi</button>
+      <button class="btn" id="btnDiary"></button>
+      <button class="btn" id="btnTasks"></button>
     </div>
   </div>
 </div>
@@ -348,7 +340,6 @@ function renderTasks(){
    <small>${t.date} ${t.time}</small><br>
    <small>${t.note||""}</small>`;
   taskList.appendChild(d);
- });
 }
 
 /* INIT */
@@ -357,11 +348,12 @@ window.addEventListener("load",()=>{
  if(s) lang=s;
  applyLang();
 
- document.getElementById("btnDiary").onclick=openDiary;
- document.getElementById("btnTasks").onclick=openTasks;
- document.getElementById("backMenu").onclick=goHome;
- document.getElementById("backDiary").onclick=()=>show("screen-menu");
- document.getElementById("backTasks").onclick=()=>show("screen-menu");
+ btnDiary.onclick=openDiary;
+ btnTasks.onclick=openTasks;
+
+ backMenu.onclick=goHome;
+ backDiary.onclick=()=>show("screen-menu");
+ backTasks.onclick=()=>show("screen-menu");
 });
 </script>
 

@@ -11,18 +11,14 @@ content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%;width:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 
-/* ANDROID */
-body{overflow-y:auto;-webkit-overflow-scrolling:touch}
-
-/* iOS FIX */
+/* iOS fix */
 @supports (-webkit-touch-callout:none){
   html,body{overflow:hidden}
   body{position:fixed;inset:0}
 }
 
-/* BACKGROUND */
 body.home{
   background:linear-gradient(120deg,#1f6b4a,#2e8b57,#3fa37a,#2e8b57);
   background-size:400% 400%;
@@ -37,29 +33,31 @@ body.static{
   100%{background-position:0% 50%}
 }
 
-/* APP / SCREENS */
-.app{position:relative;width:100%;height:100%}
+.app{position:relative;height:100%}
 .screen{
   position:absolute;inset:0;
   display:flex;justify-content:center;align-items:center;
-  opacity:0;transform:translateY(20px);
-  pointer-events:none;
-  transition:.4s ease;
+  opacity:0;pointer-events:none;
+  transition:.3s ease;
 }
-.screen.active{opacity:1;transform:translateY(0);pointer-events:auto}
+.screen.active{opacity:1;pointer-events:auto}
 
-/* CONTENT */
-.content{width:100%;max-width:420px;padding:2rem 1.5rem;text-align:center}
+.content{
+  width:100%;max-width:420px;
+  padding:2rem 1.5rem;text-align:center
+}
 
 /* TITLE */
-.title{font-size:4rem;font-weight:900;line-height:1;margin-bottom:2rem}
+.title{
+  font-size:4rem;font-weight:900;line-height:1;margin-bottom:2rem
+}
 .title span{
   display:block;
   background:linear-gradient(180deg,#000 40%,#ff8c00 60%,#ff4500);
   background-size:100% 200%;
   -webkit-background-clip:text;
   -webkit-text-fill-color:transparent;
-  animation:fireGlow 3s ease-in-out infinite;
+  animation:fireGlow 3s infinite;
 }
 @keyframes fireGlow{
   0%{background-position:0% 0%}
@@ -68,69 +66,55 @@ body.static{
 }
 
 /* BUTTONS */
-.buttons{display:flex;flex-direction:column;gap:1rem;align-items:center}
+.buttons{display:flex;flex-direction:column;gap:1rem}
 .btn{
-  width:100%;max-width:280px;
-  padding:.9rem;border:none;border-radius:50px;
+  padding:.9rem;
+  border:none;border-radius:50px;
   font-size:1.1rem;font-weight:600;
-  background:rgba(255,255,255,.85);
+  background:rgba(255,255,255,.85)
 }
 
-/* BACK */
-.back-top{
+.back{
   position:absolute;top:1rem;right:1rem;
-  padding:.4rem .9rem;border:none;border-radius:20px;
-  background:rgba(255,255,255,.9);font-weight:600;
+  border:none;border-radius:20px;
+  padding:.4rem .9rem;
+  background:rgba(255,255,255,.9)
 }
 
 /* INPUTS */
+label{
+  display:block;
+  text-align:left;
+  font-size:.9rem;
+  margin-top:1rem;
+  opacity:.8
+}
 input,textarea,select{
   width:100%;
   padding:12px;
-  margin:8px 0;
+  margin-top:4px;
   border-radius:12px;
   border:none;
-  font-size:16px;
+  font-size:16px
 }
 textarea{resize:vertical}
 
 /* TASK */
 .task{
-  display:flex;
-  gap:8px;
-  align-items:flex-start;
   background:rgba(255,255,255,.9);
   border-radius:14px;
   padding:12px;
   margin-top:10px;
+  text-align:left
 }
-.task .meta{
-  flex:1;
-  text-align:left;
-  font-size:.95rem;
-}
-.task .meta small{opacity:.75}
-.task .icons{
+.task-actions{
   display:flex;
-  gap:4px;
-  margin-top:4px;
+  justify-content:space-between;
+  margin-top:8px
 }
-.task .actions{
-  display:flex;
-  gap:6px;
-}
-.task button{
-  border:none;
-  background:none;
-  font-size:1.15rem;
-  cursor:pointer;
-}
-
-/* EMPTY STATE */
-.empty{
-  margin-top:2rem;
-  font-size:1rem;
-  opacity:.8;
+.task-actions button{
+  border:none;background:none;
+  font-size:1.1rem
 }
 </style>
 </head>
@@ -139,7 +123,7 @@ textarea{resize:vertical}
 <div class="app">
 
 <!-- JEZIK -->
-<div id="screen-lang" class="screen active">
+<div id="lang" class="screen active">
   <div class="content">
     <h1 class="title"><span>Life</span><span>Kompas</span></h1>
     <div class="buttons">
@@ -151,167 +135,151 @@ textarea{resize:vertical}
 </div>
 
 <!-- MENU -->
-<div id="screen-menu" class="screen">
-  <button id="backBtn" class="back-top"></button>
+<div id="menu" class="screen">
+  <button class="back" onclick="goHome()">←</button>
   <div class="content">
     <div class="buttons">
-      <button id="btnDiary" class="btn"></button>
-      <button id="btnTasks" class="btn"></button>
+      <button class="btn" onclick="openDiary()">📔 Dnevnik</button>
+      <button class="btn" onclick="openTasks()">📋 Obveze</button>
+    </div>
+  </div>
+</div>
+
+<!-- DNEVNIK -->
+<div id="diary" class="screen">
+  <button class="back" onclick="show('menu')">←</button>
+  <div class="content">
+    <label>Datum</label>
+    <input type="date" id="dDate">
+    <label>Naslov</label>
+    <input id="dTitle">
+    <label>Tekst</label>
+    <textarea id="dText" rows="6"></textarea>
+
+    <div class="buttons">
+      <button class="btn" onclick="saveDiary()">💾 Spremi</button>
+      <button class="btn" onclick="loadDiary()">✏️ Uredi</button>
+      <button class="btn" onclick="deleteDiary()">🗑 Izbriši</button>
     </div>
   </div>
 </div>
 
 <!-- OBVEZE -->
-<div id="screen-tasks" class="screen">
-  <button class="back-top" onclick="show('screen-menu')">←</button>
+<div id="tasks" class="screen">
+  <button class="back" onclick="show('menu')">←</button>
   <div class="content">
-    <input type="text" id="taskTitle">
+    <label>Obveza</label>
+    <input id="taskTitle">
+
+    <label>Datum</label>
     <input type="date" id="taskDate">
+
+    <label>Vrijeme</label>
     <input type="time" id="taskTime">
 
+    <label>Podsjetnik</label>
     <select id="taskReminder">
-      <option value="0">—</option>
+      <option value="0">Bez podsjetnika</option>
       <option value="15">15 min</option>
       <option value="30">30 min</option>
-      <option value="60">1 h</option>
+      <option value="60">1 sat</option>
       <option value="1440">1 dan</option>
     </select>
 
-    <button class="btn" onclick="saveTask()" id="btnAddTask"></button>
-
+    <button class="btn" onclick="saveTask()">💾 Spremi obvezu</button>
     <div id="taskList"></div>
-    <div id="emptyState" class="empty"></div>
   </div>
 </div>
 
 </div>
 
 <script>
-const T={
- hr:{
-  back:"← Povratak",
-  diary:"📔 Dnevnik",
-  tasks:"📋 Obveze",
-  add:"➕ Dodaj",
-  save:"💾 Spremi",
-  empty:"Nema obveza – dodaj prvu 👇",
-  confirmDelete:"Obrisati ovu obvezu?"
- },
- de:{
-  back:"← Zurück",
-  diary:"📔 Tagebuch",
-  tasks:"📋 Aufgaben",
-  add:"➕ Hinzufügen",
-  save:"💾 Speichern",
-  empty:"Keine Aufgaben – füge eine hinzu 👇",
-  confirmDelete:"Diese Aufgabe löschen?"
- },
- en:{
-  back:"← Back",
-  diary:"📔 Diary",
-  tasks:"📋 Tasks",
-  add:"➕ Add",
-  save:"💾 Save",
-  empty:"No tasks yet – add one 👇",
-  confirmDelete:"Delete this task?"
- }
-};
-
 let lang="hr";
 let tasks=[];
-let editTaskId=null;
 
 function show(id){
- document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
- document.getElementById(id).classList.add("active");
+ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
 }
 
 function selectLang(l){
  lang=l;
- localStorage.setItem("lang",l);
- applyLang();
  document.body.className="static";
- show("screen-menu");
+ show('menu');
 }
 
-function applyLang(){
- backBtn.textContent=T[lang].back;
- btnTasks.textContent=T[lang].tasks;
- btnAddTask.textContent=editTaskId?T[lang].save:T[lang].add;
+function goHome(){
+ document.body.className="home";
+ show('lang');
 }
 
-btnTasks.onclick=()=>{loadTasks();show("screen-tasks")};
-backBtn.onclick=()=>{document.body.className="home";show("screen-lang")};
+/* DNEVNIK */
+function openDiary(){
+ dDate.value=new Date().toISOString().slice(0,10);
+ loadDiary();
+ show('diary');
+}
+function saveDiary(){
+ localStorage.setItem("d-"+dDate.value,JSON.stringify({t:dTitle.value,x:dText.value}));
+}
+function loadDiary(){
+ const s=localStorage.getItem("d-"+dDate.value);
+ if(!s)return;
+ const e=JSON.parse(s);
+ dTitle.value=e.t||"";dText.value=e.x||"";
+}
+function deleteDiary(){
+ localStorage.removeItem("d-"+dDate.value);
+ dTitle.value="";dText.value="";
+}
 
-function loadTasks(){
+/* OBVEZE */
+function openTasks(){
  tasks=JSON.parse(localStorage.getItem("tasks")||"[]");
  renderTasks();
+ show('tasks');
 }
-
 function saveTask(){
- if(!taskTitle.value)return;
-
- if(editTaskId){
-  const t=tasks.find(x=>x.id===editTaskId);
-  t.t=taskTitle.value;t.d=taskDate.value;t.h=taskTime.value;t.r=taskReminder.value;
-  editTaskId=null;
- }else{
-  tasks.push({id:Date.now(),t:taskTitle.value,d:taskDate.value,h:taskTime.value,r:taskReminder.value});
- }
-
+ tasks.push({
+  id:Date.now(),
+  t:taskTitle.value,
+  d:taskDate.value,
+  h:taskTime.value,
+  r:taskReminder.value
+ });
  localStorage.setItem("tasks",JSON.stringify(tasks));
- taskTitle.value="";taskDate.value="";taskTime.value="";taskReminder.value="0";
- applyLang();
+ taskTitle.value="";taskDate.value="";taskTime.value="";
  renderTasks();
 }
-
 function renderTasks(){
  taskList.innerHTML="";
- emptyState.textContent=tasks.length?"" : T[lang].empty;
-
  tasks.forEach(t=>{
   const div=document.createElement("div");
   div.className="task";
-
-  const hasReminder = parseInt(t.r)>0;
-
   div.innerHTML=`
-   <div class="meta">
-     <strong>${t.t}</strong>
-     <div class="icons">
-       ${hasReminder?"🔔":""}
-       📅
-     </div>
-     <small>${t.d||""} ${t.h||""}</small>
-   </div>
-   <div class="actions">
+   <strong>${t.t}</strong><br>
+   <small>${t.d} ${t.h}</small>
+   <div class="task-actions">
      <button onclick="editTask(${t.id})">✏️</button>
-     <button onclick="confirmDelete(${t.id})">🗑</button>
+     <button onclick="deleteTask(${t.id})">🗑</button>
+     <button onclick="calendar()">📅</button>
    </div>`;
   taskList.appendChild(div);
  });
 }
-
 function editTask(id){
  const t=tasks.find(x=>x.id===id);
- editTaskId=id;
  taskTitle.value=t.t;taskDate.value=t.d;taskTime.value=t.h;taskReminder.value=t.r;
- applyLang();
+ tasks=tasks.filter(x=>x.id!==id);
 }
-
-function confirmDelete(id){
- if(confirm(T[lang].confirmDelete)){
-  tasks=tasks.filter(t=>t.id!==id);
-  localStorage.setItem("tasks",JSON.stringify(tasks));
-  renderTasks();
- }
+function deleteTask(id){
+ tasks=tasks.filter(x=>x.id!==id);
+ localStorage.setItem("tasks",JSON.stringify(tasks));
+ renderTasks();
 }
-
-window.addEventListener("load",()=>{
- const s=localStorage.getItem("lang");
- if(s)lang=s;
- applyLang();
-});
+function calendar(){
+ alert("📅 Kalendar će se dodati u sljedećem koraku");
+}
 </script>
 
 </body>

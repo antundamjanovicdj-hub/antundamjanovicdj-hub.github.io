@@ -107,19 +107,18 @@ textarea{resize:vertical}
   <div class="content">
     <h1 class="title"><span>Life</span><span>Kompas</span></h1>
     <div class="buttons">
-      <button class="btn" onclick="selectLang('hr')">🇭🇷 Hrvatski</button>
-      <button class="btn" onclick="selectLang('de')">🇩🇪 Deutsch</button>
-      <button class="btn" onclick="selectLang('en')">🇬🇧 English</button>
+      <button class="btn" id="langHr">🇭🇷 Hrvatski</button>
+      <button class="btn" id="langDe">🇩🇪 Deutsch</button>
+      <button class="btn" id="langEn">🇬🇧 English</button>
     </div>
   </div>
 </div>
 
 <!-- MENU -->
 <div id="screen-menu" class="screen">
-  <button class="back" onclick="goHome()">←</button>
+  <button class="back" id="backMenu">←</button>
   <div class="content">
     <div class="buttons">
-      <button class="btn" id="btnDiary"></button>
       <button class="btn" id="btnTasks"></button>
     </div>
   </div>
@@ -127,7 +126,7 @@ textarea{resize:vertical}
 
 <!-- TASKS -->
 <div id="screen-tasks" class="screen">
-  <button class="back" onclick="show('screen-menu')">←</button>
+  <button class="back" id="backTasks">←</button>
   <div class="content scroll">
 
     <label id="lblTask"></label>
@@ -165,22 +164,19 @@ textarea{resize:vertical}
 <script>
 const T={
  hr:{
-  diary:"📔 Dnevnik",tasks:"📋 Obveze",
-  task:"Obveza",note:"Bilješka",cat:"Kategorija",
+  tasks:"📋 Obveze",task:"Obveza",note:"Bilješka",cat:"Kategorija",
   date:"Datum",time:"Vrijeme",rem:"Podsjetnik",
   save:"💾 Spremi obvezu",saveEdit:"💾 Spremi izmjene",
   cats:{health:"Zdravlje",family:"Obitelj",finance:"Financije",personal:"Osobno",other:"Ostalo"}
  },
  de:{
-  diary:"📔 Tagebuch",tasks:"📋 Aufgaben",
-  task:"Aufgabe",note:"Notiz",cat:"Kategorie",
+  tasks:"📋 Aufgaben",task:"Aufgabe",note:"Notiz",cat:"Kategorie",
   date:"Datum",time:"Zeit",rem:"Erinnerung",
   save:"💾 Aufgabe speichern",saveEdit:"💾 Änderungen speichern",
   cats:{health:"Gesundheit",family:"Familie",finance:"Finanzen",personal:"Persönlich",other:"Sonstiges"}
  },
  en:{
-  diary:"📔 Diary",tasks:"📋 Tasks",
-  task:"Task",note:"Note",cat:"Category",
+  tasks:"📋 Tasks",task:"Task",note:"Note",cat:"Category",
   date:"Date",time:"Time",rem:"Reminder",
   save:"💾 Save task",saveEdit:"💾 Save changes",
   cats:{health:"Health",family:"Family",finance:"Finance",personal:"Personal",other:"Other"}
@@ -194,15 +190,9 @@ function show(id){
  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
  document.getElementById(id).classList.add("active");
 }
-function selectLang(l){
- lang=l;localStorage.setItem("lang",l);
- applyLang();document.body.className="static";show("screen-menu");
-}
-function goHome(){document.body.className="home";show("screen-lang")}
 
 /* LANG */
 function applyLang(){
- btnDiary.textContent=T[lang].diary;
  btnTasks.textContent=T[lang].tasks;
  lblTask.textContent=T[lang].task;
  lblNote.textContent=T[lang].note;
@@ -287,10 +277,17 @@ function renderTasks(){
    <small>${t.date} ${t.time}</small><br>
    <small>${t.note||""}</small>
    <div class="task-actions">
-     <button onclick="editTask(${t.id})">✏️</button>
-     <button onclick="deleteTask(${t.id})">🗑</button>
+     <button data-id="${t.id}" class="edit">✏️</button>
+     <button data-id="${t.id}" class="delete">🗑</button>
    </div>`;
   taskList.appendChild(d);
+ });
+
+ document.querySelectorAll(".edit").forEach(b=>{
+  b.addEventListener("click",()=>editTask(+b.dataset.id));
+ });
+ document.querySelectorAll(".delete").forEach(b=>{
+  b.addEventListener("click",()=>deleteTask(+b.dataset.id));
  });
 }
 
@@ -299,8 +296,15 @@ window.addEventListener("load",()=>{
  const s=localStorage.getItem("lang");
  if(s&&T[s])lang=s;
  applyLang();
- btnDiary.onclick=()=>alert("Dnevnik je sljedeći korak");
- btnTasks.onclick=openTasks;
+
+ document.getElementById("langHr").onclick=()=>{lang="hr";localStorage.setItem("lang","hr");applyLang();show("screen-menu");document.body.className="static"};
+ document.getElementById("langDe").onclick=()=>{lang="de";localStorage.setItem("lang","de");applyLang();show("screen-menu");document.body.className="static"};
+ document.getElementById("langEn").onclick=()=>{lang="en";localStorage.setItem("lang","en");applyLang();show("screen-menu");document.body.className="static"};
+
+ btnTasks.addEventListener("click",openTasks);
+ backMenu.addEventListener("click",()=>{document.body.className="home";show("screen-lang")});
+ backTasks.addEventListener("click",()=>show("screen-menu"));
+ btnSaveTask.addEventListener("click",saveTask);
 });
 </script>
 

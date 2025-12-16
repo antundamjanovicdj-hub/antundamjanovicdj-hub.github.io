@@ -71,8 +71,7 @@ body.static{
 .buttons{display:flex;flex-direction:column;gap:1rem;align-items:center}
 .btn{
   width:100%;max-width:280px;
-  padding:.9rem;
-  border:none;border-radius:50px;
+  padding:.9rem;border:none;border-radius:50px;
   font-size:1.1rem;font-weight:600;
   background:rgba(255,255,255,.85);
 }
@@ -91,10 +90,28 @@ input,textarea{
 }
 textarea{resize:vertical}
 
-/* ACTIONS */
-.actions{display:flex;gap:6px;margin-top:10px}
-.actions button{flex:1;white-space:nowrap}
-.actions.de button{font-size:.8rem}
+/* ACTIONS (default: 1 row) */
+.actions{
+  display:flex;
+  gap:6px;
+  margin-top:10px;
+}
+.actions button{
+  flex:1;
+  white-space:nowrap;
+  padding:10px;
+}
+
+/* 🇩🇪 Diary actions: 2 rows (2 + 1) */
+.actions.de-diary{
+  flex-wrap:wrap;
+}
+.actions.de-diary button{
+  flex:0 0 calc(50% - 3px);
+}
+.actions.de-diary button:last-child{
+  flex:0 0 100%;
+}
 
 /* TASK */
 .task{
@@ -177,7 +194,6 @@ let lang="hr";
 let tasks=[];
 let editTaskId=null;
 
-/* NAV */
 function show(id){
  document.activeElement.blur();
  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
@@ -193,28 +209,30 @@ function selectLang(l){
 }
 
 function applyLang(){
- backBtn.textContent=T[lang].back;
- btnDiary.textContent=T[lang].diary;
- btnTasks.textContent=T[lang].tasks;
+ const t=T[lang];
+ backBtn.textContent=t.back;
+ btnDiary.textContent=t.diary;
+ btnTasks.textContent=t.tasks;
 
- btnSaveDiary.textContent=T[lang].save;
- btnEditDiary.textContent=T[lang].edit;
- btnDeleteDiary.textContent=T[lang].del;
+ btnSaveDiary.textContent=t.save;
+ btnEditDiary.textContent=t.edit;
+ btnDeleteDiary.textContent=t.del;
 
- btnAddTask.textContent=T[lang].add;
- taskTitle.placeholder=T[lang].tasks;
+ btnAddTask.textContent=t.add;
+
+ // 🔑 FIX: only Diary actions change layout in German
+ diaryActions.classList.toggle("de-diary", lang==="de");
+
+ taskTitle.placeholder=t.tasks;
 }
 
-/* MENU */
 btnDiary.onclick=()=>{
  dDate.value=new Date().toISOString().slice(0,10);
  loadDiary();
  show("screen-diary");
 };
-btnTasks.onclick=()=>{
- loadTasks();
- show("screen-tasks");
-};
+btnTasks.onclick=()=>{loadTasks();show("screen-tasks")};
+
 backBtn.onclick=()=>{
  document.body.className="home";
  show("screen-lang");
@@ -222,8 +240,7 @@ backBtn.onclick=()=>{
 
 /* DIARY */
 function saveDiary(){
- localStorage.setItem("diary-"+dDate.value,
- JSON.stringify({t:dTitle.value,x:dText.value}));
+ localStorage.setItem("diary-"+dDate.value, JSON.stringify({t:dTitle.value,x:dText.value}));
  alert("OK");
 }
 function loadDiary(){
@@ -248,17 +265,10 @@ function saveTask(){
  if(!taskTitle.value)return;
  if(editTaskId){
   const t=tasks.find(x=>x.id===editTaskId);
-  t.t=taskTitle.value;
-  t.d=taskDate.value;
-  t.h=taskTime.value;
+  if(t){ t.t=taskTitle.value; t.d=taskDate.value; t.h=taskTime.value; }
   editTaskId=null;
  }else{
-  tasks.push({
-    id:Date.now(),
-    t:taskTitle.value,
-    d:taskDate.value,
-    h:taskTime.value
-  });
+  tasks.push({id:Date.now(),t:taskTitle.value,d:taskDate.value,h:taskTime.value});
  }
  localStorage.setItem("tasks",JSON.stringify(tasks));
  taskTitle.value="";taskDate.value="";taskTime.value="";

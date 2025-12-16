@@ -90,44 +90,34 @@ input,textarea{
 }
 textarea{resize:vertical}
 
-/* ACTIONS (default: 1 row) */
-.actions{
-  display:flex;
-  gap:6px;
-  margin-top:10px;
-}
-.actions button{
-  flex:1;
-  white-space:nowrap;
-  padding:10px;
-}
-
-/* 🇩🇪 Diary actions: 2 rows (2 + 1) */
-.actions.de-diary{
-  flex-wrap:wrap;
-}
-.actions.de-diary button{
-  flex:0 0 calc(50% - 3px);
-}
-.actions.de-diary button:last-child{
-  flex:0 0 100%;
-}
-
 /* TASK */
 .task{
-  display:flex;justify-content:space-between;align-items:center;
+  display:flex;
+  gap:6px;
+  align-items:center;
   background:rgba(255,255,255,.85);
-  border-radius:12px;padding:10px;margin-top:8px;
+  border-radius:12px;
+  padding:10px;
+  margin-top:8px;
 }
-.task span{text-align:left;font-size:.95rem;flex:1}
-.task button{border:none;background:none;font-size:1.2rem}
+.task span{
+  flex:1;
+  text-align:left;
+  font-size:.95rem;
+}
+.task button{
+  border:none;
+  background:none;
+  font-size:1.2rem;
+  cursor:pointer;
+}
 </style>
 </head>
 
 <body class="home">
 <div class="app">
 
-<!-- LANG -->
+<!-- JEZIK -->
 <div id="screen-lang" class="screen active">
   <div class="content">
     <h1 class="title"><span>Life</span><span>Kompas</span></h1>
@@ -150,23 +140,7 @@ textarea{resize:vertical}
   </div>
 </div>
 
-<!-- DIARY -->
-<div id="screen-diary" class="screen">
-  <button class="back-top" onclick="show('screen-menu')">←</button>
-  <div class="content">
-    <input type="date" id="dDate">
-    <input type="text" id="dTitle">
-    <textarea id="dText" rows="6"></textarea>
-
-    <div class="actions" id="diaryActions">
-      <button class="btn" onclick="saveDiary()" id="btnSaveDiary"></button>
-      <button class="btn" onclick="loadDiary()" id="btnEditDiary"></button>
-      <button class="btn" onclick="deleteDiary()" id="btnDeleteDiary"></button>
-    </div>
-  </div>
-</div>
-
-<!-- TASKS -->
+<!-- OBVEZE -->
 <div id="screen-tasks" class="screen">
   <button class="back-top" onclick="show('screen-menu')">←</button>
   <div class="content">
@@ -182,18 +156,16 @@ textarea{resize:vertical}
 
 <script>
 const T={
- hr:{back:"← Povratak",diary:"📔 Dnevnik",tasks:"📋 Obveze",add:"➕ Dodaj",
-     save:"💾 Spremi",edit:"✏️ Uredi",del:"🗑 Obriši"},
- de:{back:"← Zurück",diary:"📔 Tagebuch",tasks:"📋 Aufgaben",add:"➕ Hinzufügen",
-     save:"💾 Speichern",edit:"✏️ Bearbeiten",del:"🗑 Löschen"},
- en:{back:"← Back",diary:"📔 Diary",tasks:"📋 Tasks",add:"➕ Add",
-     save:"💾 Save",edit:"✏️ Edit",del:"🗑 Delete"}
+ hr:{back:"← Povratak",tasks:"📋 Obveze",add:"➕ Dodaj",save:"💾 Spremi"},
+ de:{back:"← Zurück",tasks:"📋 Aufgaben",add:"➕ Hinzufügen",save:"💾 Speichern"},
+ en:{back:"← Back",tasks:"📋 Tasks",add:"➕ Add",save:"💾 Save"}
 };
 
 let lang="hr";
 let tasks=[];
 let editTaskId=null;
 
+/* NAV */
 function show(id){
  document.activeElement.blur();
  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
@@ -209,85 +181,63 @@ function selectLang(l){
 }
 
 function applyLang(){
- const t=T[lang];
- backBtn.textContent=t.back;
- btnDiary.textContent=t.diary;
- btnTasks.textContent=t.tasks;
-
- btnSaveDiary.textContent=t.save;
- btnEditDiary.textContent=t.edit;
- btnDeleteDiary.textContent=t.del;
-
- btnAddTask.textContent=t.add;
-
- // 🔑 FIX: only Diary actions change layout in German
- diaryActions.classList.toggle("de-diary", lang==="de");
-
- taskTitle.placeholder=t.tasks;
+ backBtn.textContent=T[lang].back;
+ btnTasks.textContent=T[lang].tasks;
+ btnAddTask.textContent=T[lang].add;
+ taskTitle.placeholder=T[lang].tasks;
 }
 
-btnDiary.onclick=()=>{
- dDate.value=new Date().toISOString().slice(0,10);
- loadDiary();
- show("screen-diary");
-};
 btnTasks.onclick=()=>{loadTasks();show("screen-tasks")};
-
-backBtn.onclick=()=>{
- document.body.className="home";
- show("screen-lang");
-};
-
-/* DIARY */
-function saveDiary(){
- localStorage.setItem("diary-"+dDate.value, JSON.stringify({t:dTitle.value,x:dText.value}));
- alert("OK");
-}
-function loadDiary(){
- const s=localStorage.getItem("diary-"+dDate.value);
- if(!s)return;
- const e=JSON.parse(s);
- dTitle.value=e.t;
- dText.value=e.x;
-}
-function deleteDiary(){
- localStorage.removeItem("diary-"+dDate.value);
- dTitle.value="";
- dText.value="";
-}
+backBtn.onclick=()=>{document.body.className="home";show("screen-lang")};
 
 /* TASKS */
 function loadTasks(){
  tasks=JSON.parse(localStorage.getItem("tasks")||"[]");
  renderTasks();
 }
+
 function saveTask(){
  if(!taskTitle.value)return;
+
  if(editTaskId){
   const t=tasks.find(x=>x.id===editTaskId);
-  if(t){ t.t=taskTitle.value; t.d=taskDate.value; t.h=taskTime.value; }
+  if(t){
+    t.t=taskTitle.value;
+    t.d=taskDate.value;
+    t.h=taskTime.value;
+  }
   editTaskId=null;
+  btnAddTask.textContent=T[lang].add;
  }else{
-  tasks.push({id:Date.now(),t:taskTitle.value,d:taskDate.value,h:taskTime.value});
+  tasks.push({
+    id:Date.now(),
+    t:taskTitle.value,
+    d:taskDate.value,
+    h:taskTime.value
+  });
  }
+
  localStorage.setItem("tasks",JSON.stringify(tasks));
  taskTitle.value="";taskDate.value="";taskTime.value="";
- btnAddTask.textContent=T[lang].add;
  renderTasks();
 }
+
 function renderTasks(){
  taskList.innerHTML="";
  tasks.sort((a,b)=>(a.d+a.h).localeCompare(b.d+b.h));
+
  tasks.forEach(t=>{
   const div=document.createElement("div");
   div.className="task";
   div.innerHTML=
    `<span>${t.t}<br><small>${t.d} ${t.h}</small></span>
     <button onclick="editTask(${t.id})">✏️</button>
-    <button onclick="doneTask(${t.id})">✔</button>`;
+    <button onclick="doneTask(${t.id})">✔</button>
+    <button onclick="deleteTask(${t.id})">🗑</button>`;
   taskList.appendChild(div);
  });
 }
+
 function editTask(id){
  const t=tasks.find(x=>x.id===id);
  if(!t)return;
@@ -297,7 +247,14 @@ function editTask(id){
  taskTime.value=t.h;
  btnAddTask.textContent=T[lang].save;
 }
+
 function doneTask(id){
+ tasks=tasks.filter(t=>t.id!==id);
+ localStorage.setItem("tasks",JSON.stringify(tasks));
+ renderTasks();
+}
+
+function deleteTask(id){
  tasks=tasks.filter(t=>t.id!==id);
  localStorage.setItem("tasks",JSON.stringify(tasks));
  renderTasks();

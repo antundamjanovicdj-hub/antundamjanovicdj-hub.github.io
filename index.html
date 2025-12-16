@@ -16,13 +16,13 @@ html,body{height:100%;width:100%;font-family:-apple-system,BlinkMacSystemFont,"S
 /* ANDROID */
 body{overflow-y:auto;-webkit-overflow-scrolling:touch}
 
-/* iOS ONLY: sprječava zoom/scroll bugove */
+/* iOS FIX */
 @supports (-webkit-touch-callout:none){
   html,body{overflow:hidden}
   body{position:fixed;inset:0}
 }
 
-/* BACKGROUNDS */
+/* BACKGROUND */
 body.home{
   background:linear-gradient(120deg,#1f6b4a,#2e8b57,#3fa37a,#2e8b57);
   background-size:400% 400%;
@@ -99,30 +99,38 @@ textarea{resize:vertical}
   display:flex;
   gap:8px;
   align-items:flex-start;
-  background:rgba(255,255,255,.85);
-  border-radius:12px;
-  padding:10px;
-  margin-top:8px;
+  background:rgba(255,255,255,.9);
+  border-radius:14px;
+  padding:12px;
+  margin-top:10px;
 }
-.task .meta{flex:1;text-align:left;font-size:.95rem}
+.task .meta{
+  flex:1;
+  text-align:left;
+  font-size:.95rem;
+}
 .task .meta small{opacity:.75}
+.task .icons{
+  display:flex;
+  gap:4px;
+  margin-top:4px;
+}
 .task .actions{
   display:flex;
   gap:6px;
-  align-items:center;
-  margin-top:2px;
 }
 .task button{
-  border:none;background:none;
+  border:none;
+  background:none;
   font-size:1.15rem;
   cursor:pointer;
 }
 
-/* Small helper text */
-.help{
-  font-size:.9rem;
-  opacity:.85;
-  margin-top:6px;
+/* EMPTY STATE */
+.empty{
+  margin-top:2rem;
+  font-size:1rem;
+  opacity:.8;
 }
 </style>
 </head>
@@ -153,22 +161,6 @@ textarea{resize:vertical}
   </div>
 </div>
 
-<!-- DNEVNIK -->
-<div id="screen-diary" class="screen">
-  <button class="back-top" onclick="show('screen-menu')">←</button>
-  <div class="content">
-    <input type="date" id="dDate">
-    <input type="text" id="dTitle">
-    <textarea id="dText" rows="6"></textarea>
-
-    <div class="buttons">
-      <button class="btn" onclick="saveDiary()" id="btnSaveDiary"></button>
-      <button class="btn" onclick="loadDiary()" id="btnEditDiary"></button>
-      <button class="btn" onclick="deleteDiary()" id="btnDeleteDiary"></button>
-    </div>
-  </div>
-</div>
-
 <!-- OBVEZE -->
 <div id="screen-tasks" class="screen">
   <button class="back-top" onclick="show('screen-menu')">←</button>
@@ -186,437 +178,139 @@ textarea{resize:vertical}
     </select>
 
     <button class="btn" onclick="saveTask()" id="btnAddTask"></button>
-    <div class="help" id="notifHelp"></div>
 
     <div id="taskList"></div>
+    <div id="emptyState" class="empty"></div>
   </div>
 </div>
 
 </div>
 
 <script>
-/* =========================
-   TRANSLATIONS
-   ========================= */
 const T={
  hr:{
   back:"← Povratak",
   diary:"📔 Dnevnik",
   tasks:"📋 Obveze",
-  saveDiary:"💾 Spremi",
-  editDiary:"✏️ Uredi",
-  deleteDiary:"🗑 Izbriši",
-  addTask:"➕ Dodaj",
-  saveTask:"💾 Spremi izmjene",
-  taskPlaceholder:"Naziv obveze (npr. Doktor)",
-  reminderLabel:"Podsjetnik",
-  none:"Bez podsjetnika",
-  mins:"min prije",
-  hour:"1 sat prije",
-  day:"1 dan prije",
-  calendar:"📅 Kalendar",
-  notifHint:"🔔 In-app podsjetnik radi dok je aplikacija otvorena. Za sigurnu notifikaciju koristi 📅 Kalendar."
+  add:"➕ Dodaj",
+  save:"💾 Spremi",
+  empty:"Nema obveza – dodaj prvu 👇",
+  confirmDelete:"Obrisati ovu obvezu?"
  },
  de:{
   back:"← Zurück",
   diary:"📔 Tagebuch",
   tasks:"📋 Aufgaben",
-  saveDiary:"💾 Speichern",
-  editDiary:"✏️ Bearbeiten",
-  deleteDiary:"🗑 Löschen",
-  addTask:"➕ Hinzufügen",
-  saveTask:"💾 Änderungen speichern",
-  taskPlaceholder:"Aufgabe (z.B. Arzt)",
-  reminderLabel:"Erinnerung",
-  none:"Keine Erinnerung",
-  mins:"Min vorher",
-  hour:"1 Std vorher",
-  day:"1 Tag vorher",
-  calendar:"📅 Kalender",
-  notifHint:"🔔 In-App Erinnerung funktioniert, solange die App geöffnet ist. Für sichere Benachrichtigung nutze 📅 Kalender."
+  add:"➕ Hinzufügen",
+  save:"💾 Speichern",
+  empty:"Keine Aufgaben – füge eine hinzu 👇",
+  confirmDelete:"Diese Aufgabe löschen?"
  },
  en:{
   back:"← Back",
   diary:"📔 Diary",
   tasks:"📋 Tasks",
-  saveDiary:"💾 Save",
-  editDiary:"✏️ Edit",
-  deleteDiary:"🗑 Delete",
-  addTask:"➕ Add",
-  saveTask:"💾 Save changes",
-  taskPlaceholder:"Task title (e.g. Doctor)",
-  reminderLabel:"Reminder",
-  none:"No reminder",
-  mins:"min before",
-  hour:"1 hour before",
-  day:"1 day before",
-  calendar:"📅 Calendar",
-  notifHint:"🔔 In-app reminder works while the app is open. For reliable alerts use 📅 Calendar."
+  add:"➕ Add",
+  save:"💾 Save",
+  empty:"No tasks yet – add one 👇",
+  confirmDelete:"Delete this task?"
  }
 };
 
 let lang="hr";
+let tasks=[];
+let editTaskId=null;
 
-/* =========================
-   STATE
-   ========================= */
-let tasks = [];
-let editTaskId = null;
-
-/* =========================
-   NAV
-   ========================= */
 function show(id){
-  document.activeElement.blur();
-  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
+ document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
 }
 
 function selectLang(l){
-  lang=l;
-  localStorage.setItem("lang",l);
-  applyLang();
-  document.body.className="static";
-  show("screen-menu");
+ lang=l;
+ localStorage.setItem("lang",l);
+ applyLang();
+ document.body.className="static";
+ show("screen-menu");
 }
 
 function applyLang(){
-  backBtn.textContent = T[lang].back;
-  btnDiary.textContent = T[lang].diary;
-  btnTasks.textContent = T[lang].tasks;
-
-  btnSaveDiary.textContent = T[lang].saveDiary;
-  btnEditDiary.textContent = T[lang].editDiary;
-  btnDeleteDiary.textContent = T[lang].deleteDiary;
-
-  taskTitle.placeholder = T[lang].taskPlaceholder;
-  btnAddTask.textContent = editTaskId ? T[lang].saveTask : T[lang].addTask;
-
-  // reminder select labels
-  taskReminder.options[0].textContent = "— " + T[lang].none;
-  taskReminder.options[1].textContent = "15 " + T[lang].mins;
-  taskReminder.options[2].textContent = "30 " + T[lang].mins;
-  taskReminder.options[3].textContent = T[lang].hour;
-  taskReminder.options[4].textContent = T[lang].day;
-
-  notifHelp.textContent = T[lang].notifHint;
+ backBtn.textContent=T[lang].back;
+ btnTasks.textContent=T[lang].tasks;
+ btnAddTask.textContent=editTaskId?T[lang].save:T[lang].add;
 }
 
-btnDiary.onclick=()=>{
-  dDate.value=new Date().toISOString().slice(0,10);
-  loadDiary();
-  show("screen-diary");
-};
+btnTasks.onclick=()=>{loadTasks();show("screen-tasks")};
+backBtn.onclick=()=>{document.body.className="home";show("screen-lang")};
 
-btnTasks.onclick=()=>{
-  loadTasks();
-  show("screen-tasks");
-};
-
-backBtn.onclick=()=>{
-  document.body.className="home";
-  show("screen-lang");
-};
-
-/* =========================
-   DIARY
-   ========================= */
-function saveDiary(){
-  localStorage.setItem("diary-"+dDate.value, JSON.stringify({t:dTitle.value,x:dText.value}));
-  alert("OK");
-}
-function loadDiary(){
-  const s=localStorage.getItem("diary-"+dDate.value);
-  if(!s) return;
-  const e=JSON.parse(s);
-  dTitle.value=e.t || "";
-  dText.value=e.x || "";
-}
-function deleteDiary(){
-  localStorage.removeItem("diary-"+dDate.value);
-  dTitle.value="";
-  dText.value="";
-}
-
-/* =========================
-   TASKS
-   ========================= */
 function loadTasks(){
-  tasks = JSON.parse(localStorage.getItem("tasks")||"[]");
-  renderTasks();
-}
-
-function persistTasks(){
-  localStorage.setItem("tasks", JSON.stringify(tasks));
+ tasks=JSON.parse(localStorage.getItem("tasks")||"[]");
+ renderTasks();
 }
 
 function saveTask(){
-  if(!taskTitle.value) return;
+ if(!taskTitle.value)return;
 
-  const reminderMin = parseInt(taskReminder.value || "0", 10);
+ if(editTaskId){
+  const t=tasks.find(x=>x.id===editTaskId);
+  t.t=taskTitle.value;t.d=taskDate.value;t.h=taskTime.value;t.r=taskReminder.value;
+  editTaskId=null;
+ }else{
+  tasks.push({id:Date.now(),t:taskTitle.value,d:taskDate.value,h:taskTime.value,r:taskReminder.value});
+ }
 
-  if(editTaskId){
-    const t = tasks.find(x=>x.id===editTaskId);
-    if(t){
-      t.t = taskTitle.value;
-      t.d = taskDate.value;
-      t.h = taskTime.value;
-      t.r = reminderMin; // update reminder too (A)
-    }
-    editTaskId = null;
-  } else {
-    tasks.push({
-      id: Date.now(),
-      t: taskTitle.value,
-      d: taskDate.value,
-      h: taskTime.value,
-      r: reminderMin // minutes before (0 = none)
-    });
-  }
-
-  persistTasks();
-  taskTitle.value=""; taskDate.value=""; taskTime.value=""; taskReminder.value="0";
-  btnAddTask.textContent = T[lang].addTask;
-  renderTasks();
-  applyLang();
-}
-
-function editTask(id){
-  const t = tasks.find(x=>x.id===id);
-  if(!t) return;
-  editTaskId = id;
-  taskTitle.value = t.t || "";
-  taskDate.value = t.d || "";
-  taskTime.value = t.h || "";
-  taskReminder.value = String(t.r || 0);
-  btnAddTask.textContent = T[lang].saveTask;
-}
-
-function deleteTask(id){
-  tasks = tasks.filter(t=>t.id!==id);
-  persistTasks();
-  renderTasks();
-}
-
-function doneTask(id){
-  // Option B: done = remove
-  deleteTask(id);
-}
-
-function formatReminderLabel(mins){
-  if(!mins) return T[lang].none;
-  if(mins===60) return T[lang].hour;
-  if(mins===1440) return T[lang].day;
-  return `${mins} ${T[lang].mins}`;
+ localStorage.setItem("tasks",JSON.stringify(tasks));
+ taskTitle.value="";taskDate.value="";taskTime.value="";taskReminder.value="0";
+ applyLang();
+ renderTasks();
 }
 
 function renderTasks(){
-  taskList.innerHTML = "";
-  tasks.sort((a,b)=>(String(a.d||"") + String(a.h||"")).localeCompare(String(b.d||"") + String(b.h||"")));
+ taskList.innerHTML="";
+ emptyState.textContent=tasks.length?"" : T[lang].empty;
 
-  tasks.forEach(t=>{
-    const div = document.createElement("div");
-    div.className="task";
-    const when = `${t.d||""} ${t.h||""}`.trim();
-    const rem = formatReminderLabel(t.r||0);
+ tasks.forEach(t=>{
+  const div=document.createElement("div");
+  div.className="task";
 
-    div.innerHTML = `
-      <div class="meta">
-        <div><strong>${escapeHtml(t.t||"")}</strong></div>
-        <small>${escapeHtml(when)} • ${escapeHtml(rem)}</small>
-      </div>
-      <div class="actions">
-        <button title="Edit" onclick="editTask(${t.id})">✏️</button>
-        <button title="Calendar" onclick="downloadICS(${t.id})">📅</button>
-        <button title="Done" onclick="doneTask(${t.id})">✔</button>
-        <button title="Delete" onclick="deleteTask(${t.id})">🗑</button>
-      </div>
-    `;
-    taskList.appendChild(div);
-  });
+  const hasReminder = parseInt(t.r)>0;
+
+  div.innerHTML=`
+   <div class="meta">
+     <strong>${t.t}</strong>
+     <div class="icons">
+       ${hasReminder?"🔔":""}
+       📅
+     </div>
+     <small>${t.d||""} ${t.h||""}</small>
+   </div>
+   <div class="actions">
+     <button onclick="editTask(${t.id})">✏️</button>
+     <button onclick="confirmDelete(${t.id})">🗑</button>
+   </div>`;
+  taskList.appendChild(div);
+ });
 }
 
-/* =========================
-   NOTIFICATIONS (In-app)
-   ========================= */
-async function ensureNotificationPermission(){
-  if(!("Notification" in window)) return false;
-  if(Notification.permission === "granted") return true;
-  if(Notification.permission === "denied") return false;
-
-  // traži dozvolu tek kad korisnik uđe u Obveze (nije naporno)
-  try{
-    const perm = await Notification.requestPermission();
-    return perm === "granted";
-  }catch{
-    return false;
-  }
+function editTask(id){
+ const t=tasks.find(x=>x.id===id);
+ editTaskId=id;
+ taskTitle.value=t.t;taskDate.value=t.d;taskTime.value=t.h;taskReminder.value=t.r;
+ applyLang();
 }
 
-// provjera svake minute: ako je obveza blizu i reminder je postavljen
-// radi offline; najpouzdanije dok je app otvoren
-const firedKey = "reminders_fired_v1"; // map to avoid duplicate alerts
-function loadFiredMap(){
-  try{ return JSON.parse(localStorage.getItem(firedKey)||"{}"); }catch{ return {}; }
-}
-function saveFiredMap(map){
-  localStorage.setItem(firedKey, JSON.stringify(map));
+function confirmDelete(id){
+ if(confirm(T[lang].confirmDelete)){
+  tasks=tasks.filter(t=>t.id!==id);
+  localStorage.setItem("tasks",JSON.stringify(tasks));
+  renderTasks();
+ }
 }
 
-function taskDueMillis(task){
-  if(!task.d || !task.h) return null;
-  const iso = `${task.d}T${task.h}:00`;
-  const ms = Date.parse(iso);
-  return Number.isFinite(ms) ? ms : null;
-}
-
-async function checkReminders(){
-  const ok = await ensureNotificationPermission(); // may be false; still no crash
-  const now = Date.now();
-  const fired = loadFiredMap();
-
-  // reload tasks from storage to ensure latest edits
-  const current = JSON.parse(localStorage.getItem("tasks")||"[]");
-
-  for(const t of current){
-    const due = taskDueMillis(t);
-    const r = parseInt(t.r||0,10);
-    if(!due || !r) continue;
-
-    const fireAt = due - r*60*1000;
-    const windowMs = 60*1000; // 1 minute window
-
-    if(now >= fireAt && now < fireAt + windowMs){
-      const key = `${t.id}_${fireAt}`;
-      if(fired[key]) continue;
-
-      fired[key] = true;
-      saveFiredMap(fired);
-
-      if(ok){
-        try{
-          new Notification(T[lang].tasks, {
-            body: `${t.t} • ${t.d} ${t.h}`,
-            tag: key
-          });
-        }catch{
-          alert(`🔔 ${t.t}\n${t.d} ${t.h}`);
-        }
-      }else{
-        // fallback when permission not granted
-        alert(`🔔 ${t.t}\n${t.d} ${t.h}`);
-      }
-    }
-  }
-}
-
-/* Run reminders loop */
-setInterval(checkReminders, 60*1000);
-
-/* Ask permission when entering tasks screen */
-const _origShow = show;
-show = function(id){
-  document.activeElement.blur();
-  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
-  if(id==="screen-tasks"){
-    // trigger permission ask once user is in tasks
-    ensureNotificationPermission();
-    // immediate check (so user doesn't wait 1 min)
-    checkReminders();
-  }
-};
-
-/* =========================
-   CALENDAR EXPORT (.ics)
-   Works on iOS + Android
-   ========================= */
-function pad(n){ return String(n).padStart(2,"0"); }
-function toICSDateTime(dateStr, timeStr){
-  // local time -> format: YYYYMMDDTHHMMSS
-  const [y,m,d]=dateStr.split("-").map(Number);
-  const [hh,mm]=timeStr.split(":").map(Number);
-  return `${y}${pad(m)}${pad(d)}T${pad(hh)}${pad(mm)}00`;
-}
-
-function reminderToTriggerMinutes(mins){
-  // VALARM TRIGGER is negative relative duration
-  // e.g. -PT15M, -PT1H, -P1D
-  if(!mins) return null;
-  if(mins===1440) return "-P1D";
-  if(mins===60) return "-PT1H";
-  return `-PT${mins}M`;
-}
-
-function downloadICS(taskId){
-  const t = tasks.find(x=>x.id===taskId) || JSON.parse(localStorage.getItem("tasks")||"[]").find(x=>x.id===taskId);
-  if(!t || !t.d || !t.h) return;
-
-  const dtStart = toICSDateTime(t.d, t.h);
-  // default duration 30 min
-  const dtEnd = dtStart; // keep same time; calendar can edit duration
-  const uid = `${t.id}@lifekompas`;
-  const stamp = new Date().toISOString().replace(/[-:]/g,"").split(".")[0] + "Z";
-  const trigger = reminderToTriggerMinutes(parseInt(t.r||0,10));
-
-  const lines = [
-    "BEGIN:VCALENDAR",
-    "VERSION:2.0",
-    "PRODID:-//LifeKompas//Obveze//HR",
-    "CALSCALE:GREGORIAN",
-    "METHOD:PUBLISH",
-    "BEGIN:VEVENT",
-    `UID:${uid}`,
-    `DTSTAMP:${stamp}`,
-    `DTSTART:${dtStart}`,
-    `SUMMARY:${escapeICS(t.t||"Obveza")}`,
-    "END:VEVENT",
-    "END:VCALENDAR"
-  ];
-
-  // Insert VALARM if reminder set
-  if(trigger){
-    lines.splice(lines.indexOf("END:VEVENT"), 0,
-      "BEGIN:VALARM",
-      `TRIGGER:${trigger}`,
-      "ACTION:DISPLAY",
-      `DESCRIPTION:${escapeICS(t.t||"Obveza")}`,
-      "END:VALARM"
-    );
-  }
-
-  const ics = lines.join("\r\n");
-  const blob = new Blob([ics], {type:"text/calendar;charset=utf-8"});
-  const url = URL.createObjectURL(blob);
-
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "obveza.ics";
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(()=>URL.revokeObjectURL(url), 2000);
-}
-
-/* =========================
-   HELPERS
-   ========================= */
-function escapeHtml(s){
-  return String(s).replace(/[&<>"']/g, c => ({
-    "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
-  }[c]));
-}
-function escapeICS(s){
-  return String(s).replace(/\\/g,"\\\\").replace(/\n/g,"\\n").replace(/,/g,"\\,").replace(/;/g,"\\;");
-}
-
-/* INIT */
 window.addEventListener("load",()=>{
-  const s=localStorage.getItem("lang");
-  if(s) lang=s;
-  applyLang();
-  // quick reminder check on start
-  checkReminders();
+ const s=localStorage.getItem("lang");
+ if(s)lang=s;
+ applyLang();
 });
 </script>
 

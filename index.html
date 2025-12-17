@@ -166,14 +166,19 @@ select{
   <div class="content scroll">
     <label id="tTitleL"></label>
     <input id="taskTitle">
+
     <label id="tNoteL"></label>
     <textarea id="taskNote"></textarea>
+
     <label id="tCatL"></label>
     <select id="taskCategory"></select>
+
     <label id="tDateL"></label>
     <input type="date" id="taskDate">
+
     <label id="tTimeL"></label>
     <input type="time" id="taskTime">
+
     <label id="tRemL"></label>
     <select id="taskReminder">
       <option value="0">—</option>
@@ -182,8 +187,11 @@ select{
       <option value="30">30 min</option>
       <option value="60">1 h</option>
     </select>
+
     <button class="btn" id="saveTask" style="margin-top:1.2rem"></button>
+
     <div id="taskList"></div>
+    <div id="calendarInfo" class="note" style="display:none"></div>
   </div>
 </div>
 
@@ -198,7 +206,9 @@ const T={
   tDate:"Datum", tTime:"Vrijeme", tRem:"Podsjeti prije",
   tSave:"💾 Spremi obvezu",
   cats:{health:"Zdravlje",family:"Obitelj",finance:"Financije",personal:"Osobno",other:"Ostalo"},
-  notify:"Podsjetnik: ", calendarNote:"Kalendar služi samo zbog alarma."
+  notify:"Podsjetnik: ",
+  calendarNote:"Kalendar služi samo zbog alarma.",
+  calendarAdded:"📅 Dodano u kalendar (samo alarm)"
  },
  de:{ diary:"📔 Tagebuch", tasks:"📋 Aufgaben",
   dDate:"Datum", dTitle:"Titel", dText:"Text", dSave:"💾 Speichern",
@@ -206,7 +216,9 @@ const T={
   tDate:"Datum", tTime:"Zeit", tRem:"Erinnerung vor",
   tSave:"💾 Aufgabe speichern",
   cats:{health:"Gesundheit",family:"Familie",finance:"Finanzen",personal:"Persönlich",other:"Sonstiges"},
-  notify:"Erinnerung: ", calendarNote:"Kalender dient nur als Alarm."
+  notify:"Erinnerung: ",
+  calendarNote:"Kalender dient nur als Alarm.",
+  calendarAdded:"📅 Zum Kalender hinzugefügt (nur Alarm)"
  },
  en:{ diary:"📔 Diary", tasks:"📋 Tasks",
   dDate:"Date", dTitle:"Title", dText:"Text", dSave:"💾 Save",
@@ -214,7 +226,9 @@ const T={
   tDate:"Date", tTime:"Time", tRem:"Remind before",
   tSave:"💾 Save task",
   cats:{health:"Health",family:"Family",finance:"Finance",personal:"Personal",other:"Other"},
-  notify:"Reminder: ", calendarNote:"Calendar is used only for alarm."
+  notify:"Reminder: ",
+  calendarNote:"Calendar is used only for alarm.",
+  calendarAdded:"📅 Added to calendar (alarm only)"
  }
 };
 
@@ -312,6 +326,7 @@ function deleteDiary(date){
 /* TASKS */
 function loadTasks(){
  tasks=JSON.parse(localStorage.getItem("tasks")||"[]");
+ document.getElementById("calendarInfo").style.display="none";
  renderTasks();
 }
 saveTask.onclick=()=>{
@@ -330,9 +345,14 @@ saveTask.onclick=()=>{
  } else tasks.push(data);
 
  localStorage.setItem("tasks",JSON.stringify(tasks));
+
  taskTitle.value=taskNote.value=taskDate.value=taskTime.value="";
  taskReminder.value="0";
  renderTasks();
+
+ const info=document.getElementById("calendarInfo");
+ info.textContent=T[lang].calendarAdded;
+ info.style.display="block";
 };
 function renderTasks(){
  taskList.innerHTML="";

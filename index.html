@@ -63,7 +63,7 @@ body.static{
   padding:.9rem;
   border:none;
   border-radius:50px;
-  font-size:1.1rem;
+  font-size:1.05rem;
   font-weight:600;
   background:rgba(255,255,255,.85);
 }
@@ -106,6 +106,11 @@ select{
   background:none;
   border:none;
   font-size:1.2rem;
+}
+.note{
+  font-size:.8rem;
+  opacity:.7;
+  margin-top:.4rem;
 }
 </style>
 </head>
@@ -157,16 +162,29 @@ select{
   <div class="content scroll">
     <label id="tTitleL"></label>
     <input id="taskTitle">
+
     <label id="tNoteL"></label>
     <textarea id="taskNote"></textarea>
+
     <label id="tCatL"></label>
     <select id="taskCategory"></select>
+
     <label id="tDateL"></label>
     <input type="date" id="taskDate">
+
     <label id="tTimeL"></label>
     <input type="time" id="taskTime">
 
-    <!-- POMAKNUT GUMB -->
+    <!-- NOVO: REMINDER OFFSET -->
+    <label id="tRemL"></label>
+    <select id="taskReminder">
+      <option value="0">—</option>
+      <option value="5">5 min</option>
+      <option value="15">15 min</option>
+      <option value="30">30 min</option>
+      <option value="60">1 h</option>
+    </select>
+
     <button class="btn" id="saveTask" style="margin-top:1.2rem"></button>
 
     <div id="taskList"></div>
@@ -180,23 +198,29 @@ const T={
  hr:{ diary:"📔 Dnevnik", tasks:"📋 Obveze",
   dDate:"Datum", dTitle:"Naslov", dText:"Tekst", dSave:"💾 Spremi",
   tTitle:"Obveza", tNote:"Bilješka", tCat:"Kategorija",
-  tDate:"Datum", tTime:"Vrijeme", tSave:"💾 Spremi obvezu",
+  tDate:"Datum", tTime:"Vrijeme", tRem:"Podsjeti prije",
+  tSave:"💾 Spremi obvezu",
   cats:{health:"Zdravlje",family:"Obitelj",finance:"Financije",personal:"Osobno",other:"Ostalo"},
-  notify:"⏰ Podsjetnik: "
+  notify:"Podsjetnik: ",
+  calendarNote:"Kalendar služi samo zbog alarma."
  },
  de:{ diary:"📔 Tagebuch", tasks:"📋 Aufgaben",
   dDate:"Datum", dTitle:"Titel", dText:"Text", dSave:"💾 Speichern",
   tTitle:"Aufgabe", tNote:"Notiz", tCat:"Kategorie",
-  tDate:"Datum", tTime:"Zeit", tSave:"💾 Aufgabe speichern",
+  tDate:"Datum", tTime:"Zeit", tRem:"Erinnerung vor",
+  tSave:"💾 Aufgabe speichern",
   cats:{health:"Gesundheit",family:"Familie",finance:"Finanzen",personal:"Persönlich",other:"Sonstiges"},
-  notify:"⏰ Erinnerung: "
+  notify:"Erinnerung: ",
+  calendarNote:"Kalender dient nur als Alarm."
  },
  en:{ diary:"📔 Diary", tasks:"📋 Tasks",
   dDate:"Date", dTitle:"Title", dText:"Text", dSave:"💾 Save",
   tTitle:"Task", tNote:"Note", tCat:"Category",
-  tDate:"Date", tTime:"Time", tSave:"💾 Save task",
+  tDate:"Date", tTime:"Time", tRem:"Remind before",
+  tSave:"💾 Save task",
   cats:{health:"Health",family:"Family",finance:"Finance",personal:"Personal",other:"Other"},
-  notify:"⏰ Reminder: "
+  notify:"Reminder: ",
+  calendarNote:"Calendar is used only for alarm."
  }
 };
 
@@ -221,6 +245,7 @@ function applyLang(){
  tCatL.textContent=T[lang].tCat;
  tDateL.textContent=T[lang].tDate;
  tTimeL.textContent=T[lang].tTime;
+ tRemL.textContent=T[lang].tRem;
  saveTask.textContent=T[lang].tSave;
 
  taskCategory.innerHTML="";
@@ -231,7 +256,7 @@ function applyLang(){
  }
 }
 
-/* LANGUAGE SELECT */
+/* LANGUAGE */
 document.querySelectorAll("[data-lang]").forEach(b=>{
  b.onclick=()=>{
   lang=b.dataset.lang;
@@ -288,7 +313,7 @@ function deleteDiary(date){
  loadDiary();
 }
 
-/* TASKS + NOTIFICATION */
+/* TASKS + NOTIFICATION + CALENDAR */
 function loadTasks(){
  tasks=JSON.parse(localStorage.getItem("tasks")||"[]");
  renderTasks();
@@ -300,7 +325,8 @@ saveTask.onclick=()=>{
   note:taskNote.value,
   cat:taskCategory.value,
   date:taskDate.value,
-  time:taskTime.value
+  time:taskTime.value,
+  reminder:+taskReminder.value
  };
  if(editTaskId){
   tasks=tasks.map(t=>t.id===editTaskId?data:t);
@@ -309,22 +335,50 @@ saveTask.onclick=()=>{
  localStorage.setItem("tasks",JSON.stringify(tasks));
 
  scheduleNotification(data);
+ exportToCalendar(data);
+
  taskTitle.value=taskNote.value=taskDate.value=taskTime.value="";
+ taskReminder.value="0";
  renderTasks();
 };
+
 function scheduleNotification(task){
  if(!("Notification" in window)) return;
  Notification.requestPermission().then(p=>{
   if(p!=="granted") return;
-  const target=new Date(task.date+"T"+task.time);
-  const delay=target-Date.now();
+  if(!task.reminder) return;
+
+  const eventTime=new Date(task.date+"T"+task.time);
+  const notifyTime=eventTime - task.reminder*60000;
+  const delay=notifyTime - Date.now();
+
   if(delay>0){
    setTimeout(()=>{
-    new Notification(T[lang].notify+task.title);
+    new Notification(T[lang].notify + task.title);
    },delay);
   }
  });
 }
+
+function exportToCalendar(task){
+ const start=new Date(task.date+"T"+task.time);
+ const end=new Date(start.getTime()+30*60000);
+ const ics=`BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+SUMMARY:${task.title}
+DTSTART:${start.toISOString().replace(/[-:]/g,"").split(".")[0]}Z
+DTEND:${end.toISOString().replace(/[-:]/g,"").split(".")[0]}Z
+DESCRIPTION:${T[lang].calendarNote}
+END:VEVENT
+END:VCALENDAR`;
+ const blob=new Blob([ics],{type:"text/calendar"});
+ const a=document.createElement("a");
+ a.href=URL.createObjectURL(blob);
+ a.download="lifekompas-alarm.ics";
+ a.click();
+}
+
 function renderTasks(){
  taskList.innerHTML="";
  tasks.forEach(t=>{
@@ -336,7 +390,8 @@ function renderTasks(){
    <div class="actions">
     <button onclick="editTask(${t.id})">✏️</button>
     <button onclick="deleteTask(${t.id})">🗑</button>
-   </div>`;
+   </div>
+   <div class="note">${T[lang].calendarNote}</div>`;
   taskList.appendChild(el);
  });
 }
@@ -348,6 +403,7 @@ function editTask(id){
  taskCategory.value=t.cat;
  taskDate.value=t.date;
  taskTime.value=t.time;
+ taskReminder.value=t.reminder||"0";
 }
 function deleteTask(id){
  tasks=tasks.filter(t=>t.id!==id);

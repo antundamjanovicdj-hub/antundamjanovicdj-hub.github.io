@@ -16,7 +16,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sa
 body.home{
   background:linear-gradient(120deg,#1f6b4a,#2e8b57,#3fa37a,#2e8b57);
   background-size:400% 400%;
-  animation:bgMove 12s ease-in-out infinite;
+  animation:bgMove 12s infinite;
 }
 body.static{
   background:linear-gradient(to top,#d0f0c0,#a8e6cf,#61c09a,#2e8b57);
@@ -29,16 +29,13 @@ body.static{
 
 .app{position:relative;height:100%}
 
-/* SCREENS */
 .screen{
   position:absolute;inset:0;
   display:flex;justify-content:center;align-items:center;
   opacity:0;pointer-events:none;
-  transition:.25s ease;
 }
 .screen.active{opacity:1;pointer-events:auto}
 
-/* CONTENT */
 .content{
   width:100%;max-width:420px;
   padding:2rem 1.5rem;text-align:center;
@@ -49,59 +46,66 @@ body.static{
   -webkit-overflow-scrolling:touch;
 }
 
-/* TITLE */
 .title{
   font-size:4rem;font-weight:900;line-height:1;margin-bottom:2rem;
 }
 .title span{
   display:block;
   background:linear-gradient(180deg,#000 40%,#ff8c00 60%,#ff4500);
-  background-size:100% 200%;
   -webkit-background-clip:text;
   -webkit-text-fill-color:transparent;
-  animation:fireGlow 3s infinite;
-}
-@keyframes fireGlow{
-  0%{background-position:0% 0%}
-  50%{background-position:0% 100%}
-  100%{background-position:0% 0%}
 }
 
 /* UI */
-.buttons{display:flex;flex-direction:column;gap:1rem;align-items:center}
+.buttons{display:flex;flex-direction:column;gap:1rem}
 .btn{
-  width:100%;max-width:280px;
-  padding:.9rem;border:none;border-radius:50px;
-  font-size:1.1rem;font-weight:600;
+  width:100%;
+  padding:.9rem;
+  border:none;
+  border-radius:50px;
+  font-size:1.1rem;
+  font-weight:600;
   background:rgba(255,255,255,.85);
 }
 
 .back{
-  position:fixed;top:1rem;right:1rem;z-index:9999;
+  position:fixed;
+  top:1rem;right:1rem;
   border:none;border-radius:20px;
   padding:.4rem .9rem;
   background:rgba(255,255,255,.9);
 }
 
-/* FORM */
-label{display:block;text-align:left;font-size:.9rem;margin-top:1rem;opacity:.8}
-input,textarea{
-  width:100%;padding:12px;margin-top:4px;
-  border-radius:12px;border:none;font-size:16px;
+label{display:block;text-align:left;font-size:.9rem;margin-top:1rem}
+input,textarea,select{
+  width:100%;
+  padding:12px;
+  border-radius:12px;
+  border:none;
+  font-size:16px;
 }
-textarea{resize:vertical}
+select{
+  appearance:none;
+  -webkit-appearance:none;
+  background:white;
+}
 
-/* LIST */
 .item{
   background:rgba(255,255,255,.9);
   border-radius:14px;
-  padding:12px;margin-top:12px;text-align:left;
+  padding:12px;
+  margin-top:12px;
+  text-align:left;
 }
-.item-actions{
-  display:flex;justify-content:space-between;margin-top:8px;
+.actions{
+  display:flex;
+  justify-content:space-between;
+  margin-top:8px;
 }
-.item-actions button{
-  border:none;background:none;font-size:1.2rem;
+.actions button{
+  background:none;
+  border:none;
+  font-size:1.2rem;
 }
 </style>
 </head>
@@ -114,9 +118,9 @@ textarea{resize:vertical}
   <div class="content">
     <h1 class="title"><span>Life</span><span>Kompas</span></h1>
     <div class="buttons">
-      <button class="btn" id="langHr">🇭🇷 Hrvatski</button>
-      <button class="btn" id="langDe">🇩🇪 Deutsch</button>
-      <button class="btn" id="langEn">🇬🇧 English</button>
+      <button class="btn" data-lang="hr">🇭🇷 Hrvatski</button>
+      <button class="btn" data-lang="de">🇩🇪 Deutsch</button>
+      <button class="btn" data-lang="en">🇬🇧 English</button>
     </div>
   </div>
 </div>
@@ -126,8 +130,8 @@ textarea{resize:vertical}
   <button class="back" id="backMenu">←</button>
   <div class="content">
     <div class="buttons">
-      <button class="btn" id="btnDiary">📔 Dnevnik</button>
-      <button class="btn" id="btnTasks">📋 Obveze</button>
+      <button class="btn" id="btnDiary"></button>
+      <button class="btn" id="btnTasks"></button>
     </div>
   </div>
 </div>
@@ -136,18 +140,13 @@ textarea{resize:vertical}
 <div id="screen-diary" class="screen">
   <button class="back" id="backDiary">←</button>
   <div class="content scroll">
-
-    <label>Datum</label>
+    <label id="dDateL"></label>
     <input type="date" id="dDate">
-
-    <label>Naslov</label>
+    <label id="dTitleL"></label>
     <input id="dTitle">
-
-    <label>Tekst</label>
-    <textarea id="dText" rows="6"></textarea>
-
-    <button class="btn" id="btnSaveDiary">💾 Spremi / Uredi</button>
-
+    <label id="dTextL"></label>
+    <textarea id="dText" rows="5"></textarea>
+    <button class="btn" id="saveDiary"></button>
     <div id="diaryList"></div>
   </div>
 </div>
@@ -156,30 +155,17 @@ textarea{resize:vertical}
 <div id="screen-tasks" class="screen">
   <button class="back" id="backTasks">←</button>
   <div class="content scroll">
-
-    <label>Obveza</label>
+    <label id="tTitleL"></label>
     <input id="taskTitle">
-
-    <label>Bilješka</label>
-    <textarea id="taskNote" rows="3"></textarea>
-
-    <label>Kategorija</label>
-    <select id="taskCategory">
-      <option value="health">Zdravlje</option>
-      <option value="family">Obitelj</option>
-      <option value="finance">Financije</option>
-      <option value="personal">Osobno</option>
-      <option value="other">Ostalo</option>
-    </select>
-
-    <label>Datum</label>
+    <label id="tNoteL"></label>
+    <textarea id="taskNote"></textarea>
+    <label id="tCatL"></label>
+    <select id="taskCategory"></select>
+    <label id="tDateL"></label>
     <input type="date" id="taskDate">
-
-    <label>Vrijeme</label>
+    <label id="tTimeL"></label>
     <input type="time" id="taskTime">
-
-    <button class="btn" id="btnSaveTask">💾 Spremi obvezu</button>
-
+    <button class="btn" id="saveTask"></button>
     <div id="taskList"></div>
   </div>
 </div>
@@ -187,20 +173,71 @@ textarea{resize:vertical}
 </div>
 
 <script>
-let tasks=[], diaries=[];
+const T={
+ hr:{ diary:"📔 Dnevnik", tasks:"📋 Obveze",
+  dDate:"Datum", dTitle:"Naslov", dText:"Tekst", dSave:"💾 Spremi",
+  tTitle:"Obveza", tNote:"Bilješka", tCat:"Kategorija",
+  tDate:"Datum", tTime:"Vrijeme", tSave:"💾 Spremi obvezu",
+  cats:{health:"Zdravlje",family:"Obitelj",finance:"Financije",personal:"Osobno",other:"Ostalo"}
+ },
+ de:{ diary:"📔 Tagebuch", tasks:"📋 Aufgaben",
+  dDate:"Datum", dTitle:"Titel", dText:"Text", dSave:"💾 Speichern",
+  tTitle:"Aufgabe", tNote:"Notiz", tCat:"Kategorie",
+  tDate:"Datum", tTime:"Zeit", tSave:"💾 Aufgabe speichern",
+  cats:{health:"Gesundheit",family:"Familie",finance:"Finanzen",personal:"Persönlich",other:"Sonstiges"}
+ },
+ en:{ diary:"📔 Diary", tasks:"📋 Tasks",
+  dDate:"Date", dTitle:"Title", dText:"Text", dSave:"💾 Save",
+  tTitle:"Task", tNote:"Note", tCat:"Category",
+  tDate:"Date", tTime:"Time", tSave:"💾 Save task",
+  cats:{health:"Health",family:"Family",finance:"Finance",personal:"Personal",other:"Other"}
+ }
+};
 
-/* NAV */
+let lang="hr", diaries=[], tasks=[], editTaskId=null;
+
 function show(id){
  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
  document.getElementById(id).classList.add("active");
 }
 
-/* LANGUAGE */
-langHr.onclick=()=>{show("screen-menu");document.body.className="static"};
-langDe.onclick=langHr.onclick;
-langEn.onclick=langHr.onclick;
+function applyLang(){
+ btnDiary.textContent=T[lang].diary;
+ btnTasks.textContent=T[lang].tasks;
 
-backMenu.onclick=()=>{show("screen-lang");document.body.className="home"};
+ dDateL.textContent=T[lang].dDate;
+ dTitleL.textContent=T[lang].dTitle;
+ dTextL.textContent=T[lang].dText;
+ saveDiary.textContent=T[lang].dSave;
+
+ tTitleL.textContent=T[lang].tTitle;
+ tNoteL.textContent=T[lang].tNote;
+ tCatL.textContent=T[lang].tCat;
+ tDateL.textContent=T[lang].tDate;
+ tTimeL.textContent=T[lang].tTime;
+ saveTask.textContent=T[lang].tSave;
+
+ taskCategory.innerHTML="";
+ for(const k in T[lang].cats){
+  const o=document.createElement("option");
+  o.value=k;o.textContent=T[lang].cats[k];
+  taskCategory.appendChild(o);
+ }
+}
+
+/* LANGUAGE SELECT */
+document.querySelectorAll("[data-lang]").forEach(b=>{
+ b.onclick=()=>{
+  lang=b.dataset.lang;
+  localStorage.setItem("lang",lang);
+  applyLang();
+  document.body.className="static";
+  show("screen-menu");
+ };
+});
+
+/* MENU */
+backMenu.onclick=()=>{document.body.className="home";show("screen-lang")};
 btnDiary.onclick=()=>{loadDiary();show("screen-diary")};
 btnTasks.onclick=()=>{loadTasks();show("screen-tasks")};
 backDiary.onclick=()=>show("screen-menu");
@@ -209,33 +246,23 @@ backTasks.onclick=()=>show("screen-menu");
 /* DIARY */
 function loadDiary(){
  diaries=JSON.parse(localStorage.getItem("diaries")||"[]");
+ diaries.sort((a,b)=>b.date.localeCompare(a.date));
  renderDiary();
 }
-btnSaveDiary.onclick=()=>{
- const d={
-  date:dDate.value,
-  title:dTitle.value,
-  text:dText.value
- };
+saveDiary.onclick=()=>{
+ const d={date:dDate.value,title:dTitle.value,text:dText.value};
  diaries=diaries.filter(x=>x.date!==d.date);
  diaries.push(d);
  localStorage.setItem("diaries",JSON.stringify(diaries));
- renderDiary();
+ loadDiary();
 };
-
 function renderDiary(){
  diaryList.innerHTML="";
- diaries.sort((a,b)=>b.date.localeCompare(a.date));
  diaries.forEach(d=>{
   const el=document.createElement("div");
   el.className="item";
-  el.innerHTML=`
-   <strong>${d.date}</strong><br>
-   <strong>${d.title}</strong><br>
-   <small>${d.text}</small>
-   <div class="item-actions">
-     <button onclick="editDiary('${d.date}')">✏️</button>
-   </div>`;
+  el.innerHTML=`<strong>${d.date}</strong><br><strong>${d.title}</strong><br>${d.text}
+    <div class="actions"><button onclick="editDiary('${d.date}')">✏️</button></div>`;
   diaryList.appendChild(el);
  });
 }
@@ -251,16 +278,15 @@ function loadTasks(){
  tasks=JSON.parse(localStorage.getItem("tasks")||"[]");
  renderTasks();
 }
-btnSaveTask.onclick=()=>{
- tasks.push({
-  id:Date.now(),
-  title:taskTitle.value,
-  note:taskNote.value,
-  cat:taskCategory.value,
-  date:taskDate.value,
-  time:taskTime.value
- });
+saveTask.onclick=()=>{
+ const data={id:editTaskId||Date.now(),title:taskTitle.value,note:taskNote.value,
+ cat:taskCategory.value,date:taskDate.value,time:taskTime.value};
+ if(editTaskId){
+  tasks=tasks.map(t=>t.id===editTaskId?data:t);
+  editTaskId=null;
+ } else tasks.push(data);
  localStorage.setItem("tasks",JSON.stringify(tasks));
+ taskTitle.value=taskNote.value=taskDate.value=taskTime.value="";
  renderTasks();
 };
 function renderTasks(){
@@ -268,20 +294,36 @@ function renderTasks(){
  tasks.forEach(t=>{
   const el=document.createElement("div");
   el.className="item";
-  el.innerHTML=`
-   <strong>${t.title}</strong><br>
-   <small>${t.date} ${t.time}</small>
-   <div class="item-actions">
-     <button onclick="deleteTask(${t.id})">🗑</button>
+  el.innerHTML=`<strong>${t.title}</strong> (${T[lang].cats[t.cat]})<br>
+   ${t.date} ${t.time}
+   <div class="actions">
+    <button onclick="editTask(${t.id})">✏️</button>
+    <button onclick="deleteTask(${t.id})">🗑</button>
    </div>`;
   taskList.appendChild(el);
  });
+}
+function editTask(id){
+ const t=tasks.find(x=>x.id===id);
+ editTaskId=id;
+ taskTitle.value=t.title;
+ taskNote.value=t.note;
+ taskCategory.value=t.cat;
+ taskDate.value=t.date;
+ taskTime.value=t.time;
 }
 function deleteTask(id){
  tasks=tasks.filter(t=>t.id!==id);
  localStorage.setItem("tasks",JSON.stringify(tasks));
  renderTasks();
 }
+
+/* INIT */
+window.onload=()=>{
+ const s=localStorage.getItem("lang");
+ if(s&&T[s])lang=s;
+ applyLang();
+};
 </script>
 
 </body>

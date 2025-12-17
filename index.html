@@ -68,15 +68,10 @@ body.static{
   background:rgba(255,255,255,.85);
 }
 
-/* ⬅⬅⬅ iOS FIX */
 .back{
   position:fixed;
-  top:1rem;
-  right:1rem;
-  z-index:9999;
-  pointer-events:auto;
-  border:none;
-  border-radius:20px;
+  top:1rem;right:1rem;
+  border:none;border-radius:20px;
   padding:.4rem .9rem;
   background:rgba(255,255,255,.9);
 }
@@ -180,6 +175,7 @@ select{
     <label id="tTimeL"></label>
     <input type="time" id="taskTime">
 
+    <!-- NOVO: REMINDER OFFSET -->
     <label id="tRemL"></label>
     <select id="taskReminder">
       <option value="0">—</option>
@@ -190,6 +186,7 @@ select{
     </select>
 
     <button class="btn" id="saveTask" style="margin-top:1.2rem"></button>
+
     <div id="taskList"></div>
   </div>
 </div>
@@ -197,12 +194,229 @@ select{
 </div>
 
 <script>
-/* --- OSTATK TVOG JS-a JE 100 % ISTI --- */
-/* --- JEDINA PROMJENA JE OVDJE ISPOD --- */
+const T={
+ hr:{ diary:"📔 Dnevnik", tasks:"📋 Obveze",
+  dDate:"Datum", dTitle:"Naslov", dText:"Tekst", dSave:"💾 Spremi",
+  tTitle:"Obveza", tNote:"Bilješka", tCat:"Kategorija",
+  tDate:"Datum", tTime:"Vrijeme", tRem:"Podsjeti prije",
+  tSave:"💾 Spremi obvezu",
+  cats:{health:"Zdravlje",family:"Obitelj",finance:"Financije",personal:"Osobno",other:"Ostalo"},
+  notify:"Podsjetnik: ",
+  calendarNote:"Kalendar služi samo zbog alarma."
+ },
+ de:{ diary:"📔 Tagebuch", tasks:"📋 Aufgaben",
+  dDate:"Datum", dTitle:"Titel", dText:"Text", dSave:"💾 Speichern",
+  tTitle:"Aufgabe", tNote:"Notiz", tCat:"Kategorie",
+  tDate:"Datum", tTime:"Zeit", tRem:"Erinnerung vor",
+  tSave:"💾 Aufgabe speichern",
+  cats:{health:"Gesundheit",family:"Familie",finance:"Finanzen",personal:"Persönlich",other:"Sonstiges"},
+  notify:"Erinnerung: ",
+  calendarNote:"Kalender dient nur als Alarm."
+ },
+ en:{ diary:"📔 Diary", tasks:"📋 Tasks",
+  dDate:"Date", dTitle:"Title", dText:"Text", dSave:"💾 Save",
+  tTitle:"Task", tNote:"Note", tCat:"Category",
+  tDate:"Date", tTime:"Time", tRem:"Remind before",
+  tSave:"💾 Save task",
+  cats:{health:"Health",family:"Family",finance:"Finance",personal:"Personal",other:"Other"},
+  notify:"Reminder: ",
+  calendarNote:"Calendar is used only for alarm."
+ }
+};
 
-document.getElementById("backTasks").addEventListener("click", () => {
+let lang="hr", diaries=[], tasks=[], editTaskId=null;
+
+/* NAV */
+function show(id){
+ document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
+}
+
+/* LANG */
+function applyLang(){
+ btnDiary.textContent=T[lang].diary;
+ btnTasks.textContent=T[lang].tasks;
+ dDateL.textContent=T[lang].dDate;
+ dTitleL.textContent=T[lang].dTitle;
+ dTextL.textContent=T[lang].dText;
+ saveDiary.textContent=T[lang].dSave;
+ tTitleL.textContent=T[lang].tTitle;
+ tNoteL.textContent=T[lang].tNote;
+ tCatL.textContent=T[lang].tCat;
+ tDateL.textContent=T[lang].tDate;
+ tTimeL.textContent=T[lang].tTime;
+ tRemL.textContent=T[lang].tRem;
+ saveTask.textContent=T[lang].tSave;
+
+ taskCategory.innerHTML="";
+ for(const k in T[lang].cats){
+  const o=document.createElement("option");
+  o.value=k;o.textContent=T[lang].cats[k];
+  taskCategory.appendChild(o);
+ }
+}
+
+/* LANGUAGE */
+document.querySelectorAll("[data-lang]").forEach(b=>{
+ b.onclick=()=>{
+  lang=b.dataset.lang;
+  localStorage.setItem("lang",lang);
+  applyLang();
+  document.body.className="static";
   show("screen-menu");
+ };
 });
+
+/* MENU */
+backMenu.onclick=()=>{document.body.className="home";show("screen-lang")};
+btnDiary.onclick=()=>{loadDiary();show("screen-diary")};
+btnTasks.onclick=()=>{loadTasks();show("screen-tasks")};
+backDiary.onclick=()=>show("screen-menu");
+backTasks.onclick=()=>show("screen-menu");
+
+/* DIARY */
+function loadDiary(){
+ diaries=JSON.parse(localStorage.getItem("diaries")||"[]");
+ diaries.sort((a,b)=>b.date.localeCompare(a.date));
+ renderDiary();
+}
+saveDiary.onclick=()=>{
+ const d={date:dDate.value,title:dTitle.value,text:dText.value};
+ diaries=diaries.filter(x=>x.date!==d.date);
+ diaries.push(d);
+ localStorage.setItem("diaries",JSON.stringify(diaries));
+ loadDiary();
+};
+function renderDiary(){
+ diaryList.innerHTML="";
+ diaries.forEach(d=>{
+  const el=document.createElement("div");
+  el.className="item";
+  el.innerHTML=`
+   <strong>${d.date}</strong><br><strong>${d.title}</strong><br>${d.text}
+   <div class="actions">
+    <button onclick="editDiary('${d.date}')">✏️</button>
+    <button onclick="deleteDiary('${d.date}')">🗑</button>
+   </div>`;
+  diaryList.appendChild(el);
+ });
+}
+function editDiary(date){
+ const d=diaries.find(x=>x.date===date);
+ dDate.value=d.date;
+ dTitle.value=d.title;
+ dText.value=d.text;
+}
+function deleteDiary(date){
+ diaries=diaries.filter(d=>d.date!==date);
+ localStorage.setItem("diaries",JSON.stringify(diaries));
+ loadDiary();
+}
+
+/* TASKS + NOTIFICATION + CALENDAR */
+function loadTasks(){
+ tasks=JSON.parse(localStorage.getItem("tasks")||"[]");
+ renderTasks();
+}
+saveTask.onclick=()=>{
+ const data={
+  id:editTaskId||Date.now(),
+  title:taskTitle.value,
+  note:taskNote.value,
+  cat:taskCategory.value,
+  date:taskDate.value,
+  time:taskTime.value,
+  reminder:+taskReminder.value
+ };
+ if(editTaskId){
+  tasks=tasks.map(t=>t.id===editTaskId?data:t);
+  editTaskId=null;
+ } else tasks.push(data);
+ localStorage.setItem("tasks",JSON.stringify(tasks));
+
+ scheduleNotification(data);
+ exportToCalendar(data);
+
+ taskTitle.value=taskNote.value=taskDate.value=taskTime.value="";
+ taskReminder.value="0";
+ renderTasks();
+};
+
+function scheduleNotification(task){
+ if(!("Notification" in window)) return;
+ Notification.requestPermission().then(p=>{
+  if(p!=="granted") return;
+  if(!task.reminder) return;
+
+  const eventTime=new Date(task.date+"T"+task.time);
+  const notifyTime=eventTime - task.reminder*60000;
+  const delay=notifyTime - Date.now();
+
+  if(delay>0){
+   setTimeout(()=>{
+    new Notification(T[lang].notify + task.title);
+   },delay);
+  }
+ });
+}
+
+function exportToCalendar(task){
+ const start=new Date(task.date+"T"+task.time);
+ const end=new Date(start.getTime()+30*60000);
+ const ics=`BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+SUMMARY:${task.title}
+DTSTART:${start.toISOString().replace(/[-:]/g,"").split(".")[0]}Z
+DTEND:${end.toISOString().replace(/[-:]/g,"").split(".")[0]}Z
+DESCRIPTION:${T[lang].calendarNote}
+END:VEVENT
+END:VCALENDAR`;
+ const blob=new Blob([ics],{type:"text/calendar"});
+ const a=document.createElement("a");
+ a.href=URL.createObjectURL(blob);
+ a.download="lifekompas-alarm.ics";
+ a.click();
+}
+
+function renderTasks(){
+ taskList.innerHTML="";
+ tasks.forEach(t=>{
+  const el=document.createElement("div");
+  el.className="item";
+  el.innerHTML=`
+   <strong>${t.title}</strong> (${T[lang].cats[t.cat]})<br>
+   ${t.date} ${t.time}
+   <div class="actions">
+    <button onclick="editTask(${t.id})">✏️</button>
+    <button onclick="deleteTask(${t.id})">🗑</button>
+   </div>
+   <div class="note">${T[lang].calendarNote}</div>`;
+  taskList.appendChild(el);
+ });
+}
+function editTask(id){
+ const t=tasks.find(x=>x.id===id);
+ editTaskId=id;
+ taskTitle.value=t.title;
+ taskNote.value=t.note;
+ taskCategory.value=t.cat;
+ taskDate.value=t.date;
+ taskTime.value=t.time;
+ taskReminder.value=t.reminder||"0";
+}
+function deleteTask(id){
+ tasks=tasks.filter(t=>t.id!==id);
+ localStorage.setItem("tasks",JSON.stringify(tasks));
+ renderTasks();
+}
+
+/* INIT */
+window.onload=()=>{
+ const s=localStorage.getItem("lang");
+ if(s&&T[s])lang=s;
+ applyLang();
+};
 </script>
 
 </body>

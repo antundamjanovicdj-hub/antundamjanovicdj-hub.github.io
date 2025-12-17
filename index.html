@@ -165,7 +165,10 @@ select{
     <input type="date" id="taskDate">
     <label id="tTimeL"></label>
     <input type="time" id="taskTime">
-    <button class="btn" id="saveTask"></button>
+
+    <!-- POMAKNUT GUMB -->
+    <button class="btn" id="saveTask" style="margin-top:1.2rem"></button>
+
     <div id="taskList"></div>
   </div>
 </div>
@@ -178,38 +181,41 @@ const T={
   dDate:"Datum", dTitle:"Naslov", dText:"Tekst", dSave:"💾 Spremi",
   tTitle:"Obveza", tNote:"Bilješka", tCat:"Kategorija",
   tDate:"Datum", tTime:"Vrijeme", tSave:"💾 Spremi obvezu",
-  cats:{health:"Zdravlje",family:"Obitelj",finance:"Financije",personal:"Osobno",other:"Ostalo"}
+  cats:{health:"Zdravlje",family:"Obitelj",finance:"Financije",personal:"Osobno",other:"Ostalo"},
+  notify:"⏰ Podsjetnik: "
  },
  de:{ diary:"📔 Tagebuch", tasks:"📋 Aufgaben",
   dDate:"Datum", dTitle:"Titel", dText:"Text", dSave:"💾 Speichern",
   tTitle:"Aufgabe", tNote:"Notiz", tCat:"Kategorie",
   tDate:"Datum", tTime:"Zeit", tSave:"💾 Aufgabe speichern",
-  cats:{health:"Gesundheit",family:"Familie",finance:"Finanzen",personal:"Persönlich",other:"Sonstiges"}
+  cats:{health:"Gesundheit",family:"Familie",finance:"Finanzen",personal:"Persönlich",other:"Sonstiges"},
+  notify:"⏰ Erinnerung: "
  },
  en:{ diary:"📔 Diary", tasks:"📋 Tasks",
   dDate:"Date", dTitle:"Title", dText:"Text", dSave:"💾 Save",
   tTitle:"Task", tNote:"Note", tCat:"Category",
   tDate:"Date", tTime:"Time", tSave:"💾 Save task",
-  cats:{health:"Health",family:"Family",finance:"Finance",personal:"Personal",other:"Other"}
+  cats:{health:"Health",family:"Family",finance:"Finance",personal:"Personal",other:"Other"},
+  notify:"⏰ Reminder: "
  }
 };
 
 let lang="hr", diaries=[], tasks=[], editTaskId=null;
 
+/* NAV */
 function show(id){
  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
  document.getElementById(id).classList.add("active");
 }
 
+/* LANG */
 function applyLang(){
  btnDiary.textContent=T[lang].diary;
  btnTasks.textContent=T[lang].tasks;
-
  dDateL.textContent=T[lang].dDate;
  dTitleL.textContent=T[lang].dTitle;
  dTextL.textContent=T[lang].dText;
  saveDiary.textContent=T[lang].dSave;
-
  tTitleL.textContent=T[lang].tTitle;
  tNoteL.textContent=T[lang].tNote;
  tCatL.textContent=T[lang].tCat;
@@ -261,8 +267,12 @@ function renderDiary(){
  diaries.forEach(d=>{
   const el=document.createElement("div");
   el.className="item";
-  el.innerHTML=`<strong>${d.date}</strong><br><strong>${d.title}</strong><br>${d.text}
-    <div class="actions"><button onclick="editDiary('${d.date}')">✏️</button></div>`;
+  el.innerHTML=`
+   <strong>${d.date}</strong><br><strong>${d.title}</strong><br>${d.text}
+   <div class="actions">
+    <button onclick="editDiary('${d.date}')">✏️</button>
+    <button onclick="deleteDiary('${d.date}')">🗑</button>
+   </div>`;
   diaryList.appendChild(el);
  });
 }
@@ -272,29 +282,56 @@ function editDiary(date){
  dTitle.value=d.title;
  dText.value=d.text;
 }
+function deleteDiary(date){
+ diaries=diaries.filter(d=>d.date!==date);
+ localStorage.setItem("diaries",JSON.stringify(diaries));
+ loadDiary();
+}
 
-/* TASKS */
+/* TASKS + NOTIFICATION */
 function loadTasks(){
  tasks=JSON.parse(localStorage.getItem("tasks")||"[]");
  renderTasks();
 }
 saveTask.onclick=()=>{
- const data={id:editTaskId||Date.now(),title:taskTitle.value,note:taskNote.value,
- cat:taskCategory.value,date:taskDate.value,time:taskTime.value};
+ const data={
+  id:editTaskId||Date.now(),
+  title:taskTitle.value,
+  note:taskNote.value,
+  cat:taskCategory.value,
+  date:taskDate.value,
+  time:taskTime.value
+ };
  if(editTaskId){
   tasks=tasks.map(t=>t.id===editTaskId?data:t);
   editTaskId=null;
  } else tasks.push(data);
  localStorage.setItem("tasks",JSON.stringify(tasks));
+
+ scheduleNotification(data);
  taskTitle.value=taskNote.value=taskDate.value=taskTime.value="";
  renderTasks();
 };
+function scheduleNotification(task){
+ if(!("Notification" in window)) return;
+ Notification.requestPermission().then(p=>{
+  if(p!=="granted") return;
+  const target=new Date(task.date+"T"+task.time);
+  const delay=target-Date.now();
+  if(delay>0){
+   setTimeout(()=>{
+    new Notification(T[lang].notify+task.title);
+   },delay);
+  }
+ });
+}
 function renderTasks(){
  taskList.innerHTML="";
  tasks.forEach(t=>{
   const el=document.createElement("div");
   el.className="item";
-  el.innerHTML=`<strong>${t.title}</strong> (${T[lang].cats[t.cat]})<br>
+  el.innerHTML=`
+   <strong>${t.title}</strong> (${T[lang].cats[t.cat]})<br>
    ${t.date} ${t.time}
    <div class="actions">
     <button onclick="editTask(${t.id})">✏️</button>

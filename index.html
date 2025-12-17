@@ -206,7 +206,6 @@ const T={
   tDate:"Datum", tTime:"Vrijeme", tRem:"Podsjeti prije",
   tSave:"💾 Spremi obvezu",
   cats:{health:"Zdravlje",family:"Obitelj",finance:"Financije",personal:"Osobno",other:"Ostalo"},
-  notify:"Podsjetnik: ",
   calendarNote:"Kalendar služi samo zbog alarma.",
   calendarAdded:"📅 Dodano u kalendar (samo alarm)"
  },
@@ -216,7 +215,6 @@ const T={
   tDate:"Datum", tTime:"Zeit", tRem:"Erinnerung vor",
   tSave:"💾 Aufgabe speichern",
   cats:{health:"Gesundheit",family:"Familie",finance:"Finanzen",personal:"Persönlich",other:"Sonstiges"},
-  notify:"Erinnerung: ",
   calendarNote:"Kalender dient nur als Alarm.",
   calendarAdded:"📅 Zum Kalender hinzugefügt (nur Alarm)"
  },
@@ -226,7 +224,6 @@ const T={
   tDate:"Date", tTime:"Time", tRem:"Remind before",
   tSave:"💾 Save task",
   cats:{health:"Health",family:"Family",finance:"Finance",personal:"Personal",other:"Other"},
-  notify:"Reminder: ",
   calendarNote:"Calendar is used only for alarm.",
   calendarAdded:"📅 Added to calendar (alarm only)"
  }
@@ -234,13 +231,13 @@ const T={
 
 let lang="hr", diaries=[], tasks=[], editTaskId=null;
 
-/* ========= NAV ========= */
+/* NAV */
 function show(id){
  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
  document.getElementById(id).classList.add("active");
 }
 
-/* ========= LANG ========= */
+/* LANG */
 function applyLang(){
  btnDiary.textContent=T[lang].diary;
  btnTasks.textContent=T[lang].tasks;
@@ -264,15 +261,15 @@ function applyLang(){
  }
 }
 
-/* LANGUAGE BUTTONS */
+/* LANGUAGE */
 document.querySelectorAll("[data-lang]").forEach(b=>{
- b.addEventListener("click",()=>{
+ b.onclick=()=>{
   lang=b.dataset.lang;
   localStorage.setItem("lang",lang);
   applyLang();
   document.body.className="static";
   show("screen-menu");
- });
+ };
 });
 
 /* MENU */
@@ -280,7 +277,7 @@ backMenu.onclick=()=>{document.body.className="home";show("screen-lang")};
 btnDiary.onclick=()=>{loadDiary();show("screen-diary")};
 btnTasks.onclick=()=>{loadTasks();show("screen-tasks")};
 backDiary.onclick=()=>show("screen-menu");
-document.getElementById("backTasks").addEventListener("click",()=>show("screen-menu"));
+backTasks.onclick=()=>show("screen-menu");
 
 /* DIARY */
 function loadDiary(){
@@ -346,6 +343,8 @@ saveTask.onclick=()=>{
 
  localStorage.setItem("tasks",JSON.stringify(tasks));
 
+ exportToCalendar(data);
+
  taskTitle.value=taskNote.value=taskDate.value=taskTime.value="";
  taskReminder.value="0";
  renderTasks();
@@ -354,6 +353,33 @@ saveTask.onclick=()=>{
  info.textContent=T[lang].calendarAdded;
  info.style.display="block";
 };
+
+function exportToCalendar(task){
+ const start=new Date(task.date+"T"+task.time);
+ if(isNaN(start)) return;
+ const end=new Date(start.getTime()+30*60000);
+
+ const ics=`BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+SUMMARY:${task.title}
+DTSTART:${start.toISOString().replace(/[-:]/g,"").split(".")[0]}Z
+DTEND:${end.toISOString().replace(/[-:]/g,"").split(".")[0]}Z
+DESCRIPTION:${T[lang].calendarNote}
+END:VEVENT
+END:VCALENDAR`;
+
+ const blob=new Blob([ics],{type:"text/calendar;charset=utf-8"});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement("a");
+ a.href=url;
+ a.download="lifekompas-alarm.ics";
+ document.body.appendChild(a);
+ a.click();
+ document.body.removeChild(a);
+ URL.revokeObjectURL(url);
+}
+
 function renderTasks(){
  taskList.innerHTML="";
  tasks.forEach(t=>{

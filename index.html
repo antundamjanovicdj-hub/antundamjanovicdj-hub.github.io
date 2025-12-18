@@ -127,7 +127,7 @@ select{-webkit-appearance:none;appearance:none;background:white}
   <div class="calendar-box">
    <label class="calendar-label">
     <input type="checkbox" id="addToCalendar" checked>
-    <span>Dodaj u kalendar (alarm)</span>
+    <span id="calendarLabel"></span>
    </label>
   </div>
 
@@ -154,6 +154,7 @@ const T={
   tTitle:"Obveza",tNote:"Bilješka",tCat:"Kategorija",
   tDate:"Datum",tTime:"Vrijeme",tRem:"Podsjeti prije",
   tSave:"💾 Spremi obvezu",
+  calendarToggle:"Dodaj u kalendar (alarm)",
   cats:{health:"Zdravlje",family:"Obitelj",finance:"Financije",personal:"Osobno",other:"Ostalo"},
   calendarAdded:"📅 Kalendar ažuriran",
   calendarNote:"Alarm iz LifeKompas aplikacije."
@@ -163,6 +164,7 @@ const T={
   tTitle:"Aufgabe",tNote:"Notiz",tCat:"Kategorie",
   tDate:"Datum",tTime:"Zeit",tRem:"Erinnerung",
   tSave:"💾 Aufgabe speichern",
+  calendarToggle:"Zum Kalender hinzufügen (Alarm)",
   cats:{health:"Gesundheit",family:"Familie",finance:"Finanzen",personal:"Persönlich",other:"Sonstiges"},
   calendarAdded:"📅 Kalender aktualisiert",
   calendarNote:"Erinnerung von LifeKompas."
@@ -172,6 +174,7 @@ const T={
   tTitle:"Task",tNote:"Note",tCat:"Category",
   tDate:"Date",tTime:"Time",tRem:"Remind before",
   tSave:"💾 Save task",
+  calendarToggle:"Add to calendar (alarm)",
   cats:{health:"Health",family:"Family",finance:"Finance",personal:"Personal",other:"Other"},
   calendarAdded:"📅 Calendar updated",
   calendarNote:"Reminder from LifeKompas."
@@ -195,6 +198,7 @@ function applyLang(){
  tTimeL.textContent=T[lang].tTime;
  tRemL.textContent=T[lang].tRem;
  saveTask.textContent=T[lang].tSave;
+ calendarLabel.textContent=T[lang].calendarToggle;
 
  taskCategory.innerHTML="";
  for(const k in T[lang].cats){
@@ -239,27 +243,23 @@ saveTask.onclick=()=>{
   date:taskDate.value,
   time:taskTime.value,
   reminder:+taskReminder.value,
-  status:"active"
+  status:"active",
+  seq: Date.now()
  };
 
  if(editTaskId){
-  tasks = tasks.map(t => t.id === editTaskId ? data : t);
-  editTaskId = null;
- } else {
-  tasks.push(data);
- }
+  tasks=tasks.map(t=>t.id===editTaskId?data:t);
+  editTaskId=null;
+ } else tasks.push(data);
 
  localStorage.setItem("tasks",JSON.stringify(tasks));
 
  if(addToCalendar.checked){
   exportToCalendar(data);
-  calendarInfo.textContent = T[lang].calendarAdded;
- } else calendarInfo.textContent = "";
+  calendarInfo.textContent=T[lang].calendarAdded;
+ } else calendarInfo.textContent="";
 
- taskTitle.value="";
- taskNote.value="";
- taskDate.value="";
- taskTime.value="";
+ taskTitle.value=taskNote.value=taskDate.value=taskTime.value="";
  taskReminder.value="0";
  addToCalendar.checked=true;
 
@@ -284,10 +284,11 @@ function exportToCalendar(task){
  const ics=
  "BEGIN:VCALENDAR\r\n"+
  "VERSION:2.0\r\n"+
- "METHOD:PUBLISH\r\n"+
+ "METHOD:REQUEST\r\n"+
  "PRODID:-//LifeKompas//HR\r\n"+
  "BEGIN:VEVENT\r\n"+
  `UID:${uid}\r\n`+
+ `SEQUENCE:${task.seq}\r\n`+
  `DTSTAMP:${dt(new Date())}\r\n`+
  `SUMMARY:${task.title}\r\n`+
  `DTSTART:${dt(start)}\r\n`+

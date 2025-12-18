@@ -66,6 +66,14 @@ select{-webkit-appearance:none;appearance:none;background:white}
 .actions{display:flex;justify-content:space-between;margin-top:8px}
 .actions button{background:none;border:none;font-size:1.2rem}
 .note{font-size:.8rem;opacity:.7;margin-top:.4rem}
+
+.checkbox{
+ display:flex;
+ align-items:center;
+ gap:.5rem;
+ margin-top:1rem;
+ font-size:.9rem;
+}
 </style>
 </head>
 
@@ -99,6 +107,7 @@ select{-webkit-appearance:none;appearance:none;background:white}
 <div id="screen-tasks" class="screen">
  <button class="back" id="backTasks">←</button>
  <div class="content scroll">
+
   <label id="tTitleL"></label>
   <input id="taskTitle">
 
@@ -122,9 +131,17 @@ select{-webkit-appearance:none;appearance:none;background:white}
    <option value="60">1 h</option>
   </select>
 
+  <!-- ADD TO CALENDAR -->
+  <div class="checkbox">
+   <input type="checkbox" id="addToCalendar" checked>
+   <label for="addToCalendar">Dodaj u kalendar</label>
+  </div>
+
   <button class="btn" id="saveTask" style="margin-top:1rem"></button>
+
   <div id="taskList"></div>
   <div id="calendarInfo" class="note"></div>
+
  </div>
 </div>
 
@@ -152,7 +169,7 @@ const T={
   tDate:"Datum",tTime:"Vrijeme",tRem:"Podsjeti prije",
   tSave:"💾 Spremi obvezu",
   cats:{health:"Zdravlje",family:"Obitelj",finance:"Financije",personal:"Osobno",other:"Ostalo"},
-  calendarAdded:"📅 Dodano u kalendar (s alarmom)",
+  calendarAdded:"📅 Dodano / ažurirano u kalendaru",
   calendarNote:"Kalendar služi samo zbog alarma."
  }
 };
@@ -221,15 +238,22 @@ saveTask.onclick=()=>{
  } else tasks.push(data);
 
  localStorage.setItem("tasks",JSON.stringify(tasks));
- exportToCalendar(data);
+
+ if(addToCalendar.checked){
+  exportToCalendar(data);
+  calendarInfo.textContent=T[lang].calendarAdded;
+ } else {
+  calendarInfo.textContent="";
+ }
 
  taskTitle.value=taskNote.value=taskDate.value=taskTime.value="";
  taskReminder.value="0";
+ addToCalendar.checked=true;
+
  renderTasks();
- calendarInfo.textContent=T[lang].calendarAdded;
 };
 
-/* ====== OVDJE JE VALARM DODAN ====== */
+/* ===== EXPORT TO CALENDAR (NO DUPLICATES) ===== */
 function exportToCalendar(task){
  const start=new Date(task.date+"T"+task.time);
  if(isNaN(start)) return;
@@ -242,9 +266,13 @@ ACTION:DISPLAY
 DESCRIPTION:${task.title}
 END:VALARM` : "";
 
+ const uid=`lifekompas-${task.id}@lifekompas`;
+
  const ics=`BEGIN:VCALENDAR
 VERSION:2.0
+PRODID:-//LifeKompas//HR
 BEGIN:VEVENT
+UID:${uid}
 SUMMARY:${task.title}
 DTSTART:${start.toISOString().replace(/[-:]/g,"").split(".")[0]}Z
 DTEND:${end.toISOString().replace(/[-:]/g,"").split(".")[0]}Z
@@ -257,7 +285,7 @@ END:VCALENDAR`;
  const url=URL.createObjectURL(blob);
  const a=document.createElement("a");
  a.href=url;
- a.download="lifekompas-alarm.ics";
+ a.download=`lifekompas-${task.id}.ics`;
  document.body.appendChild(a);
  a.click();
  document.body.removeChild(a);

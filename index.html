@@ -27,11 +27,29 @@ body.static{
 }
 
 .app{position:relative;height:100%}
-.screen{position:absolute;inset:0;display:flex;justify-content:center;align-items:center;opacity:0;pointer-events:none}
+.screen{
+ position:absolute;
+ inset:0;
+ display:flex;
+ justify-content:center;
+ align-items:center;
+ opacity:0;
+ pointer-events:none;
+}
 .screen.active{opacity:1;pointer-events:auto}
 
-.content{width:100%;max-width:420px;padding:2rem 1.5rem;text-align:center}
-.scroll{max-height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.content{
+ width:100%;
+ max-width:420px;
+ padding:2rem 1.5rem;
+ text-align:center;
+}
+
+.scroll{
+ max-height:100%;
+ overflow-y:auto;
+ -webkit-overflow-scrolling:touch;
+}
 
 .title{font-size:4rem;font-weight:900;line-height:1;margin-bottom:2rem}
 .title span{
@@ -43,45 +61,86 @@ body.static{
 
 .buttons{display:flex;flex-direction:column;gap:1rem}
 .btn{
- width:100%;padding:.9rem;border:none;border-radius:50px;
- font-size:1.05rem;font-weight:600;background:rgba(255,255,255,.85)
+ width:100%;
+ padding:.9rem;
+ border:none;
+ border-radius:50px;
+ font-size:1.05rem;
+ font-weight:600;
+ background:rgba(255,255,255,.85)
 }
 
 .back{
- position:fixed;top:1rem;right:1rem;z-index:9999;
- border:none;border-radius:20px;padding:.4rem .9rem;
+ position:fixed;
+ top:1rem;
+ right:1rem;
+ z-index:9999;
+ border:none;
+ border-radius:20px;
+ padding:.4rem .9rem;
  background:rgba(255,255,255,.9)
 }
 
-label{display:block;text-align:left;font-size:.9rem;margin-top:1rem}
-input,textarea,select{
- width:100%;padding:12px;border-radius:12px;border:none;font-size:16px
+label{
+ display:block;
+ text-align:left;
+ font-size:.9rem;
+ margin-top:1rem
 }
+
+input,textarea,select{
+ width:100%;
+ padding:12px;
+ border-radius:12px;
+ border:none;
+ font-size:16px
+}
+
+select{-webkit-appearance:none;appearance:none;background:white}
 
 .item{
  background:rgba(255,255,255,.9);
- border-radius:14px;padding:12px;margin-top:12px;text-align:left
+ border-radius:14px;
+ padding:12px;
+ margin-top:12px;
+ text-align:left
 }
-.actions{display:flex;justify-content:space-between;margin-top:8px}
-.actions button{background:none;border:none;font-size:1.2rem}
-.note{font-size:.8rem;opacity:.7;margin-top:.4rem}
 
-/* ✅ SAFE CHECKBOX (iOS FIX) */
-.checkbox{
+.actions{
  display:flex;
- align-items:flex-start;
- gap:.6rem;
+ justify-content:space-between;
+ margin-top:8px
+}
+.actions button{
+ background:none;
+ border:none;
+ font-size:1.2rem
+}
+
+.note{
+ font-size:.8rem;
+ opacity:.7;
+ margin-top:.6rem
+}
+
+/* ===== STABLE CALENDAR CHECKBOX ===== */
+.calendar-box{
+ width:100%;
  margin-top:1rem;
- max-width:100%;
 }
-.checkbox input{
- margin-top:.15rem;
- flex-shrink:0;
-}
-.checkbox span{
+
+.calendar-label{
+ display:flex;
+ align-items:center;
+ gap:.6rem;
  font-size:.9rem;
- line-height:1.2;
- word-break:break-word;
+ line-height:1.3;
+}
+
+.calendar-label input{
+ width:18px;
+ height:18px;
+ flex-shrink:0;
 }
 </style>
 </head>
@@ -89,6 +148,7 @@ input,textarea,select{
 <body class="home">
 <div class="app">
 
+<!-- LANGUAGE -->
 <div id="screen-lang" class="screen active">
  <div class="content">
   <h1 class="title"><span>Life</span><span>Kompas</span></h1>
@@ -100,6 +160,7 @@ input,textarea,select{
  </div>
 </div>
 
+<!-- MENU -->
 <div id="screen-menu" class="screen">
  <button class="back" id="backMenu">←</button>
  <div class="content">
@@ -110,8 +171,10 @@ input,textarea,select{
  </div>
 </div>
 
+<!-- TASKS -->
 <div id="screen-tasks" class="screen">
  <button class="back" id="backTasks">←</button>
+
  <div class="content scroll">
 
   <label id="tTitleL"></label>
@@ -137,19 +200,23 @@ input,textarea,select{
    <option value="60">1 h</option>
   </select>
 
-  <!-- FIXED CHECKBOX -->
-  <div class="checkbox">
-   <input type="checkbox" id="addToCalendar" checked>
-   <span>Dodaj u kalendar (alarm)</span>
+  <!-- FIXED AREA -->
+  <div class="calendar-box">
+   <label class="calendar-label">
+    <input type="checkbox" id="addToCalendar" checked>
+    <span>Dodaj u kalendar (alarm)</span>
+   </label>
   </div>
 
-  <button class="btn" id="saveTask" style="margin-top:1rem"></button>
+  <button class="btn" id="saveTask" style="margin-top:1.2rem"></button>
 
   <div id="taskList"></div>
   <div id="calendarInfo" class="note"></div>
+
  </div>
 </div>
 
+<!-- HISTORY -->
 <div id="screen-history" class="screen">
  <button class="back" id="backHistory">←</button>
  <div class="content scroll">
@@ -187,16 +254,23 @@ function applyLang(){
  tTimeL.textContent=T[lang].tTime;
  tRemL.textContent=T[lang].tRem;
  saveTask.textContent=T[lang].tSave;
+
  taskCategory.innerHTML="";
  for(const k in T[lang].cats){
   const o=document.createElement("option");
-  o.value=k;o.textContent=T[lang].cats[k];
+  o.value=k;
+  o.textContent=T[lang].cats[k];
   taskCategory.appendChild(o);
  }
 }
 
 document.querySelectorAll("[data-lang]").forEach(b=>{
- b.onclick=()=>{lang=b.dataset.lang;applyLang();document.body.className="static";show("screen-menu")}
+ b.onclick=()=>{
+  lang=b.dataset.lang;
+  applyLang();
+  document.body.className="static";
+  show("screen-menu");
+ };
 });
 
 backMenu.onclick=()=>{document.body.className="home";show("screen-lang")};
@@ -221,24 +295,34 @@ saveTask.onclick=()=>{
   reminder:+taskReminder.value,
   status:"active"
  };
- if(editTaskId){tasks=tasks.map(t=>t.id===editTaskId?data:t);editTaskId=null;}
- else tasks.push(data);
+
+ if(editTaskId){
+  tasks=tasks.map(t=>t.id===editTaskId?data:t);
+  editTaskId=null;
+ } else tasks.push(data);
 
  localStorage.setItem("tasks",JSON.stringify(tasks));
- if(addToCalendar.checked) exportToCalendar(data);
- calendarInfo.textContent=addToCalendar.checked?T[lang].calendarAdded:"";
+
+ if(addToCalendar.checked){
+  exportToCalendar(data);
+  calendarInfo.textContent=T[lang].calendarAdded;
+ } else {
+  calendarInfo.textContent="";
+ }
+
  taskTitle.value=taskNote.value=taskDate.value=taskTime.value="";
- taskReminder.value="0";addToCalendar.checked=true;
+ taskReminder.value="0";
+ addToCalendar.checked=true;
+
  renderTasks();
 };
 
-/* ✅ ANDROID-SAFE ICS */
 function exportToCalendar(task){
  const start=new Date(task.date+"T"+task.time);
  if(isNaN(start)) return;
  const end=new Date(start.getTime()+30*60000);
  const uid=`lifekompas-${task.id}@lifekompas`;
- const dt=(d)=>d.toISOString().replace(/[-:]/g,"").split(".")[0]+"Z";
+ const dt=d=>d.toISOString().replace(/[-:]/g,"").split(".")[0]+"Z";
 
  const alarm=task.reminder>0?
  "BEGIN:VALARM\r\n"+
@@ -265,9 +349,12 @@ function exportToCalendar(task){
  const blob=new Blob([ics],{type:"text/calendar;charset=utf-8"});
  const url=URL.createObjectURL(blob);
  const a=document.createElement("a");
- a.href=url;a.download=`lifekompas-${task.id}.ics`;
- document.body.appendChild(a);a.click();
- document.body.removeChild(a);URL.revokeObjectURL(url);
+ a.href=url;
+ a.download=`lifekompas-${task.id}.ics`;
+ document.body.appendChild(a);
+ a.click();
+ document.body.removeChild(a);
+ URL.revokeObjectURL(url);
 }
 
 function renderTasks(){
@@ -275,32 +362,55 @@ function renderTasks(){
  tasks.filter(t=>t.status==="active").forEach(t=>{
   const el=document.createElement("div");
   el.className="item";
-  el.innerHTML=`<strong>${t.title}</strong><br>${t.date} ${t.time}
-  <div class="actions">
-   <button onclick="updateStatus(${t.id},'done')">✅</button>
-   <button onclick="updateStatus(${t.id},'cancelled')">❌</button>
-   <button onclick="editTask(${t.id})">✏️</button>
-   <button onclick="deleteTask(${t.id})">🗑</button>
-  </div>`;
+  el.innerHTML=`
+   <strong>${t.title}</strong><br>
+   ${t.date} ${t.time}
+   <div class="actions">
+    <button onclick="updateStatus(${t.id},'done')">✅</button>
+    <button onclick="updateStatus(${t.id},'cancelled')">❌</button>
+    <button onclick="editTask(${t.id})">✏️</button>
+    <button onclick="deleteTask(${t.id})">🗑</button>
+   </div>`;
   taskList.appendChild(el);
  });
 }
-function updateStatus(id,s){tasks=tasks.map(t=>t.id===id?{...t,status:s}:t);localStorage.setItem("tasks",JSON.stringify(tasks));renderTasks();}
-function editTask(id){
- const t=tasks.find(x=>x.id===id);editTaskId=id;
- taskTitle.value=t.title;taskNote.value=t.note;
- taskCategory.value=t.cat;taskDate.value=t.date;
- taskTime.value=t.time;taskReminder.value=t.reminder;
+
+function updateStatus(id,status){
+ tasks=tasks.map(t=>t.id===id?{...t,status}:t);
+ localStorage.setItem("tasks",JSON.stringify(tasks));
+ renderTasks();
 }
-function deleteTask(id){tasks=tasks.filter(t=>t.id!==id);localStorage.setItem("tasks",JSON.stringify(tasks));renderTasks();}
+
+function editTask(id){
+ const t=tasks.find(x=>x.id===id);
+ editTaskId=id;
+ taskTitle.value=t.title;
+ taskNote.value=t.note;
+ taskCategory.value=t.cat;
+ taskDate.value=t.date;
+ taskTime.value=t.time;
+ taskReminder.value=t.reminder;
+}
+
+function deleteTask(id){
+ tasks=tasks.filter(t=>t.id!==id);
+ localStorage.setItem("tasks",JSON.stringify(tasks));
+ renderTasks();
+}
+
 function loadHistory(){
  tasks=JSON.parse(localStorage.getItem("tasks")||"[]");
  historyList.innerHTML="";
  tasks.filter(t=>t.status!=="active").forEach(t=>{
-  historyList.innerHTML+=`${t.status==="done"?"✅":"❌"} ${t.title}<br>`;
+  const el=document.createElement("div");
+  el.className="item";
+  el.innerHTML=`${t.status==="done"?"✅":"❌"} <strong>${t.title}</strong><br>${t.date} ${t.time}`;
+  historyList.appendChild(el);
  });
 }
+
 window.onload=applyLang;
 </script>
+
 </body>
 </html>

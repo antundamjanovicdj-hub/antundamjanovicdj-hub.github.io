@@ -183,7 +183,12 @@ const T={
 
 let lang="hr",tasks=[],editTaskId=null;
 
-const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+/* ===== PLATFORM DETEKCIJA ===== */
+const ua = navigator.userAgent;
+const isIOS = /iPad|iPhone|iPod/.test(ua);
+const isSamsung = /Samsung/i.test(ua);
+const isPixel = /Pixel/i.test(ua);
+/* ============================== */
 
 function show(id){
  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
@@ -275,7 +280,19 @@ function exportToCalendar(task){
  const uid=`lifekompas-${task.id}@lifekompas`;
  const dt=d=>d.toISOString().replace(/[-:]/g,"").split(".")[0]+"Z";
 
- const method = isIOS ? "REQUEST" : "PUBLISH";
+ let method="PUBLISH";
+ let sequenceLine="";
+
+ if(isIOS){
+  method="REQUEST";
+  sequenceLine=`SEQUENCE:${task.seq}\r\n`;
+ } else if(isSamsung){
+  method="PUBLISH";
+  sequenceLine=""; // Samsung najstabilnije bez SEQUENCE
+ } else if(isPixel){
+  method="PUBLISH";
+  sequenceLine=`SEQUENCE:${task.seq}\r\n`;
+ }
 
  const alarm=task.reminder>0
  ? "BEGIN:VALARM\r\n"+
@@ -292,7 +309,7 @@ function exportToCalendar(task){
  "PRODID:-//LifeKompas//HR\r\n"+
  "BEGIN:VEVENT\r\n"+
  `UID:${uid}\r\n`+
- (isIOS ? `SEQUENCE:${task.seq}\r\n` : "")+
+ sequenceLine+
  `DTSTAMP:${dt(new Date())}\r\n`+
  `SUMMARY:${task.title}\r\n`+
  `DTSTART:${dt(start)}\r\n`+

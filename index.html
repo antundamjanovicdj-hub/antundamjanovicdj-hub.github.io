@@ -11,66 +11,25 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-
-body.home{
-  background:linear-gradient(120deg,#1f6b4a,#2e8b57,#3fa37a,#2e8b57);
-  background-size:400% 400%;
-  animation:bgMove 12s infinite;
-}
-body.static{
-  background:linear-gradient(to top,#d0f0c0,#a8e6cf,#61c09a,#2e8b57);
-}
-@keyframes bgMove{
-  0%{background-position:0% 50%}
-  50%{background-position:100% 50%}
-  100%{background-position:0% 50%}
-}
-
+body.home{background:linear-gradient(120deg,#1f6b4a,#2e8b57,#3fa37a,#2e8b57);background-size:400% 400%;animation:bgMove 12s infinite}
+body.static{background:linear-gradient(to top,#d0f0c0,#a8e6cf,#61c09a,#2e8b57)}
+@keyframes bgMove{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 .app{position:relative;height:100%}
 .screen{position:absolute;inset:0;display:flex;justify-content:center;align-items:center;opacity:0;pointer-events:none}
 .screen.active{opacity:1;pointer-events:auto}
-
 .content{width:100%;max-width:420px;padding:2rem 1.5rem;text-align:center}
 .scroll{max-height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch}
-
-.title{font-size:4rem;font-weight:900;line-height:1;margin-bottom:2rem}
-.title span{
- display:block;
- background:linear-gradient(180deg,#000 40%,#ff8c00 60%,#ff4500);
- -webkit-background-clip:text;
- -webkit-text-fill-color:transparent;
-}
-
 .buttons{display:flex;flex-direction:column;gap:1rem}
-.btn{
- width:100%;padding:.9rem;border:none;border-radius:50px;
- font-size:1.05rem;font-weight:600;background:rgba(255,255,255,.85)
-}
-
-.back{
- position:fixed;top:1rem;right:1rem;z-index:9999;
- border:none;border-radius:20px;padding:.4rem .9rem;
- background:rgba(255,255,255,.9)
-}
-
+.btn{width:100%;padding:.9rem;border:none;border-radius:50px;font-size:1.05rem;font-weight:600;background:rgba(255,255,255,.85)}
+.back{position:fixed;top:1rem;right:1rem;z-index:9999;border:none;border-radius:20px;padding:.4rem .9rem;background:rgba(255,255,255,.9)}
 label{display:block;text-align:left;font-size:.9rem;margin-top:1rem}
-input,textarea,select{
- width:100%;padding:12px;border-radius:12px;border:none;font-size:16px
-}
-select{-webkit-appearance:none;appearance:none;background:white}
-
-.item{
- background:rgba(255,255,255,.9);
- border-radius:14px;padding:12px;margin-top:12px;text-align:left
-}
+input,textarea,select{width:100%;padding:12px;border-radius:12px;border:none;font-size:16px}
+.item{background:rgba(255,255,255,.9);border-radius:14px;padding:12px;margin-top:12px;text-align:left}
 .actions{display:flex;justify-content:space-between;margin-top:8px}
 .actions button{background:none;border:none;font-size:1.2rem}
-.note{font-size:.8rem;opacity:.7;margin-top:.6rem}
-
-/* stable checkbox */
-.calendar-box{width:100%;margin-top:1rem}
+.calendar-box{margin-top:1rem}
 .calendar-label{display:flex;align-items:center;gap:.6rem;font-size:.9rem}
-.calendar-label input{width:18px;height:18px;flex-shrink:0}
+.calendar-label input{width:18px;height:18px}
 </style>
 </head>
 
@@ -79,11 +38,9 @@ select{-webkit-appearance:none;appearance:none;background:white}
 
 <div id="screen-lang" class="screen active">
  <div class="content">
-  <h1 class="title"><span>Life</span><span>Kompas</span></h1>
+  <h1>LifeKompas</h1>
   <div class="buttons">
    <button class="btn" data-lang="hr">🇭🇷 Hrvatski</button>
-   <button class="btn" data-lang="de">🇩🇪 Deutsch</button>
-   <button class="btn" data-lang="en">🇬🇧 English</button>
   </div>
  </div>
 </div>
@@ -92,8 +49,7 @@ select{-webkit-appearance:none;appearance:none;background:white}
  <button class="back" id="backMenu">←</button>
  <div class="content">
   <div class="buttons">
-   <button class="btn" id="btnTasks"></button>
-   <button class="btn" id="btnHistory"></button>
+   <button class="btn" id="btnTasks">📋 Obveze</button>
   </div>
  </div>
 </div>
@@ -102,22 +58,16 @@ select{-webkit-appearance:none;appearance:none;background:white}
  <button class="back" id="backTasks">←</button>
  <div class="content scroll">
 
-  <label id="tTitleL"></label>
+  <label>Obveza</label>
   <input id="taskTitle">
 
-  <label id="tNoteL"></label>
-  <textarea id="taskNote"></textarea>
-
-  <label id="tCatL"></label>
-  <select id="taskCategory"></select>
-
-  <label id="tDateL"></label>
+  <label>Datum</label>
   <input type="date" id="taskDate">
 
-  <label id="tTimeL"></label>
+  <label>Vrijeme</label>
   <input type="time" id="taskTime">
 
-  <label id="tRemL"></label>
+  <label>Podsjeti prije</label>
   <select id="taskReminder">
    <option value="0">—</option>
    <option value="15">15 min</option>
@@ -132,133 +82,52 @@ select{-webkit-appearance:none;appearance:none;background:white}
    </label>
   </div>
 
-  <button class="btn" id="saveTask" style="margin-top:1.2rem"></button>
-
-  <div id="taskList"></div>
-  <div id="calendarInfo" class="note"></div>
- </div>
-</div>
-
-<div id="screen-history" class="screen">
- <button class="back" id="backHistory">←</button>
- <div class="content scroll">
-  <div id="historyList"></div>
+  <button class="btn" id="saveTask" style="margin-top:1rem">Spremi</button>
  </div>
 </div>
 
 </div>
 
 <script>
-const T={hr:{
- tasks:"📋 Obveze",history:"📜 Povijest",
- tTitle:"Obveza",tNote:"Bilješka",tCat:"Kategorija",
- tDate:"Datum",tTime:"Vrijeme",tRem:"Podsjeti prije",
- tSave:"💾 Spremi obvezu",
- cats:{health:"Zdravlje",family:"Obitelj",finance:"Financije",personal:"Osobno",other:"Ostalo"},
- calendarAdded:"📅 Dodano / ažurirano u kalendaru",
- calendarNote:"Kalendar služi samo zbog alarma."
-}};
-
-let lang="hr",tasks=[],editTaskId=null;
+backMenu.onclick=()=>show("screen-lang");
+btnTasks.onclick=()=>show("screen-tasks");
+backTasks.onclick=()=>show("screen-menu");
 
 function show(id){
  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
  document.getElementById(id).classList.add("active");
 }
 
-function applyLang(){
- btnTasks.textContent=T[lang].tasks;
- btnHistory.textContent=T[lang].history;
- tTitleL.textContent=T[lang].tTitle;
- tNoteL.textContent=T[lang].tNote;
- tCatL.textContent=T[lang].tCat;
- tDateL.textContent=T[lang].tDate;
- tTimeL.textContent=T[lang].tTime;
- tRemL.textContent=T[lang].tRem;
- saveTask.textContent=T[lang].tSave;
-
- taskCategory.innerHTML="";
- for(const k in T[lang].cats){
-  const o=document.createElement("option");
-  o.value=k;o.textContent=T[lang].cats[k];
-  taskCategory.appendChild(o);
- }
-}
-
-document.querySelectorAll("[data-lang]").forEach(b=>{
- b.onclick=()=>{lang=b.dataset.lang;applyLang();document.body.className="static";show("screen-menu")}
-});
-
-backMenu.onclick=()=>{document.body.className="home";show("screen-lang")};
-btnTasks.onclick=()=>{loadTasks();show("screen-tasks")};
-btnHistory.onclick=()=>{loadHistory();show("screen-history")};
-backTasks.onclick=()=>show("screen-menu");
-backHistory.onclick=()=>show("screen-menu");
-
-function loadTasks(){
- tasks=JSON.parse(localStorage.getItem("tasks")||"[]");
- renderTasks();
-}
-
 saveTask.onclick=()=>{
- const data={
-  id:editTaskId||Date.now(),
-  title:taskTitle.value,
-  note:taskNote.value,
-  cat:taskCategory.value,
-  date:taskDate.value,
-  time:taskTime.value,
-  reminder:+taskReminder.value,
-  status:"active"
- };
-
- if(editTaskId){
-  tasks=tasks.map(t=>t.id===editTaskId?data:t);
-  editTaskId=null;
- } else tasks.push(data);
-
- localStorage.setItem("tasks",JSON.stringify(tasks));
-
- if(addToCalendar.checked){
-  exportToCalendar(data);
-  calendarInfo.textContent=T[lang].calendarAdded;
- } else calendarInfo.textContent="";
-
- taskTitle.value=taskNote.value=taskDate.value=taskTime.value="";
- taskReminder.value="0";
- addToCalendar.checked=true;
-
- renderTasks();
+ if(addToCalendar.checked) exportToCalendar();
 };
 
-/* ===== ANDROID FIX: METHOD:PUBLISH ===== */
-function exportToCalendar(task){
- const start=new Date(task.date+"T"+task.time);
- if(isNaN(start)) return;
+function exportToCalendar(){
+ const start=new Date(taskDate.value+"T"+taskTime.value);
  const end=new Date(start.getTime()+30*60000);
- const uid=`lifekompas-${task.id}@lifekompas`;
+ const mins=+taskReminder.value;
+
  const dt=d=>d.toISOString().replace(/[-:]/g,"").split(".")[0]+"Z";
 
- const alarm=task.reminder>0
- ? "BEGIN:VALARM\r\n"+
-   `TRIGGER:-PT${task.reminder}M\r\n`+
-   "ACTION:DISPLAY\r\n"+
-   `DESCRIPTION:${task.title}\r\n`+
-   "END:VALARM\r\n"
- : "";
+ const alarm=mins>0?
+ "BEGIN:VALARM\r\n"+
+ `TRIGGER;RELATED=START:-PT${mins}M\r\n`+
+ "ACTION:DISPLAY\r\n"+
+ "DESCRIPTION:Reminder\r\n"+
+ "END:VALARM\r\n":"";
+
+ const googleAlarm=mins>0?`X-GOOGLE-ALARM-TRIGGER:-PT${mins}M\r\n`:"";
 
  const ics=
  "BEGIN:VCALENDAR\r\n"+
  "VERSION:2.0\r\n"+
- "METHOD:PUBLISH\r\n"+
  "PRODID:-//LifeKompas//HR\r\n"+
  "BEGIN:VEVENT\r\n"+
- `UID:${uid}\r\n`+
  `DTSTAMP:${dt(new Date())}\r\n`+
- `SUMMARY:${task.title}\r\n`+
+ `SUMMARY:${taskTitle.value}\r\n`+
  `DTSTART:${dt(start)}\r\n`+
  `DTEND:${dt(end)}\r\n`+
- `DESCRIPTION:${T[lang].calendarNote}\r\n`+
+ googleAlarm+
  alarm+
  "END:VEVENT\r\n"+
  "END:VCALENDAR";
@@ -266,67 +135,10 @@ function exportToCalendar(task){
  const blob=new Blob([ics],{type:"text/calendar;charset=utf-8"});
  const url=URL.createObjectURL(blob);
  const a=document.createElement("a");
- a.href=url;
- a.download=`lifekompas-${task.id}.ics`;
- document.body.appendChild(a);
- a.click();
- document.body.removeChild(a);
- URL.revokeObjectURL(url);
+ a.href=url;a.download="lifekompas.ics";
+ document.body.appendChild(a);a.click();
+ document.body.removeChild(a);URL.revokeObjectURL(url);
 }
-
-function renderTasks(){
- taskList.innerHTML="";
- tasks.filter(t=>t.status==="active").forEach(t=>{
-  const el=document.createElement("div");
-  el.className="item";
-  el.innerHTML=`
-   <strong>${t.title}</strong><br>
-   ${t.date} ${t.time}
-   <div class="actions">
-    <button onclick="updateStatus(${t.id},'done')">✅</button>
-    <button onclick="updateStatus(${t.id},'cancelled')">❌</button>
-    <button onclick="editTask(${t.id})">✏️</button>
-    <button onclick="deleteTask(${t.id})">🗑</button>
-   </div>`;
-  taskList.appendChild(el);
- });
-}
-
-function updateStatus(id,status){
- tasks=tasks.map(t=>t.id===id?{...t,status}:t);
- localStorage.setItem("tasks",JSON.stringify(tasks));
- renderTasks();
-}
-
-function editTask(id){
- const t=tasks.find(x=>x.id===id);
- editTaskId=id;
- taskTitle.value=t.title;
- taskNote.value=t.note;
- taskCategory.value=t.cat;
- taskDate.value=t.date;
- taskTime.value=t.time;
- taskReminder.value=t.reminder;
-}
-
-function deleteTask(id){
- tasks=tasks.filter(t=>t.id!==id);
- localStorage.setItem("tasks",JSON.stringify(tasks));
- renderTasks();
-}
-
-function loadHistory(){
- tasks=JSON.parse(localStorage.getItem("tasks")||"[]");
- historyList.innerHTML="";
- tasks.filter(t=>t.status!=="active").forEach(t=>{
-  const el=document.createElement("div");
-  el.className="item";
-  el.innerHTML=`${t.status==="done"?"✅":"❌"} <strong>${t.title}</strong><br>${t.date} ${t.time}`;
-  historyList.appendChild(el);
- });
-}
-
-window.onload=applyLang;
 </script>
 
 </body>

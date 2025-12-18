@@ -73,7 +73,6 @@ body.static{
   top:1rem;
   right:1rem;
   z-index:9999;
-  pointer-events:auto;
   border:none;
   border-radius:20px;
   padding:.4rem .9rem;
@@ -88,11 +87,7 @@ input,textarea,select{
   border:none;
   font-size:16px;
 }
-select{
-  appearance:none;
-  -webkit-appearance:none;
-  background:white;
-}
+select{-webkit-appearance:none;appearance:none;background:white}
 
 .item{
   background:rgba(255,255,255,.9);
@@ -111,11 +106,7 @@ select{
   border:none;
   font-size:1.2rem;
 }
-.note{
-  font-size:.8rem;
-  opacity:.7;
-  margin-top:.4rem;
-}
+.note{font-size:.8rem;opacity:.7;margin-top:.4rem}
 </style>
 </head>
 
@@ -141,22 +132,8 @@ select{
     <div class="buttons">
       <button class="btn" id="btnDiary"></button>
       <button class="btn" id="btnTasks"></button>
+      <button class="btn" id="btnHistory"></button>
     </div>
-  </div>
-</div>
-
-<!-- DIARY -->
-<div id="screen-diary" class="screen">
-  <button class="back" id="backDiary">←</button>
-  <div class="content scroll">
-    <label id="dDateL"></label>
-    <input type="date" id="dDate">
-    <label id="dTitleL"></label>
-    <input id="dTitle">
-    <label id="dTextL"></label>
-    <textarea id="dText" rows="5"></textarea>
-    <button class="btn" id="saveDiary"></button>
-    <div id="diaryList"></div>
   </div>
 </div>
 
@@ -166,85 +143,60 @@ select{
   <div class="content scroll">
     <label id="tTitleL"></label>
     <input id="taskTitle">
-
     <label id="tNoteL"></label>
     <textarea id="taskNote"></textarea>
-
     <label id="tCatL"></label>
     <select id="taskCategory"></select>
-
     <label id="tDateL"></label>
     <input type="date" id="taskDate">
-
     <label id="tTimeL"></label>
     <input type="time" id="taskTime">
-
     <label id="tRemL"></label>
     <select id="taskReminder">
       <option value="0">—</option>
-      <option value="5">5 min</option>
       <option value="15">15 min</option>
       <option value="30">30 min</option>
       <option value="60">1 h</option>
     </select>
-
-    <button class="btn" id="saveTask" style="margin-top:1.2rem"></button>
-
+    <button class="btn" id="saveTask" style="margin-top:1rem"></button>
     <div id="taskList"></div>
-    <div id="calendarInfo" class="note" style="display:none"></div>
+    <div id="calendarInfo" class="note"></div>
+  </div>
+</div>
+
+<!-- HISTORY -->
+<div id="screen-history" class="screen">
+  <button class="back" id="backHistory">←</button>
+  <div class="content scroll">
+    <div id="historyList"></div>
   </div>
 </div>
 
 </div>
 
 <script>
-/* ========= TRANSLATIONS ========= */
 const T={
- hr:{ diary:"📔 Dnevnik", tasks:"📋 Obveze",
-  dDate:"Datum", dTitle:"Naslov", dText:"Tekst", dSave:"💾 Spremi",
-  tTitle:"Obveza", tNote:"Bilješka", tCat:"Kategorija",
-  tDate:"Datum", tTime:"Vrijeme", tRem:"Podsjeti prije",
+ hr:{
+  diary:"📔 Dnevnik",tasks:"📋 Obveze",history:"📜 Povijest",
+  tTitle:"Obveza",tNote:"Bilješka",tCat:"Kategorija",
+  tDate:"Datum",tTime:"Vrijeme",tRem:"Podsjeti prije",
   tSave:"💾 Spremi obvezu",
   cats:{health:"Zdravlje",family:"Obitelj",finance:"Financije",personal:"Osobno",other:"Ostalo"},
-  calendarNote:"Kalendar služi samo zbog alarma.",
   calendarAdded:"📅 Dodano u kalendar (samo alarm)"
- },
- de:{ diary:"📔 Tagebuch", tasks:"📋 Aufgaben",
-  dDate:"Datum", dTitle:"Titel", dText:"Text", dSave:"💾 Speichern",
-  tTitle:"Aufgabe", tNote:"Notiz", tCat:"Kategorie",
-  tDate:"Datum", tTime:"Zeit", tRem:"Erinnerung vor",
-  tSave:"💾 Aufgabe speichern",
-  cats:{health:"Gesundheit",family:"Familie",finance:"Finanzen",personal:"Persönlich",other:"Sonstiges"},
-  calendarNote:"Kalender dient nur als Alarm.",
-  calendarAdded:"📅 Zum Kalender hinzugefügt (nur Alarm)"
- },
- en:{ diary:"📔 Diary", tasks:"📋 Tasks",
-  dDate:"Date", dTitle:"Title", dText:"Text", dSave:"💾 Save",
-  tTitle:"Task", tNote:"Note", tCat:"Category",
-  tDate:"Date", tTime:"Time", tRem:"Remind before",
-  tSave:"💾 Save task",
-  cats:{health:"Health",family:"Family",finance:"Finance",personal:"Personal",other:"Other"},
-  calendarNote:"Calendar is used only for alarm.",
-  calendarAdded:"📅 Added to calendar (alarm only)"
  }
 };
 
-let lang="hr", diaries=[], tasks=[], editTaskId=null;
+let lang="hr",tasks=[],editTaskId=null;
 
-/* NAV */
 function show(id){
  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
  document.getElementById(id).classList.add("active");
 }
 
-/* LANG */
 function applyLang(){
  btnDiary.textContent=T[lang].diary;
  btnTasks.textContent=T[lang].tasks;
- dDateL.textContent=T[lang].dDate;
- dTitleL.textContent=T[lang].dTitle;
- dTextL.textContent=T[lang].dText;
- saveDiary.textContent=T[lang].dSave;
+ btnHistory.textContent=T[lang].history;
  tTitleL.textContent=T[lang].tTitle;
  tNoteL.textContent=T[lang].tNote;
  tCatL.textContent=T[lang].tCat;
@@ -261,71 +213,26 @@ function applyLang(){
  }
 }
 
-/* LANGUAGE */
 document.querySelectorAll("[data-lang]").forEach(b=>{
  b.onclick=()=>{
   lang=b.dataset.lang;
-  localStorage.setItem("lang",lang);
   applyLang();
   document.body.className="static";
   show("screen-menu");
  };
 });
 
-/* MENU */
 backMenu.onclick=()=>{document.body.className="home";show("screen-lang")};
-btnDiary.onclick=()=>{loadDiary();show("screen-diary")};
 btnTasks.onclick=()=>{loadTasks();show("screen-tasks")};
-backDiary.onclick=()=>show("screen-menu");
+btnHistory.onclick=()=>{loadHistory();show("screen-history")};
 backTasks.onclick=()=>show("screen-menu");
+backHistory.onclick=()=>show("screen-menu");
 
-/* DIARY */
-function loadDiary(){
- diaries=JSON.parse(localStorage.getItem("diaries")||"[]");
- diaries.sort((a,b)=>b.date.localeCompare(a.date));
- renderDiary();
-}
-saveDiary.onclick=()=>{
- const d={date:dDate.value,title:dTitle.value,text:dText.value};
- diaries=diaries.filter(x=>x.date!==d.date);
- diaries.push(d);
- localStorage.setItem("diaries",JSON.stringify(diaries));
- loadDiary();
-};
-function renderDiary(){
- diaryList.innerHTML="";
- diaries.forEach(d=>{
-  const el=document.createElement("div");
-  el.className="item";
-  el.innerHTML=`
-   <strong>${d.date}</strong><br>
-   <strong>${d.title}</strong><br>
-   ${d.text}
-   <div class="actions">
-    <button onclick="editDiary('${d.date}')">✏️</button>
-    <button onclick="deleteDiary('${d.date}')">🗑</button>
-   </div>`;
-  diaryList.appendChild(el);
- });
-}
-function editDiary(date){
- const d=diaries.find(x=>x.date===date);
- dDate.value=d.date;
- dTitle.value=d.title;
- dText.value=d.text;
-}
-function deleteDiary(date){
- diaries=diaries.filter(d=>d.date!==date);
- localStorage.setItem("diaries",JSON.stringify(diaries));
- loadDiary();
-}
-
-/* TASKS */
 function loadTasks(){
  tasks=JSON.parse(localStorage.getItem("tasks")||"[]");
- document.getElementById("calendarInfo").style.display="none";
  renderTasks();
 }
+
 saveTask.onclick=()=>{
  const data={
   id:editTaskId||Date.now(),
@@ -334,7 +241,8 @@ saveTask.onclick=()=>{
   cat:taskCategory.value,
   date:taskDate.value,
   time:taskTime.value,
-  reminder:+taskReminder.value
+  reminder:+taskReminder.value,
+  status:"active"
  };
  if(editTaskId){
   tasks=tasks.map(t=>t.id===editTaskId?data:t);
@@ -342,60 +250,37 @@ saveTask.onclick=()=>{
  } else tasks.push(data);
 
  localStorage.setItem("tasks",JSON.stringify(tasks));
-
- exportToCalendar(data);
-
  taskTitle.value=taskNote.value=taskDate.value=taskTime.value="";
  taskReminder.value="0";
  renderTasks();
-
- const info=document.getElementById("calendarInfo");
- info.textContent=T[lang].calendarAdded;
- info.style.display="block";
+ document.getElementById("calendarInfo").textContent=T[lang].calendarAdded;
 };
-
-function exportToCalendar(task){
- const start=new Date(task.date+"T"+task.time);
- if(isNaN(start)) return;
- const end=new Date(start.getTime()+30*60000);
-
- const ics=`BEGIN:VCALENDAR
-VERSION:2.0
-BEGIN:VEVENT
-SUMMARY:${task.title}
-DTSTART:${start.toISOString().replace(/[-:]/g,"").split(".")[0]}Z
-DTEND:${end.toISOString().replace(/[-:]/g,"").split(".")[0]}Z
-DESCRIPTION:${T[lang].calendarNote}
-END:VEVENT
-END:VCALENDAR`;
-
- const blob=new Blob([ics],{type:"text/calendar;charset=utf-8"});
- const url=URL.createObjectURL(blob);
- const a=document.createElement("a");
- a.href=url;
- a.download="lifekompas-alarm.ics";
- document.body.appendChild(a);
- a.click();
- document.body.removeChild(a);
- URL.revokeObjectURL(url);
-}
 
 function renderTasks(){
  taskList.innerHTML="";
- tasks.forEach(t=>{
+ tasks.filter(t=>t.status==="active").forEach(t=>{
   const el=document.createElement("div");
   el.className="item";
   el.innerHTML=`
-   <strong>${t.title}</strong> (${T[lang].cats[t.cat]})<br>
-   ${t.date} ${t.time}
+   <strong>${t.title}</strong><br>${t.date} ${t.time}
    <div class="actions">
+    <button onclick="finishTask(${t.id})">✅</button>
+    <button onclick="cancelTask(${t.id})">❌</button>
     <button onclick="editTask(${t.id})">✏️</button>
     <button onclick="deleteTask(${t.id})">🗑</button>
-   </div>
-   <div class="note">${T[lang].calendarNote}</div>`;
+   </div>`;
   taskList.appendChild(el);
  });
 }
+
+function finishTask(id){updateStatus(id,"done")}
+function cancelTask(id){updateStatus(id,"cancelled")}
+function updateStatus(id,status){
+ tasks=tasks.map(t=>t.id===id?{...t,status}:t);
+ localStorage.setItem("tasks",JSON.stringify(tasks));
+ renderTasks();
+}
+
 function editTask(id){
  const t=tasks.find(x=>x.id===id);
  editTaskId=id;
@@ -404,20 +289,27 @@ function editTask(id){
  taskCategory.value=t.cat;
  taskDate.value=t.date;
  taskTime.value=t.time;
- taskReminder.value=t.reminder||"0";
+ taskReminder.value=t.reminder;
 }
+
 function deleteTask(id){
  tasks=tasks.filter(t=>t.id!==id);
  localStorage.setItem("tasks",JSON.stringify(tasks));
  renderTasks();
 }
 
-/* INIT */
-window.onload=()=>{
- const s=localStorage.getItem("lang");
- if(s&&T[s])lang=s;
- applyLang();
-};
+function loadHistory(){
+ tasks=JSON.parse(localStorage.getItem("tasks")||"[]");
+ historyList.innerHTML="";
+ tasks.filter(t=>t.status!=="active").forEach(t=>{
+  const el=document.createElement("div");
+  el.className="item";
+  el.innerHTML=`${t.status==="done"?"✅":"❌"} <strong>${t.title}</strong><br>${t.date} ${t.time}`;
+  historyList.appendChild(el);
+ });
+}
+
+window.onload=applyLang;
 </script>
 
 </body>

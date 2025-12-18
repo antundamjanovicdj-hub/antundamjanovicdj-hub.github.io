@@ -28,84 +28,44 @@ body.static{
 }
 
 .app{position:relative;height:100%}
-
-.screen{
-  position:absolute;inset:0;
-  display:flex;justify-content:center;align-items:center;
-  opacity:0;pointer-events:none;
-}
+.screen{position:absolute;inset:0;display:flex;justify-content:center;align-items:center;opacity:0;pointer-events:none}
 .screen.active{opacity:1;pointer-events:auto}
 
-.content{
-  width:100%;max-width:420px;
-  padding:2rem 1.5rem;text-align:center;
-}
-.scroll{
-  max-height:100%;
-  overflow-y:auto;
-  -webkit-overflow-scrolling:touch;
-}
+.content{width:100%;max-width:420px;padding:2rem 1.5rem;text-align:center}
+.scroll{max-height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch}
 
-.title{
-  font-size:4rem;font-weight:900;line-height:1;margin-bottom:2rem;
-}
+.title{font-size:4rem;font-weight:900;line-height:1;margin-bottom:2rem}
 .title span{
-  display:block;
-  background:linear-gradient(180deg,#000 40%,#ff8c00 60%,#ff4500);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
+ display:block;
+ background:linear-gradient(180deg,#000 40%,#ff8c00 60%,#ff4500);
+ -webkit-background-clip:text;
+ -webkit-text-fill-color:transparent;
 }
 
-/* UI */
 .buttons{display:flex;flex-direction:column;gap:1rem}
 .btn{
-  width:100%;
-  padding:.9rem;
-  border:none;
-  border-radius:50px;
-  font-size:1.05rem;
-  font-weight:600;
-  background:rgba(255,255,255,.85);
+ width:100%;padding:.9rem;border:none;border-radius:50px;
+ font-size:1.05rem;font-weight:600;background:rgba(255,255,255,.85)
 }
 
 .back{
-  position:fixed;
-  top:1rem;
-  right:1rem;
-  z-index:9999;
-  border:none;
-  border-radius:20px;
-  padding:.4rem .9rem;
-  background:rgba(255,255,255,.9);
+ position:fixed;top:1rem;right:1rem;z-index:9999;
+ border:none;border-radius:20px;padding:.4rem .9rem;
+ background:rgba(255,255,255,.9)
 }
 
 label{display:block;text-align:left;font-size:.9rem;margin-top:1rem}
 input,textarea,select{
-  width:100%;
-  padding:12px;
-  border-radius:12px;
-  border:none;
-  font-size:16px;
+ width:100%;padding:12px;border-radius:12px;border:none;font-size:16px
 }
 select{-webkit-appearance:none;appearance:none;background:white}
 
 .item{
-  background:rgba(255,255,255,.9);
-  border-radius:14px;
-  padding:12px;
-  margin-top:12px;
-  text-align:left;
+ background:rgba(255,255,255,.9);
+ border-radius:14px;padding:12px;margin-top:12px;text-align:left
 }
-.actions{
-  display:flex;
-  justify-content:space-between;
-  margin-top:8px;
-}
-.actions button{
-  background:none;
-  border:none;
-  font-size:1.2rem;
-}
+.actions{display:flex;justify-content:space-between;margin-top:8px}
+.actions button{background:none;border:none;font-size:1.2rem}
 .note{font-size:.8rem;opacity:.7;margin-top:.4rem}
 </style>
 </head>
@@ -115,86 +75,101 @@ select{-webkit-appearance:none;appearance:none;background:white}
 
 <!-- LANGUAGE -->
 <div id="screen-lang" class="screen active">
-  <div class="content">
-    <h1 class="title"><span>Life</span><span>Kompas</span></h1>
-    <div class="buttons">
-      <button class="btn" data-lang="hr">🇭🇷 Hrvatski</button>
-      <button class="btn" data-lang="de">🇩🇪 Deutsch</button>
-      <button class="btn" data-lang="en">🇬🇧 English</button>
-    </div>
+ <div class="content">
+  <h1 class="title"><span>Life</span><span>Kompas</span></h1>
+  <div class="buttons">
+   <button class="btn" data-lang="hr">🇭🇷 Hrvatski</button>
+   <button class="btn" data-lang="de">🇩🇪 Deutsch</button>
+   <button class="btn" data-lang="en">🇬🇧 English</button>
   </div>
+ </div>
 </div>
 
 <!-- MENU -->
 <div id="screen-menu" class="screen">
-  <button class="back" id="backMenu">←</button>
-  <div class="content">
-    <div class="buttons">
-      <button class="btn" id="btnDiary"></button>
-      <button class="btn" id="btnTasks"></button>
-      <button class="btn" id="btnHistory"></button>
-    </div>
+ <button class="back" id="backMenu">←</button>
+ <div class="content">
+  <div class="buttons">
+   <button class="btn" id="btnTasks"></button>
+   <button class="btn" id="btnHistory"></button>
   </div>
+ </div>
 </div>
 
 <!-- TASKS -->
 <div id="screen-tasks" class="screen">
-  <button class="back" id="backTasks">←</button>
-  <div class="content scroll">
-    <label id="tTitleL"></label>
-    <input id="taskTitle">
-    <label id="tNoteL"></label>
-    <textarea id="taskNote"></textarea>
-    <label id="tCatL"></label>
-    <select id="taskCategory"></select>
-    <label id="tDateL"></label>
-    <input type="date" id="taskDate">
-    <label id="tTimeL"></label>
-    <input type="time" id="taskTime">
-    <label id="tRemL"></label>
-    <select id="taskReminder">
-      <option value="0">—</option>
-      <option value="15">15 min</option>
-      <option value="30">30 min</option>
-      <option value="60">1 h</option>
-    </select>
-    <button class="btn" id="saveTask" style="margin-top:1rem"></button>
-    <div id="taskList"></div>
-    <div id="calendarInfo" class="note"></div>
-  </div>
+ <button class="back" id="backTasks">←</button>
+ <div class="content scroll">
+  <label id="tTitleL"></label>
+  <input id="taskTitle">
+
+  <label id="tNoteL"></label>
+  <textarea id="taskNote"></textarea>
+
+  <label id="tCatL"></label>
+  <select id="taskCategory"></select>
+
+  <label id="tDateL"></label>
+  <input type="date" id="taskDate">
+
+  <label id="tTimeL"></label>
+  <input type="time" id="taskTime">
+
+  <label id="tRemL"></label>
+  <select id="taskReminder">
+   <option value="0">—</option>
+   <option value="15">15 min</option>
+   <option value="30">30 min</option>
+   <option value="60">1 h</option>
+  </select>
+
+  <button class="btn" id="saveTask" style="margin-top:1rem"></button>
+  <div id="taskList"></div>
+  <div id="calendarInfo" class="note"></div>
+ </div>
 </div>
 
 <!-- HISTORY -->
 <div id="screen-history" class="screen">
-  <button class="back" id="backHistory">←</button>
-  <div class="content scroll">
-    <div id="historyList"></div>
-  </div>
+ <button class="back" id="backHistory">←</button>
+ <div class="content scroll">
+  <div id="historyList"></div>
+ </div>
 </div>
 
 </div>
 
 <script>
+/* ===== HELPERS ===== */
+function formatDate(d){
+ if(!d) return "";
+ const [y,m,day]=d.split("-");
+ return `${day}.${m}.${y}`;
+}
+
+/* ===== TRANSLATIONS ===== */
 const T={
  hr:{
-  diary:"📔 Dnevnik",tasks:"📋 Obveze",history:"📜 Povijest",
+  tasks:"📋 Obveze",history:"📜 Povijest",
   tTitle:"Obveza",tNote:"Bilješka",tCat:"Kategorija",
   tDate:"Datum",tTime:"Vrijeme",tRem:"Podsjeti prije",
   tSave:"💾 Spremi obvezu",
   cats:{health:"Zdravlje",family:"Obitelj",finance:"Financije",personal:"Osobno",other:"Ostalo"},
-  calendarAdded:"📅 Dodano u kalendar (samo alarm)"
+  calendarAdded:"📅 Dodano u kalendar (samo alarm)",
+  calendarNote:"Kalendar služi samo zbog alarma."
  }
 };
 
 let lang="hr",tasks=[],editTaskId=null;
 
+/* ===== NAV ===== */
 function show(id){
  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
  document.getElementById(id).classList.add("active");
 }
 
+/* ===== LANG ===== */
 function applyLang(){
- btnDiary.textContent=T[lang].diary;
  btnTasks.textContent=T[lang].tasks;
  btnHistory.textContent=T[lang].history;
  tTitleL.textContent=T[lang].tTitle;
@@ -228,6 +203,7 @@ btnHistory.onclick=()=>{loadHistory();show("screen-history")};
 backTasks.onclick=()=>show("screen-menu");
 backHistory.onclick=()=>show("screen-menu");
 
+/* ===== TASKS ===== */
 function loadTasks(){
  tasks=JSON.parse(localStorage.getItem("tasks")||"[]");
  renderTasks();
@@ -244,17 +220,44 @@ saveTask.onclick=()=>{
   reminder:+taskReminder.value,
   status:"active"
  };
+
  if(editTaskId){
   tasks=tasks.map(t=>t.id===editTaskId?data:t);
   editTaskId=null;
  } else tasks.push(data);
 
  localStorage.setItem("tasks",JSON.stringify(tasks));
+
+ exportToCalendar(data);
+
  taskTitle.value=taskNote.value=taskDate.value=taskTime.value="";
  taskReminder.value="0";
  renderTasks();
- document.getElementById("calendarInfo").textContent=T[lang].calendarAdded;
+ calendarInfo.textContent=T[lang].calendarAdded;
 };
+
+function exportToCalendar(task){
+ const start=new Date(task.date+"T"+task.time);
+ if(isNaN(start)) return;
+ const end=new Date(start.getTime()+30*60000);
+
+ const ics=`BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+SUMMARY:${task.title}
+DTSTART:${start.toISOString().replace(/[-:]/g,"").split(".")[0]}Z
+DTEND:${end.toISOString().replace(/[-:]/g,"").split(".")[0]}Z
+DESCRIPTION:${T[lang].calendarNote}
+END:VEVENT
+END:VCALENDAR`;
+
+ const blob=new Blob([ics],{type:"text/calendar;charset=utf-8"});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement("a");
+ a.href=url;a.download="lifekompas-alarm.ics";
+ document.body.appendChild(a);a.click();
+ document.body.removeChild(a);URL.revokeObjectURL(url);
+}
 
 function renderTasks(){
  taskList.innerHTML="";
@@ -262,7 +265,8 @@ function renderTasks(){
   const el=document.createElement("div");
   el.className="item";
   el.innerHTML=`
-   <strong>${t.title}</strong><br>${t.date} ${t.time}
+   <strong>${t.title}</strong><br>
+   ${formatDate(t.date)} ${t.time}
    <div class="actions">
     <button onclick="finishTask(${t.id})">✅</button>
     <button onclick="cancelTask(${t.id})">❌</button>
@@ -304,7 +308,7 @@ function loadHistory(){
  tasks.filter(t=>t.status!=="active").forEach(t=>{
   const el=document.createElement("div");
   el.className="item";
-  el.innerHTML=`${t.status==="done"?"✅":"❌"} <strong>${t.title}</strong><br>${t.date} ${t.time}`;
+  el.innerHTML=`${t.status==="done"?"✅":"❌"} <strong>${t.title}</strong><br>${formatDate(t.date)} ${t.time}`;
   historyList.appendChild(el);
  });
 }

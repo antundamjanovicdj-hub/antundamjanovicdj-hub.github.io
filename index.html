@@ -183,6 +183,8 @@ const T={
 
 let lang="hr",tasks=[],editTaskId=null;
 
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
 function show(id){
  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
  document.getElementById(id).classList.add("active");
@@ -273,6 +275,8 @@ function exportToCalendar(task){
  const uid=`lifekompas-${task.id}@lifekompas`;
  const dt=d=>d.toISOString().replace(/[-:]/g,"").split(".")[0]+"Z";
 
+ const method = isIOS ? "REQUEST" : "PUBLISH";
+
  const alarm=task.reminder>0
  ? "BEGIN:VALARM\r\n"+
    `TRIGGER:-PT${task.reminder}M\r\n`+
@@ -284,11 +288,11 @@ function exportToCalendar(task){
  const ics=
  "BEGIN:VCALENDAR\r\n"+
  "VERSION:2.0\r\n"+
- "METHOD:REQUEST\r\n"+
+ `METHOD:${method}\r\n`+
  "PRODID:-//LifeKompas//HR\r\n"+
  "BEGIN:VEVENT\r\n"+
  `UID:${uid}\r\n`+
- `SEQUENCE:${task.seq}\r\n`+
+ (isIOS ? `SEQUENCE:${task.seq}\r\n` : "")+
  `DTSTAMP:${dt(new Date())}\r\n`+
  `SUMMARY:${task.title}\r\n`+
  `DTSTART:${dt(start)}\r\n`+

@@ -155,7 +155,7 @@ const T={
   tDate:"Datum",tTime:"Vrijeme",tRem:"Podsjeti prije",
   tSave:"💾 Spremi obvezu",
   cats:{health:"Zdravlje",family:"Obitelj",finance:"Financije",personal:"Osobno",other:"Ostalo"},
-  calendarAdded:"📅 Dodano u kalendar",
+  calendarAdded:"📅 Kalendar ažuriran",
   calendarNote:"Alarm iz LifeKompas aplikacije."
  },
  de:{
@@ -164,7 +164,7 @@ const T={
   tDate:"Datum",tTime:"Zeit",tRem:"Erinnerung",
   tSave:"💾 Aufgabe speichern",
   cats:{health:"Gesundheit",family:"Familie",finance:"Finanzen",personal:"Persönlich",other:"Sonstiges"},
-  calendarAdded:"📅 Zum Kalender hinzugefügt",
+  calendarAdded:"📅 Kalender aktualisiert",
   calendarNote:"Erinnerung von LifeKompas."
  },
  en:{
@@ -173,7 +173,7 @@ const T={
   tDate:"Date",tTime:"Time",tRem:"Remind before",
   tSave:"💾 Save task",
   cats:{health:"Health",family:"Family",finance:"Finance",personal:"Personal",other:"Other"},
-  calendarAdded:"📅 Added to calendar",
+  calendarAdded:"📅 Calendar updated",
   calendarNote:"Reminder from LifeKompas."
  }
 };
@@ -243,16 +243,70 @@ saveTask.onclick=()=>{
  };
 
  if(editTaskId){
-  tasks=tasks.map(t=>t.id===editTaskId?data:t);
-  editTaskId=null;
- } else tasks.push(data);
+  tasks = tasks.map(t => t.id === editTaskId ? data : t);
+  editTaskId = null;
+ } else {
+  tasks.push(data);
+ }
 
  localStorage.setItem("tasks",JSON.stringify(tasks));
- renderTasks();
 
- taskTitle.value=taskNote.value=taskDate.value=taskTime.value="";
+ if(addToCalendar.checked){
+  exportToCalendar(data);
+  calendarInfo.textContent = T[lang].calendarAdded;
+ } else calendarInfo.textContent = "";
+
+ taskTitle.value="";
+ taskNote.value="";
+ taskDate.value="";
+ taskTime.value="";
  taskReminder.value="0";
+ addToCalendar.checked=true;
+
+ renderTasks();
 };
+
+function exportToCalendar(task){
+ const start=new Date(task.date+"T"+task.time);
+ if(isNaN(start)) return;
+ const end=new Date(start.getTime()+30*60000);
+ const uid=`lifekompas-${task.id}@lifekompas`;
+ const dt=d=>d.toISOString().replace(/[-:]/g,"").split(".")[0]+"Z";
+
+ const alarm=task.reminder>0
+ ? "BEGIN:VALARM\r\n"+
+   `TRIGGER:-PT${task.reminder}M\r\n`+
+   "ACTION:DISPLAY\r\n"+
+   `DESCRIPTION:${task.title}\r\n`+
+   "END:VALARM\r\n"
+ : "";
+
+ const ics=
+ "BEGIN:VCALENDAR\r\n"+
+ "VERSION:2.0\r\n"+
+ "METHOD:PUBLISH\r\n"+
+ "PRODID:-//LifeKompas//HR\r\n"+
+ "BEGIN:VEVENT\r\n"+
+ `UID:${uid}\r\n`+
+ `DTSTAMP:${dt(new Date())}\r\n`+
+ `SUMMARY:${task.title}\r\n`+
+ `DTSTART:${dt(start)}\r\n`+
+ `DTEND:${dt(end)}\r\n`+
+ `DESCRIPTION:${T[lang].calendarNote}\r\n`+
+ alarm+
+ "END:VEVENT\r\n"+
+ "END:VCALENDAR";
+
+ const blob=new Blob([ics],{type:"text/calendar;charset=utf-8"});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement("a");
+ a.href=url;
+ a.download=`lifekompas-${task.id}.ics`;
+ document.body.appendChild(a);
+ a.click();
+ document.body.removeChild(a);
+ URL.revokeObjectURL(url);
+}
 
 function renderTasks(){
  taskList.innerHTML="";

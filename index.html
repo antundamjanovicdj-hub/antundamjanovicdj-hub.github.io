@@ -200,6 +200,14 @@ const T={
 let lang="hr",tasks=[],editTaskId=null;
 
 function applyLang(){
+ document.querySelectorAll("[data-lang]").forEach(b=>{
+ b.onclick=()=>{
+  lang=b.dataset.lang;
+  applyLang();
+  document.body.className="static";
+  show("screen-menu");
+ }
+});
  btnTasks.textContent=T[lang].tasks;
  tTitleL.textContent=T[lang].tTitle;
  tNoteL.textContent=T[lang].tNote;
@@ -259,3 +267,4 @@ window.onload=applyLang;
 
 </body>
 </html>
+

@@ -50,9 +50,12 @@ export function createTasksController({ T, AppState, platform, els }) {
   /* ================= LOAD / RENDER ================= */
 
   function load() {
-    tasks = loadTasks();
-    render();
-  }
+  tasks = loadTasks().map(t => ({
+    ...t,
+    addToCalendar: t.addToCalendar && t.reminder > 0
+  }));
+  render();
+}
 
   function render() {
     renderTasks({ tasks, taskListEl: els.taskList });
@@ -141,9 +144,10 @@ export function createTasksController({ T, AppState, platform, els }) {
           "Želiš li ukloniti ovu obvezu iz kalendara?"
         );
 
- if (
+if (
   shouldCancelCalendar &&
-  t.addToCalendar &&
+  t.addToCalendar === true &&
+  t.reminder > 0 &&
   t.date &&
   t.time
 ) {

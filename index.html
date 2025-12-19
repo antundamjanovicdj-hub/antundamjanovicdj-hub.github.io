@@ -20,6 +20,7 @@ body.home{
 body.static{
  background:linear-gradient(to top,#d0f0c0,#a8e6cf,#61c09a,#2e8b57);
 }
+
 @keyframes bgMove{
  0%{background-position:0% 50%}
  50%{background-position:100% 50%}
@@ -31,33 +32,17 @@ body.static{
 .screen.active{opacity:1;pointer-events:auto}
 
 .content{width:100%;max-width:420px;padding:2rem 1.5rem;text-align:center}
-.scroll{max-height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.scroll{max-height:100%;overflow-y:auto}
 
-.title{font-size:4rem;font-weight:900;line-height:1;margin-bottom:2rem}
-.title span{
- display:block;
- background:linear-gradient(180deg,#000 40%,#ff8c00 60%,#ff4500);
- -webkit-background-clip:text;
- -webkit-text-fill-color:transparent;
-}
-
-.buttons{display:flex;flex-direction:column;gap:1rem}
 .btn{
  width:100%;padding:.9rem;border:none;border-radius:50px;
  font-size:1.05rem;font-weight:600;background:rgba(255,255,255,.85)
-}
-
-.back{
- position:fixed;top:1rem;right:1rem;z-index:9999;
- border:none;border-radius:20px;padding:.4rem .9rem;
- background:rgba(255,255,255,.9)
 }
 
 label{display:block;text-align:left;font-size:.9rem;margin-top:1rem}
 input,textarea,select{
  width:100%;padding:12px;border-radius:12px;border:none;font-size:16px
 }
-select{-webkit-appearance:none;appearance:none;background:white}
 
 .item{
  background:rgba(255,255,255,.9);
@@ -65,16 +50,53 @@ select{-webkit-appearance:none;appearance:none;background:white}
 }
 .actions{display:flex;justify-content:space-between;margin-top:8px}
 .actions button{background:none;border:none;font-size:1.2rem}
-.note{font-size:.8rem;opacity:.7;margin-top:.6rem}
 
-.calendar-box{width:100%;margin-top:1rem}
-.calendar-label{display:flex;align-items:center;gap:.6rem;font-size:.9rem}
-.calendar-label input{width:18px;height:18px;flex-shrink:0}
+.calendar-box{margin-top:1rem}
+.calendar-label{display:flex;gap:.6rem;font-size:.9rem}
+
+/* POPUP */
+.popup{
+ position:fixed;
+ inset:0;
+ background:rgba(0,0,0,.35);
+ display:none;
+ justify-content:center;
+ align-items:center;
+ z-index:10000;
+}
+.popup.active{display:flex}
+
+.popup-box{
+ background:#fff;
+ width:92%;
+ max-width:420px;
+ max-height:85%;
+ border-radius:20px;
+ padding:1rem;
+ overflow-y:auto;
+}
+.popup-header{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ margin-bottom:1rem;
+}
+.popup-header button{
+ border:none;background:none;font-size:1.4rem
+}
+.popup-section{
+ margin-top:1rem;
+ font-weight:800;
+ opacity:.75;
+}
+.popup-empty{
+ margin-top:1rem;
+ opacity:.7;
+ font-size:.9rem;
+}
 </style>
 
-<!-- ✅ KORAK 2: UČITAVANJE JEZIKA -->
 <script src="core/i18n.js"></script>
-
 </head>
 
 <body class="home">
@@ -83,28 +105,22 @@ select{-webkit-appearance:none;appearance:none;background:white}
 <!-- LANGUAGE -->
 <div id="screen-lang" class="screen active">
  <div class="content">
-  <h1 class="title"><span>Life</span><span>Kompas</span></h1>
-  <div class="buttons">
-   <button class="btn" data-lang="hr">🇭🇷 Hrvatski</button>
-   <button class="btn" data-lang="de">🇩🇪 Deutsch</button>
-   <button class="btn" data-lang="en">🇬🇧 English</button>
-  </div>
+  <h1>LifeKompas</h1>
+  <button class="btn" data-lang="hr">🇭🇷 Hrvatski</button>
+  <button class="btn" data-lang="de">🇩🇪 Deutsch</button>
+  <button class="btn" data-lang="en">🇬🇧 English</button>
  </div>
 </div>
 
 <!-- MENU -->
 <div id="screen-menu" class="screen">
- <button class="back" id="backMenu">←</button>
  <div class="content">
-  <div class="buttons">
-   <button class="btn" id="btnTasks"></button>
-  </div>
+  <button class="btn" id="btnTasks"></button>
  </div>
 </div>
 
 <!-- TASKS -->
 <div id="screen-tasks" class="screen">
- <button class="back" id="backTasks">←</button>
  <div class="content scroll">
 
   <label id="tTitleL"></label>
@@ -137,26 +153,47 @@ select{-webkit-appearance:none;appearance:none;background:white}
    </label>
   </div>
 
-  <button class="btn" id="saveTask" style="margin-top:1.2rem"></button>
+  <button class="btn" id="saveTask"></button>
+  <button class="btn" id="btnByDay"></button>
 
   <div id="taskList"></div>
-  <div id="calendarInfo" class="note"></div>
  </div>
 </div>
 
 </div>
 
-<script>
-/* ✅ KORAK 2: PREUZIMANJE JEZIKA IZ MODULA */
-const T = window.I18N;
+<!-- POPUP -->
+<div id="dayPopup" class="popup">
+ <div class="popup-box">
+  <div class="popup-header">
+   <strong id="popupTitle"></strong>
+   <button id="closeDayPopup">✕</button>
+  </div>
 
+  <label id="popupDateLabel"></label>
+  <input type="date" id="popupDate">
+
+  <div id="popupTasks"></div>
+ </div>
+</div>
+
+<script>
+const T = window.I18N;
 let lang="hr",tasks=[],editTaskId=null;
 
+/* UI */
 function show(id){
  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
  document.getElementById(id).classList.add("active");
 }
 
+function formatDate(d){
+ if(!d) return "";
+ const [y,m,day]=d.split("-");
+ return `${day}/${m}/${y}`;
+}
+
+/* Language */
 function applyLang(){
  btnTasks.textContent=T[lang].tasks;
  tTitleL.textContent=T[lang].tTitle;
@@ -166,7 +203,10 @@ function applyLang(){
  tTimeL.textContent=T[lang].tTime;
  tRemL.textContent=T[lang].tRem;
  saveTask.textContent=T[lang].tSave;
+ btnByDay.textContent=T[lang].byDay;
  calendarLabel.textContent=T[lang].calendarToggle;
+ popupTitle.textContent=T[lang].popupTitle;
+ popupDateLabel.textContent=T[lang].popupDate;
 
  taskCategory.innerHTML="";
  for(const k in T[lang].cats){
@@ -176,6 +216,7 @@ function applyLang(){
  }
 }
 
+/* Language select */
 document.querySelectorAll("[data-lang]").forEach(b=>{
  b.onclick=()=>{
   lang=b.dataset.lang;
@@ -185,10 +226,9 @@ document.querySelectorAll("[data-lang]").forEach(b=>{
  }
 });
 
-backMenu.onclick=()=>{document.body.className="home";show("screen-lang")};
 btnTasks.onclick=()=>{loadTasks();show("screen-tasks")};
-backTasks.onclick=()=>show("screen-menu");
 
+/* Tasks */
 function loadTasks(){
  tasks=JSON.parse(localStorage.getItem("tasks")||"[]");
  renderTasks();
@@ -196,7 +236,7 @@ function loadTasks(){
 
 saveTask.onclick=()=>{
  const data={
-  id:editTaskId||Date.now(),
+  id:Date.now(),
   title:taskTitle.value,
   note:taskNote.value,
   cat:taskCategory.value,
@@ -206,20 +246,20 @@ saveTask.onclick=()=>{
   status:"active"
  };
 
- if(editTaskId){
-  tasks=tasks.map(t=>t.id===editTaskId?data:t);
-  editTaskId=null;
- } else tasks.push(data);
-
+ tasks.push(data);
  localStorage.setItem("tasks",JSON.stringify(tasks));
+
+ if(addToCalendar.checked){
+  exportToCalendar(data);
+ }
 
  taskTitle.value=taskNote.value=taskDate.value=taskTime.value="";
  taskReminder.value="0";
- addToCalendar.checked=true;
 
  renderTasks();
 };
 
+/* LIST */
 function renderTasks(){
  taskList.innerHTML="";
  tasks.filter(t=>t.status==="active").forEach(t=>{
@@ -227,30 +267,92 @@ function renderTasks(){
   el.className="item";
   el.innerHTML=`
    <strong>${t.title}</strong><br>
-   ${t.date} ${t.time}
+   ${formatDate(t.date)} ${t.time||""}
    <div class="actions">
-    <button onclick="editTask(${t.id})">✏️</button>
     <button onclick="deleteTask(${t.id})">🗑</button>
    </div>`;
   taskList.appendChild(el);
  });
 }
 
-function editTask(id){
- const t=tasks.find(x=>x.id===id);
- editTaskId=id;
- taskTitle.value=t.title;
- taskNote.value=t.note;
- taskCategory.value=t.cat;
- taskDate.value=t.date;
- taskTime.value=t.time;
- taskReminder.value=t.reminder;
-}
-
 function deleteTask(id){
  tasks=tasks.filter(t=>t.id!==id);
  localStorage.setItem("tasks",JSON.stringify(tasks));
  renderTasks();
+}
+
+/* POPUP */
+btnByDay.onclick=()=>{
+ popupDate.value=new Date().toISOString().split("T")[0];
+ renderPopupTasks(popupDate.value);
+ dayPopup.classList.add("active");
+};
+closeDayPopup.onclick=()=>dayPopup.classList.remove("active");
+popupDate.onchange=()=>renderPopupTasks(popupDate.value);
+
+function renderPopupTasks(date){
+ popupTasks.innerHTML="";
+ const sections=T[lang].status;
+ let any=false;
+
+ for(const s in sections){
+  const list=tasks.filter(t=>t.date===date && t.status===s);
+  if(!list.length) continue;
+  any=true;
+
+  const h=document.createElement("div");
+  h.className="popup-section";
+  h.textContent=sections[s];
+  popupTasks.appendChild(h);
+
+  list.forEach(t=>{
+   const el=document.createElement("div");
+   el.className="item";
+   el.innerHTML=`<strong>${t.title}</strong><br>${t.time||""}`;
+   popupTasks.appendChild(el);
+  });
+ }
+
+ if(!any){
+  const e=document.createElement("div");
+  e.className="popup-empty";
+  e.textContent=T[lang].emptyDay;
+  popupTasks.appendChild(e);
+ }
+}
+
+/* CALENDAR */
+function exportToCalendar(task){
+ const start=new Date(task.date+"T"+task.time);
+ if(isNaN(start)) return;
+ const end=new Date(start.getTime()+30*60000);
+ const dt=d=>d.toISOString().replace(/[-:]/g,"").split(".")[0]+"Z";
+
+ const alarm = task.reminder>0
+ ? `BEGIN:VALARM\r\nTRIGGER:-PT${task.reminder}M\r\nACTION:DISPLAY\r\nDESCRIPTION:${task.title}\r\nEND:VALARM\r\n`
+ : "";
+
+ const ics=
+`BEGIN:VCALENDAR\r
+VERSION:2.0\r
+BEGIN:VEVENT\r
+DTSTAMP:${dt(new Date())}\r
+DTSTART:${dt(start)}\r
+DTEND:${dt(end)}\r
+SUMMARY:${task.title}\r
+DESCRIPTION:${task.note||""}\r
+${alarm}END:VEVENT\r
+END:VCALENDAR`;
+
+ const blob=new Blob([ics],{type:"text/calendar;charset=utf-8"});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement("a");
+ a.href=url;
+ a.download=`task-${task.id}.ics`;
+ document.body.appendChild(a);
+ a.click();
+ document.body.removeChild(a);
+ URL.revokeObjectURL(url);
 }
 
 window.onload=applyLang;

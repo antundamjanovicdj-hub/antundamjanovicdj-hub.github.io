@@ -6,10 +6,10 @@ import { renderPopupTasks } from "./tasks.popup.js";
 
 // PAMETNI REMINDERI (u minutama)
 const SMART_REMINDERS = {
-  health: 1440,
-  finance: 2880,
-  family: 60,
-  personal: 30
+  health: 1440,    // 1 dan
+  finance: 1440,   // 1 dan
+  family: 60,      // 1 sat
+  personal: 30     // 30 min
 };
 
 export function createTasksController({ T, AppState, platform, els }) {

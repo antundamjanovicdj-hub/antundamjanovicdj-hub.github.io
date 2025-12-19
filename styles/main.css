@@ -101,8 +101,8 @@ select{-webkit-appearance:none;appearance:none;background:white}
 }
 .reminder-hint{
   margin-top:.4rem;
-  font-size:.75rem;
-  opacity:.7;
+  font-size:.8rem;
+  opacity:.85;
   text-align:left;
 }
 

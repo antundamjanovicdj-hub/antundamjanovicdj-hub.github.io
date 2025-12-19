@@ -154,6 +154,7 @@ if (els.popupDate) {
 window.updateStatus = tasksCtrl.updateStatus;
 window.editTask = tasksCtrl.editTask;
 window.deleteTask = tasksCtrl.deleteTask;
+window.popupDeleteTask = tasksCtrl.popupDeleteTask;
 
 /* =========================
    START

@@ -9,8 +9,8 @@ window.I18N = {
     tDate: "Datum",
     tTime: "Vrijeme",
     tRem: "Podsjetnik",
-    tSave: "Spremi",
-    byDay: "Pregled po danima",
+    tSave: "💾 Spremi",
+    byDay: "📅 Pregled po danima",
 
     calendarToggle: "Dodaj u kalendar",
     calendarAdded: "Dodano u kalendar",
@@ -45,8 +45,8 @@ window.I18N = {
     tDate: "Date",
     tTime: "Time",
     tRem: "Reminder",
-    tSave: "Save",
-    byDay: "By day view",
+    tSave: "💾 Save",
+    byDay: "📅 By day view",
 
     calendarToggle: "Add to calendar",
     calendarAdded: "Added to calendar",
@@ -81,8 +81,8 @@ window.I18N = {
     tDate: "Datum",
     tTime: "Uhrzeit",
     tRem: "Erinnerung",
-    tSave: "Speichern",
-    byDay: "Tagesübersicht",
+    tSave: "💾 Speichern",
+    byDay: "📅 Tagesübersicht",
 
     calendarToggle: "Zum Kalender hinzufügen",
     calendarAdded: "Zum Kalender hinzugefügt",

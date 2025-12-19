@@ -9,14 +9,15 @@ const T = window.I18N || {};
 
 const $ = (id) => document.getElementById(id);
 
+/* ===== ELEMENTI ===== */
 const els = {
-  // language / navigation
+  // navigation / language
   backMenu: $("backMenu"),
   btnTasks: $("btnTasks"),
   backTasks: $("backTasks"),
   btnByDay: $("btnByDay"),
 
-  // task form labels
+  // labels
   tTitleL: $("tTitleL"),
   tNoteL: $("tNoteL"),
   tCatL: $("tCatL"),
@@ -24,7 +25,7 @@ const els = {
   tTimeL: $("tTimeL"),
   tRemL: $("tRemL"),
 
-  // task form inputs
+  // inputs
   taskTitle: $("taskTitle"),
   taskNote: $("taskNote"),
   taskCategory: $("taskCategory"),
@@ -32,6 +33,8 @@ const els = {
   taskTime: $("taskTime"),
   taskReminder: $("taskReminder"),
   addToCalendar: $("addToCalendar"),
+
+  // buttons / lists
   calendarLabel: $("calendarLabel"),
   calendarInfo: $("calendarInfo"),
   saveTask: $("saveTask"),
@@ -45,12 +48,13 @@ const els = {
   popupDate: $("popupDate"),
   popupTasks: $("popupTasks"),
 
-  // reminder hint (može biti null)
+  // smart reminder hint (može biti null)
   reminderHint: $("reminderHint")
 };
 
 const platform = getPlatformFlags();
 
+/* ===== TASKS CONTROLLER ===== */
 const tasksCtrl = createTasksController({
   T,
   AppState,
@@ -58,7 +62,7 @@ const tasksCtrl = createTasksController({
   els
 });
 
-/* ===== LANGUAGE ===== */
+/* ===== LANGUAGE SELECTION ===== */
 document.querySelectorAll("[data-lang]").forEach(btn => {
   btn.addEventListener("click", () => {
     AppState.lang = btn.dataset.lang;
@@ -89,12 +93,12 @@ if (els.backTasks) {
   };
 }
 
-/* ===== SAVE ===== */
+/* ===== SAVE TASK ===== */
 if (els.saveTask) {
   els.saveTask.onclick = tasksCtrl.onSaveTask;
 }
 
-/* ===== POPUP ===== */
+/* ===== POPUP (PREGLED PO DANIMA) ===== */
 if (els.btnByDay) {
   els.btnByDay.onclick = () =>
     openDayPopup({
@@ -123,7 +127,7 @@ if (els.popupDate) {
     tasksCtrl.renderPopup(els.popupDate.value);
 }
 
-/* ===== GLOBALS (inline buttons) ===== */
+/* ===== GLOBALI ZA INLINE GUMBE ===== */
 window.updateStatus = tasksCtrl.updateStatus;
 window.editTask = tasksCtrl.editTask;
 window.deleteTask = tasksCtrl.deleteTask;

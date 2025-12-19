@@ -11,6 +11,7 @@ window.I18N = {
     tRem: "Podsjetnik",
     tSave: "💾 Spremi",
     byDay: "📅 Pregled po danima",
+    smartHint: "Predloženi podsjetnik za ovu kategoriju — možeš ga promijeniti",
 
     calendarToggle: "Dodaj u kalendar",
     calendarAdded: "Dodano u kalendar",
@@ -47,6 +48,7 @@ window.I18N = {
     tRem: "Reminder",
     tSave: "💾 Save",
     byDay: "📅 By day view",
+    smartHint: "Suggested reminder for this category — you can change it",
 
     calendarToggle: "Add to calendar",
     calendarAdded: "Added to calendar",
@@ -83,6 +85,7 @@ window.I18N = {
     tRem: "Erinnerung",
     tSave: "💾 Speichern",
     byDay: "📅 Tagesübersicht",
+    smartHint: "Vorgeschlagene Erinnerung für diese Kategorie — du kannst sie ändern",
 
     calendarToggle: "Zum Kalender hinzufügen",
     calendarAdded: "Zum Kalender hinzugefügt",

@@ -220,6 +220,35 @@ export function createTasksController({ T, AppState, platform, els }) {
   }
 
   bindSmartReminder();
+function popupDeleteTask(id) {
+  const t = tasks.find(x => x.id === id);
+  if (!t) return;
+
+  const ok = confirm(
+    T[AppState.lang].popupDeleteConfirm ||
+    "Obrisati ovu obvezu?"
+  );
+
+  if (!ok) return;
+
+  // ukloni iz liste
+  tasks = tasks.filter(x => x.id !== id);
+  saveTasks(tasks);
+
+  // pametno uklanjanje iz kalendara (ako postoji)
+  if (t.date && t.time) {
+    exportToCalendar({
+      task: { ...t, seq: Date.now() },
+      lang: AppState.lang,
+      T,
+      platform,
+      cancel: true
+    });
+  }
+
+  render();
+  renderPopupIfOpen();
+}
 
   return {
     load,

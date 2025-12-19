@@ -5,7 +5,10 @@ import { showScreen } from "./ui.js";
 import { createTasksController } from "../modules/tasks/tasks.controller.js";
 import { openDayPopup, closeDayPopup } from "../modules/tasks/tasks.popup.js";
 
-const T = window.I18N;
+const T = window.I18N || {};
+if (!window.I18N) {
+  console.warn("I18N not loaded yet");
+}
 
 /* =========================
    SIGURNO DOHVATANJE ELEMENATA

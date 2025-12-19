@@ -76,16 +76,17 @@ export function createTasksController({ T, AppState, platform, els }) {
     const lang = AppState.lang;
 
     const data = {
-      id: editTaskId || Date.now(),
-      title: els.taskTitle.value,
-      note: els.taskNote.value,
-      cat: els.taskCategory.value,
-      date: els.taskDate.value,
-      time: els.taskTime.value,
-      reminder: +els.taskReminder.value,
-      status: "active",
-      seq: Date.now()
-    };
+  id: editTaskId || Date.now(),
+  title: els.taskTitle.value,
+  note: els.taskNote.value,
+  cat: els.taskCategory.value,
+  date: els.taskDate.value,
+  time: els.taskTime.value,
+  reminder: +els.taskReminder.value,
+  addToCalendar: els.addToCalendar.checked && +els.taskReminder.value > 0,
+  status: "active",
+  seq: Date.now()
+};
 
     if (editTaskId) {
       tasks = tasks.map(t => t.id === editTaskId ? data : t);

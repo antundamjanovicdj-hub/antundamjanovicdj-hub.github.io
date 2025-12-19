@@ -1,4 +1,7 @@
 // core/i18n.js
+export const I18N = {
+  // ... tvoj postojeći sadržaj
+};
 window.I18N = {
   hr: {
     tasks: "Obveze",
@@ -117,3 +120,4 @@ window.I18N = {
     }
   }
 };
+window.I18N = I18N;

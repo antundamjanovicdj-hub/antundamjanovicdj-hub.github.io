@@ -8,6 +8,7 @@ import { openDayPopup, closeDayPopup } from "../modules/tasks/tasks.popup.js";
 const T = window.I18N; // ostaje kako već imaš
 
 const els = {
+  reminderHint: document.getElementById("reminderHint"),
   // screens/buttons
   backMenu: document.getElementById("backMenu"),
   btnTasks: document.getElementById("btnTasks"),

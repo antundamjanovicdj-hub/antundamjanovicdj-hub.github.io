@@ -4,12 +4,11 @@ import { renderTasks } from "./tasks.ui.js";
 import { exportToCalendar } from "./tasks.calendar.js";
 import { renderPopupTasks } from "./tasks.popup.js";
 
-// PAMETNI REMINDERI (u minutama)
 const SMART_REMINDERS = {
-  health: 1440,    // 1 dan
-  finance: 1440,   // 1 dan
-  family: 60,      // 1 sat
-  personal: 30     // 30 min
+  health: 1440,   // 1 dan
+  finance: 1440,  // 1 dan
+  family: 60,     // 1 sat
+  personal: 30    // 30 min
 };
 
 export function createTasksController({ T, AppState, platform, els }) {
@@ -17,52 +16,28 @@ export function createTasksController({ T, AppState, platform, els }) {
   let editTaskId = null;
   let userTouchedReminder = false;
 
-  /* ================= SMART REMINDER + HINT ================= */
-
-  function showHint(text) {
-    els.reminderHint.textContent = text;
-    els.reminderHint.classList.remove("hidden");
-  }
-
-  function hideHint() {
-    els.reminderHint.classList.add("hidden");
-  }
-
-  function bindSmartReminder() {
-    els.taskReminder.addEventListener("change", () => {
-      userTouchedReminder = true;
-      hideHint();
-    });
-
-    els.taskCategory.addEventListener("change", () => {
-      const cat = els.taskCategory.value;
-      const suggested = SMART_REMINDERS[cat];
-
-      if (!userTouchedReminder && suggested) {
-        els.taskReminder.value = String(suggested);
-        showHint(
-          T[AppState.lang].smartHint
-        );
-      }
-    });
-  }
-
-  /* ================= LOAD / RENDER ================= */
+  /* ================= LOAD ================= */
 
   function load() {
-  tasks = loadTasks().map(t => ({
-    ...t,
-    addToCalendar: t.addToCalendar && t.reminder > 0
-  }));
-  render();
-}
+    tasks = loadTasks().map(t => ({
+      ...t,
+      // NORMALIZACIJA: bez remindera = nema kalendara
+      addToCalendar: t.addToCalendar === true && t.reminder > 0
+    }));
+    render();
+  }
+
+  /* ================= RENDER ================= */
 
   function render() {
-    renderTasks({ tasks, taskListEl: els.taskList });
+    renderTasks({
+      tasks,
+      taskListEl: els.taskList
+    });
   }
 
   function renderPopupIfOpen() {
-    if (els.dayPopup.classList.contains("active")) {
+    if (els.dayPopup && els.dayPopup.classList.contains("active")) {
       renderPopupTasks({
         date: els.popupDate.value,
         tasks,
@@ -73,26 +48,51 @@ export function createTasksController({ T, AppState, platform, els }) {
     }
   }
 
+  /* ================= SMART REMINDER ================= */
+
+  function bindSmartReminder() {
+    if (!els.taskReminder || !els.taskCategory) return;
+
+    els.taskReminder.addEventListener("change", () => {
+      userTouchedReminder = true;
+      if (els.reminderHint) {
+        els.reminderHint.classList.add("hidden");
+      }
+    });
+
+    els.taskCategory.addEventListener("change", () => {
+      const suggested = SMART_REMINDERS[els.taskCategory.value];
+
+      if (!userTouchedReminder && suggested) {
+        els.taskReminder.value = String(suggested);
+        if (els.reminderHint) {
+          els.reminderHint.textContent = T[AppState.lang].smartHint || "";
+          els.reminderHint.classList.remove("hidden");
+        }
+      }
+    });
+  }
+
   /* ================= SAVE ================= */
 
   function onSaveTask() {
-    const lang = AppState.lang;
+    const reminder = +els.taskReminder.value;
 
     const data = {
-  id: editTaskId || Date.now(),
-  title: els.taskTitle.value,
-  note: els.taskNote.value,
-  cat: els.taskCategory.value,
-  date: els.taskDate.value,
-  time: els.taskTime.value,
-  reminder: +els.taskReminder.value,
-  addToCalendar: els.addToCalendar.checked && +els.taskReminder.value > 0,
-  status: "active",
-  seq: Date.now()
-};
+      id: editTaskId || Date.now(),
+      title: els.taskTitle.value,
+      note: els.taskNote.value,
+      cat: els.taskCategory.value,
+      date: els.taskDate.value,
+      time: els.taskTime.value,
+      reminder,
+      addToCalendar: els.addToCalendar.checked && reminder > 0,
+      status: "active",
+      seq: Date.now()
+    };
 
     if (editTaskId) {
-      tasks = tasks.map(t => t.id === editTaskId ? data : t);
+      tasks = tasks.map(t => (t.id === editTaskId ? data : t));
       editTaskId = null;
     } else {
       tasks.push(data);
@@ -100,13 +100,23 @@ export function createTasksController({ T, AppState, platform, els }) {
 
     saveTasks(tasks);
 
-    if (els.addToCalendar.checked) {
-      exportToCalendar({ task: data, lang, T, platform });
-      els.calendarInfo.textContent = T[lang].calendarAdded;
-    } else {
+    // 👉 EXPORT U KALENDAR SAMO OVDJE
+    if (data.addToCalendar && data.date && data.time) {
+      exportToCalendar({
+        task: data,
+        lang: AppState.lang,
+        T,
+        platform,
+        cancel: false
+      });
+      if (els.calendarInfo) {
+        els.calendarInfo.textContent = T[AppState.lang].calendarAdded || "";
+      }
+    } else if (els.calendarInfo) {
       els.calendarInfo.textContent = "";
     }
 
+    // reset forme
     els.taskTitle.value = "";
     els.taskNote.value = "";
     els.taskDate.value = "";
@@ -114,56 +124,54 @@ export function createTasksController({ T, AppState, platform, els }) {
     els.taskReminder.value = "0";
     els.addToCalendar.checked = true;
     userTouchedReminder = false;
-    hideHint();
+    if (els.reminderHint) {
+      els.reminderHint.classList.add("hidden");
+    }
 
     render();
     renderPopupIfOpen();
   }
 
-  /* ================= STATUS / EDIT / DELETE ================= */
+  /* ================= STATUS CHANGE ================= */
 
- function updateStatus(id, status) {
-  const t = tasks.find(x => x.id === id);
-  if (!t) return;
+  function updateStatus(id, status) {
+    const t = tasks.find(x => x.id === id);
+    if (!t) return;
 
-  const updated = {
-    ...t,
-    status,
-    seq: Date.now()
-  };
+    const updated = {
+      ...t,
+      status,
+      seq: Date.now()
+    };
 
-  tasks = tasks.map(x => x.id === id ? updated : x);
-  saveTasks(tasks);
+    tasks = tasks.map(x => (x.id === id ? updated : x));
+    saveTasks(tasks);
 
-  // 👉 ANDROID: pitaj korisnika
-  const shouldCancelCalendar =
-    platform.isIOS
-      ? true
-      : confirm(
+    // 👉 OTKAZIVANJE KALENDARA – SAMO AKO JE STVARNO BIO DODAN
+    if (updated.addToCalendar === true) {
+      const shouldCancel =
+        platform.isIOS ||
+        confirm(
           T[AppState.lang].calendarRemoveConfirm ||
           "Želiš li ukloniti ovu obvezu iz kalendara?"
         );
 
-if (
-  shouldCancelCalendar &&
-  t.addToCalendar === true &&
-  t.reminder > 0 &&
-  t.date &&
-  t.time
-) {
-  exportToCalendar({
-    task: updated,
-    lang: AppState.lang,
-    T,
-    platform,
-    cancel: true
-  });
-}
+      if (shouldCancel) {
+        exportToCalendar({
+          task: updated,
+          lang: AppState.lang,
+          T,
+          platform,
+          cancel: true
+        });
+      }
+    }
 
-  render();
-  renderPopupIfOpen();
-}
+    render();
+    renderPopupIfOpen();
+  }
 
+  /* ================= EDIT / DELETE ================= */
 
   function editTask(id) {
     const t = tasks.find(x => x.id === id);
@@ -171,14 +179,18 @@ if (
 
     editTaskId = id;
     userTouchedReminder = true;
-    hideHint();
 
     els.taskTitle.value = t.title;
     els.taskNote.value = t.note;
     els.taskCategory.value = t.cat;
     els.taskDate.value = t.date;
     els.taskTime.value = t.time;
-    els.taskReminder.value = t.reminder || "0";
+    els.taskReminder.value = String(t.reminder || 0);
+    els.addToCalendar.checked = t.addToCalendar === true;
+
+    if (els.reminderHint) {
+      els.reminderHint.classList.add("hidden");
+    }
   }
 
   function deleteTask(id) {
@@ -225,40 +237,14 @@ if (
       els.taskCategory.appendChild(o);
     }
 
-    hideHint();
+    if (els.reminderHint) {
+      els.reminderHint.classList.add("hidden");
+    }
+
     renderPopupIfOpen();
   }
 
   bindSmartReminder();
-function popupDeleteTask(id) {
-  const t = tasks.find(x => x.id === id);
-  if (!t) return;
-
-  const ok = confirm(
-    T[AppState.lang].popupDeleteConfirm ||
-    "Obrisati ovu obvezu?"
-  );
-
-  if (!ok) return;
-
-  // ukloni iz liste
-  tasks = tasks.filter(x => x.id !== id);
-  saveTasks(tasks);
-
-  // pametno uklanjanje iz kalendara (ako postoji)
-  if (t.date && t.time) {
-    exportToCalendar({
-      task: { ...t, seq: Date.now() },
-      lang: AppState.lang,
-      T,
-      platform,
-      cancel: true
-    });
-  }
-
-  render();
-  renderPopupIfOpen();
-}
 
   return {
     load,
@@ -267,7 +253,6 @@ function popupDeleteTask(id) {
     renderPopup,
     updateStatus,
     editTask,
-    deleteTask,
-    popupDeleteTask,
+    deleteTask
   };
 }

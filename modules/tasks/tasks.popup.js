@@ -50,6 +50,7 @@ export function renderPopupTasks({ date, tasks, popupTasksEl, T, lang }) {
       el.className = `item task-${t.status}`;
 
       el.innerHTML = `
+        <button class="popup-delete" onclick="popupDeleteTask(${t.id})">🗑</button>
         <strong>${t.title}</strong><br>
         ${t.time || ""}${t.time ? "<br>" : ""}
         <small>${T[lang].cats[t.cat] || ""}</small>

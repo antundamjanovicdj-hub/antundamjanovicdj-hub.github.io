@@ -99,3 +99,13 @@ select{-webkit-appearance:none;appearance:none;background:white}
  opacity:.7;
  font-size:.9rem;
 }
+.reminder-hint{
+  margin-top:.4rem;
+  font-size:.75rem;
+  opacity:.7;
+  text-align:left;
+}
+
+.reminder-hint.hidden{
+  display:none;
+}

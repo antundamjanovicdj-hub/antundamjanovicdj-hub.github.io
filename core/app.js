@@ -2,19 +2,19 @@
 import { AppState } from "./state.js";
 import { getPlatformFlags } from "./platform.js";
 import { showScreen } from "./ui.js";
-import { createTasksController } from "../modules/tasks/tasks.controller.js";
-import { openDayPopup, closeDayPopup } from "../modules/tasks/tasks.popup.js";
+/*import { createTasksController } from "../modules/tasks/tasks.controller.js";
+import { openDayPopup, closeDayPopup } from "../modules/tasks/tasks.popup.js";/*
 
 const T = window.I18N || {};
-if (!window.I18N) {
+/*if (!window.I18N) {
   console.warn("I18N not loaded yet");
-}
+}/*
 
 /* =========================
    SIGURNO DOHVATANJE ELEMENATA
 ========================= */
 
-const $ = (id) => document.getElementById(id);
+/*const $ = (id) => document.getElementById(id);
 
 const els = {
   // language / navigation
@@ -53,20 +53,20 @@ const els = {
 
   // visual hint (MOŽE BITI NULL)
   reminderHint: $("reminderHint")
-};
+};/*
 
 /* =========================
    INIT
 ========================= */
 
-const platform = getPlatformFlags();
+/*const platform = getPlatformFlags();
 
 const tasksCtrl = createTasksController({
   T,
   AppState,
   platform,
   els
-});
+});/*
 
 /* =========================
    LANGUAGE BUTTONS (SAFE)

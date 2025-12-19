@@ -118,7 +118,7 @@ export function createTasksController({ T, AppState, platform, els }) {
 
   /* ================= STATUS / EDIT / DELETE ================= */
 
-  function updateStatus(id, status) {
+ function updateStatus(id, status) {
   const t = tasks.find(x => x.id === id);
   if (!t) return;
 
@@ -131,8 +131,16 @@ export function createTasksController({ T, AppState, platform, els }) {
   tasks = tasks.map(x => x.id === id ? updated : x);
   saveTasks(tasks);
 
-  // ➜ PAMETNO OTKAZIVANJE KALENDARA
-  if (t.date && t.time) {
+  // 👉 ANDROID: pitaj korisnika
+  const shouldCancelCalendar =
+    platform.isIOS
+      ? true
+      : confirm(
+          T[AppState.lang].calendarRemoveConfirm ||
+          "Želiš li ukloniti ovu obvezu iz kalendara?"
+        );
+
+  if (shouldCancelCalendar && t.date && t.time) {
     exportToCalendar({
       task: updated,
       lang: AppState.lang,
@@ -145,6 +153,7 @@ export function createTasksController({ T, AppState, platform, els }) {
   render();
   renderPopupIfOpen();
 }
+
 
   function editTask(id) {
     const t = tasks.find(x => x.id === id);

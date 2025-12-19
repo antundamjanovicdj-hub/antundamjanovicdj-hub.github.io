@@ -257,6 +257,7 @@ function popupDeleteTask(id) {
     renderPopup,
     updateStatus,
     editTask,
-    deleteTask
+    deleteTask,
+    popupDeleteTask,
   };
 }

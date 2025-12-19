@@ -1,6 +1,12 @@
 // modules/tasks/tasks.popup.js
-export function openDayPopup({ loadTasksFn, popupDateEl, renderPopupTasksFn, dayPopupEl }) {
+export function openDayPopup({
+  loadTasksFn,
+  popupDateEl,
+  renderPopupTasksFn,
+  dayPopupEl
+}) {
   loadTasksFn();
+
   const today = new Date().toISOString().split("T")[0];
   popupDateEl.value = popupDateEl.value || today;
 
@@ -21,7 +27,7 @@ export function renderPopupTasks({ date, tasks, popupTasksEl, T, lang }) {
   const sections = [
     { key: "active", label: T[lang].status.active },
     { key: "done", label: T[lang].status.done },
-    { key: "cancelled", label: T[lang].status.cancelled },
+    { key: "cancelled", label: T[lang].status.cancelled }
   ];
 
   let any = false;
@@ -42,11 +48,14 @@ export function renderPopupTasks({ date, tasks, popupTasksEl, T, lang }) {
     list.forEach(t => {
       const el = document.createElement("div");
       el.className = "item";
+
       el.innerHTML = `
         <strong>${t.title}</strong><br>
         ${t.time || ""}${t.time ? "<br>" : ""}
         <small>${T[lang].cats[t.cat] || ""}</small>
-        ${t.note ? `<div class="note">${t.note}</div>` : ""}`;
+        ${t.note ? `<div class="note">${t.note}</div>` : ""}
+      `;
+
       popupTasksEl.appendChild(el);
     });
   });

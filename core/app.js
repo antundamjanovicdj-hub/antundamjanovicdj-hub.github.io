@@ -6,13 +6,6 @@ import { createTasksController } from "../modules/tasks/tasks.controller.js";
 import { openDayPopup, closeDayPopup } from "../modules/tasks/tasks.popup.js";
 
 const T = window.I18N || {};
-if (!window.I18N) {
-  console.warn("I18N not loaded yet");
-}
-
-/* =========================
-   SIGURNO DOHVATANJE ELEMENATA
-========================= */
 
 const $ = (id) => document.getElementById(id);
 
@@ -23,7 +16,7 @@ const els = {
   backTasks: $("backTasks"),
   btnByDay: $("btnByDay"),
 
-  // task form
+  // task form labels
   tTitleL: $("tTitleL"),
   tNoteL: $("tNoteL"),
   tCatL: $("tCatL"),
@@ -31,6 +24,7 @@ const els = {
   tTimeL: $("tTimeL"),
   tRemL: $("tRemL"),
 
+  // task form inputs
   taskTitle: $("taskTitle"),
   taskNote: $("taskNote"),
   taskCategory: $("taskCategory"),
@@ -51,13 +45,9 @@ const els = {
   popupDate: $("popupDate"),
   popupTasks: $("popupTasks"),
 
-  // visual hint (MOŽE BITI NULL)
+  // reminder hint (može biti null)
   reminderHint: $("reminderHint")
 };
-
-/* =========================
-   INIT
-========================= */
 
 const platform = getPlatformFlags();
 
@@ -68,25 +58,17 @@ const tasksCtrl = createTasksController({
   els
 });
 
-/* =========================
-   LANGUAGE BUTTONS (SAFE)
-========================= */
-
+/* ===== LANGUAGE ===== */
 document.querySelectorAll("[data-lang]").forEach(btn => {
   btn.addEventListener("click", () => {
     AppState.lang = btn.dataset.lang;
-
     tasksCtrl.applyLangToTasksUI();
-
     document.body.className = "static";
     showScreen("screen-menu");
   });
 });
 
-/* =========================
-   NAVIGATION (SAFE)
-========================= */
-
+/* ===== NAVIGATION ===== */
 if (els.backMenu) {
   els.backMenu.onclick = () => {
     document.body.className = "home";
@@ -107,18 +89,12 @@ if (els.backTasks) {
   };
 }
 
-/* =========================
-   SAVE TASK
-========================= */
-
+/* ===== SAVE ===== */
 if (els.saveTask) {
   els.saveTask.onclick = tasksCtrl.onSaveTask;
 }
 
-/* =========================
-   POPUP (SAFE)
-========================= */
-
+/* ===== POPUP ===== */
 if (els.btnByDay) {
   els.btnByDay.onclick = () =>
     openDayPopup({
@@ -147,19 +123,12 @@ if (els.popupDate) {
     tasksCtrl.renderPopup(els.popupDate.value);
 }
 
-/* =========================
-   GLOBALS (INLINE ONCLICK)
-========================= */
-
+/* ===== GLOBALS (inline buttons) ===== */
 window.updateStatus = tasksCtrl.updateStatus;
 window.editTask = tasksCtrl.editTask;
 window.deleteTask = tasksCtrl.deleteTask;
-window.popupDeleteTask = tasksCtrl.popupDeleteTask;
 
-/* =========================
-   START
-========================= */
-
+/* ===== START ===== */
 window.onload = () => {
   tasksCtrl.applyLangToTasksUI();
 };

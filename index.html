@@ -76,6 +76,7 @@ select{-webkit-appearance:none;appearance:none;background:white}
 <body class="home">
 <div class="app">
 
+<!-- LANGUAGE -->
 <div id="screen-lang" class="screen active">
  <div class="content">
   <h1 class="title"><span>Life</span><span>Kompas</span></h1>
@@ -87,16 +88,17 @@ select{-webkit-appearance:none;appearance:none;background:white}
  </div>
 </div>
 
+<!-- MENU -->
 <div id="screen-menu" class="screen">
  <button class="back" id="backMenu">←</button>
  <div class="content">
   <div class="buttons">
    <button class="btn" id="btnTasks"></button>
-   <button class="btn" id="btnHistory"></button>
   </div>
  </div>
 </div>
 
+<!-- TASKS -->
 <div id="screen-tasks" class="screen">
  <button class="back" id="backTasks">←</button>
  <div class="content scroll">
@@ -138,19 +140,12 @@ select{-webkit-appearance:none;appearance:none;background:white}
  </div>
 </div>
 
-<div id="screen-history" class="screen">
- <button class="back" id="backHistory">←</button>
- <div class="content scroll">
-  <div id="historyList"></div>
- </div>
-</div>
-
 </div>
 
 <script>
 const T={
  hr:{
-  tasks:"📋 Obveze",history:"📜 Povijest",
+  tasks:"📋 Obveze",
   tTitle:"Obveza",tNote:"Bilješka",tCat:"Kategorija",
   tDate:"Datum",tTime:"Vrijeme",tRem:"Podsjeti prije",
   tSave:"💾 Spremi obvezu",
@@ -160,7 +155,7 @@ const T={
   calendarNote:"Alarm iz LifeKompas aplikacije."
  },
  de:{
-  tasks:"📋 Aufgaben",history:"📜 Verlauf",
+  tasks:"📋 Aufgaben",
   tTitle:"Aufgabe",tNote:"Notiz",tCat:"Kategorie",
   tDate:"Datum",tTime:"Zeit",tRem:"Erinnerung",
   tSave:"💾 Aufgabe speichern",
@@ -170,7 +165,7 @@ const T={
   calendarNote:"Erinnerung von LifeKompas."
  },
  en:{
-  tasks:"📋 Tasks",history:"📜 History",
+  tasks:"📋 Tasks",
   tTitle:"Task",tNote:"Note",tCat:"Category",
   tDate:"Date",tTime:"Time",tRem:"Remind before",
   tSave:"💾 Save task",
@@ -183,12 +178,11 @@ const T={
 
 let lang="hr",tasks=[],editTaskId=null;
 
-/* ===== PLATFORM DETEKCIJA ===== */
-const ua = navigator.userAgent;
-const isIOS = /iPad|iPhone|iPod/.test(ua);
-const isSamsung = /Samsung/i.test(ua);
-const isPixel = /Pixel/i.test(ua);
-/* ============================== */
+/* PLATFORM */
+const ua=navigator.userAgent;
+const isIOS=/iPad|iPhone|iPod/.test(ua);
+const isSamsung=/Samsung/i.test(ua);
+const isPixel=/Pixel/i.test(ua);
 
 function show(id){
  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
@@ -197,7 +191,6 @@ function show(id){
 
 function applyLang(){
  btnTasks.textContent=T[lang].tasks;
- btnHistory.textContent=T[lang].history;
  tTitleL.textContent=T[lang].tTitle;
  tNoteL.textContent=T[lang].tNote;
  tCatL.textContent=T[lang].tCat;
@@ -226,9 +219,7 @@ document.querySelectorAll("[data-lang]").forEach(b=>{
 
 backMenu.onclick=()=>{document.body.className="home";show("screen-lang")};
 btnTasks.onclick=()=>{loadTasks();show("screen-tasks")};
-btnHistory.onclick=()=>{loadHistory();show("screen-history")};
 backTasks.onclick=()=>show("screen-menu");
-backHistory.onclick=()=>show("screen-menu");
 
 function formatDate(d){
  if(!d) return "";
@@ -251,7 +242,7 @@ saveTask.onclick=()=>{
   time:taskTime.value,
   reminder:+taskReminder.value,
   status:"active",
-  seq: Date.now()
+  seq:Date.now()
  };
 
  if(editTaskId){
@@ -286,38 +277,16 @@ function exportToCalendar(task){
  if(isIOS){
   method="REQUEST";
   sequenceLine=`SEQUENCE:${task.seq}\r\n`;
- } else if(isSamsung){
-  method="PUBLISH";
-  sequenceLine=""; // Samsung najstabilnije bez SEQUENCE
  } else if(isPixel){
-  method="PUBLISH";
   sequenceLine=`SEQUENCE:${task.seq}\r\n`;
  }
 
  const alarm=task.reminder>0
- ? "BEGIN:VALARM\r\n"+
-   `TRIGGER:-PT${task.reminder}M\r\n`+
-   "ACTION:DISPLAY\r\n"+
-   `DESCRIPTION:${task.title}\r\n`+
-   "END:VALARM\r\n"
+ ? `BEGIN:VALARM\r\nTRIGGER:-PT${task.reminder}M\r\nACTION:DISPLAY\r\nDESCRIPTION:${task.title}\r\nEND:VALARM\r\n`
  : "";
 
  const ics=
- "BEGIN:VCALENDAR\r\n"+
- "VERSION:2.0\r\n"+
- `METHOD:${method}\r\n`+
- "PRODID:-//LifeKompas//HR\r\n"+
- "BEGIN:VEVENT\r\n"+
- `UID:${uid}\r\n`+
- sequenceLine+
- `DTSTAMP:${dt(new Date())}\r\n`+
- `SUMMARY:${task.title}\r\n`+
- `DTSTART:${dt(start)}\r\n`+
- `DTEND:${dt(end)}\r\n`+
- `DESCRIPTION:${T[lang].calendarNote}\r\n`+
- alarm+
- "END:VEVENT\r\n"+
- "END:VCALENDAR";
+ `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nMETHOD:${method}\r\nPRODID:-//LifeKompas//HR\r\nBEGIN:VEVENT\r\nUID:${uid}\r\n${sequenceLine}DTSTAMP:${dt(new Date())}\r\nSUMMARY:${task.title}\r\nDTSTART:${dt(start)}\r\nDTEND:${dt(end)}\r\nDESCRIPTION:${T[lang].calendarNote}\r\n${alarm}END:VEVENT\r\nEND:VCALENDAR`;
 
  const blob=new Blob([ics],{type:"text/calendar;charset=utf-8"});
  const url=URL.createObjectURL(blob);
@@ -369,17 +338,6 @@ function deleteTask(id){
  tasks=tasks.filter(t=>t.id!==id);
  localStorage.setItem("tasks",JSON.stringify(tasks));
  renderTasks();
-}
-
-function loadHistory(){
- tasks=JSON.parse(localStorage.getItem("tasks")||"[]");
- historyList.innerHTML="";
- tasks.filter(t=>t.status!=="active").forEach(t=>{
-  const el=document.createElement("div");
-  el.className="item";
-  el.innerHTML=`${t.status==="done"?"✅":"❌"} <strong>${t.title}</strong><br>${formatDate(t.date)} ${t.time}`;
-  historyList.appendChild(el);
- });
 }
 
 window.onload=applyLang;

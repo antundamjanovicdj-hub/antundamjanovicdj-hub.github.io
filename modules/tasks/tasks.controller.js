@@ -4,12 +4,12 @@ import { renderTasks } from "./tasks.ui.js";
 import { exportToCalendar } from "./tasks.calendar.js";
 import { renderPopupTasks } from "./tasks.popup.js";
 
-// PAMETNI REMINDERI PO KATEGORIJI (u minutama)
+// PAMETNI REMINDERI (u minutama)
 const SMART_REMINDERS = {
-  health: 1440,     // 1 dan
-  finance: 2880,    // 2 dana
-  family: 60,       // 1 sat
-  personal: 30      // 30 min
+  health: 1440,
+  finance: 2880,
+  family: 60,
+  personal: 30
 };
 
 export function createTasksController({ T, AppState, platform, els }) {
@@ -17,9 +17,37 @@ export function createTasksController({ T, AppState, platform, els }) {
   let editTaskId = null;
   let userTouchedReminder = false;
 
-  /* =========================
-     LOAD & RENDER
-  ========================= */
+  /* ================= SMART REMINDER + HINT ================= */
+
+  function showHint(text) {
+    els.reminderHint.textContent = text;
+    els.reminderHint.classList.remove("hidden");
+  }
+
+  function hideHint() {
+    els.reminderHint.classList.add("hidden");
+  }
+
+  function bindSmartReminder() {
+    els.taskReminder.addEventListener("change", () => {
+      userTouchedReminder = true;
+      hideHint();
+    });
+
+    els.taskCategory.addEventListener("change", () => {
+      const cat = els.taskCategory.value;
+      const suggested = SMART_REMINDERS[cat];
+
+      if (!userTouchedReminder && suggested) {
+        els.taskReminder.value = String(suggested);
+        showHint(
+          T[AppState.lang].smartHint
+        );
+      }
+    });
+  }
+
+  /* ================= LOAD / RENDER ================= */
 
   function load() {
     tasks = loadTasks();
@@ -27,10 +55,7 @@ export function createTasksController({ T, AppState, platform, els }) {
   }
 
   function render() {
-    renderTasks({
-      tasks,
-      taskListEl: els.taskList
-    });
+    renderTasks({ tasks, taskListEl: els.taskList });
   }
 
   function renderPopupIfOpen() {
@@ -45,29 +70,7 @@ export function createTasksController({ T, AppState, platform, els }) {
     }
   }
 
-  /* =========================
-     SMART REMINDER LOGIKA
-  ========================= */
-
-  function bindSmartReminder() {
-    // ako korisnik ručno dira reminder, više ga ne diramo automatski
-    els.taskReminder.addEventListener("change", () => {
-      userTouchedReminder = true;
-    });
-
-    els.taskCategory.addEventListener("change", () => {
-      const cat = els.taskCategory.value;
-      const suggested = SMART_REMINDERS[cat];
-
-      if (!userTouchedReminder && suggested) {
-        els.taskReminder.value = String(suggested);
-      }
-    });
-  }
-
-  /* =========================
-     SAVE
-  ========================= */
+  /* ================= SAVE ================= */
 
   function onSaveTask() {
     const lang = AppState.lang;
@@ -85,7 +88,7 @@ export function createTasksController({ T, AppState, platform, els }) {
     };
 
     if (editTaskId) {
-      tasks = tasks.map(t => (t.id === editTaskId ? data : t));
+      tasks = tasks.map(t => t.id === editTaskId ? data : t);
       editTaskId = null;
     } else {
       tasks.push(data);
@@ -94,18 +97,12 @@ export function createTasksController({ T, AppState, platform, els }) {
     saveTasks(tasks);
 
     if (els.addToCalendar.checked) {
-      exportToCalendar({
-        task: data,
-        lang,
-        T,
-        platform
-      });
+      exportToCalendar({ task: data, lang, T, platform });
       els.calendarInfo.textContent = T[lang].calendarAdded;
     } else {
       els.calendarInfo.textContent = "";
     }
 
-    // reset forme
     els.taskTitle.value = "";
     els.taskNote.value = "";
     els.taskDate.value = "";
@@ -113,17 +110,16 @@ export function createTasksController({ T, AppState, platform, els }) {
     els.taskReminder.value = "0";
     els.addToCalendar.checked = true;
     userTouchedReminder = false;
+    hideHint();
 
     render();
     renderPopupIfOpen();
   }
 
-  /* =========================
-     STATUS / EDIT / DELETE
-  ========================= */
+  /* ================= STATUS / EDIT / DELETE ================= */
 
   function updateStatus(id, status) {
-    tasks = tasks.map(t => (t.id === id ? { ...t, status } : t));
+    tasks = tasks.map(t => t.id === id ? { ...t, status } : t);
     saveTasks(tasks);
     render();
     renderPopupIfOpen();
@@ -134,7 +130,8 @@ export function createTasksController({ T, AppState, platform, els }) {
     if (!t) return;
 
     editTaskId = id;
-    userTouchedReminder = true; // kod editiranja ne diramo reminder
+    userTouchedReminder = true;
+    hideHint();
 
     els.taskTitle.value = t.title;
     els.taskNote.value = t.note;
@@ -161,9 +158,7 @@ export function createTasksController({ T, AppState, platform, els }) {
     });
   }
 
-  /* =========================
-     LANG APPLY
-  ========================= */
+  /* ================= LANG ================= */
 
   function applyLangToTasksUI() {
     const lang = AppState.lang;
@@ -190,12 +185,9 @@ export function createTasksController({ T, AppState, platform, els }) {
       els.taskCategory.appendChild(o);
     }
 
+    hideHint();
     renderPopupIfOpen();
   }
-
-  /* =========================
-     INIT
-  ========================= */
 
   bindSmartReminder();
 
@@ -204,8 +196,6 @@ export function createTasksController({ T, AppState, platform, els }) {
     onSaveTask,
     applyLangToTasksUI,
     renderPopup,
-
-    // global zbog inline onclicka
     updateStatus,
     editTask,
     deleteTask

@@ -33,7 +33,7 @@ body.static{
 .content{width:100%;max-width:420px;padding:2rem 1.5rem;text-align:center}
 .scroll{max-height:100%;overflow-y:auto}
 
-.title{font-size:4rem;font-weight:900;margin-bottom:2rem}
+.title{font-size:4rem;font-weight:900;line-height:1;margin-bottom:2rem}
 .title span{
  display:block;
  background:linear-gradient(180deg,#000 40%,#ff8c00 60%,#ff4500);
@@ -48,7 +48,7 @@ body.static{
 }
 
 .back{
- position:fixed;top:1rem;right:1rem;
+ position:fixed;top:1rem;right:1rem;z-index:9999;
  border:none;border-radius:20px;padding:.4rem .9rem;
  background:rgba(255,255,255,.9)
 }
@@ -64,9 +64,12 @@ input,textarea,select{
 }
 .actions{display:flex;justify-content:space-between;margin-top:8px}
 .actions button{background:none;border:none;font-size:1.2rem}
-.note{font-size:.75rem;opacity:.7}
-.status-done{opacity:.6}
-.status-cancelled{text-decoration:line-through;opacity:.5}
+
+.section-title{
+ margin-top:1.5rem;
+ font-weight:700;
+ opacity:.7
+}
 </style>
 </head>
 
@@ -79,6 +82,7 @@ input,textarea,select{
   <h1 class="title"><span>Life</span><span>Kompas</span></h1>
   <div class="buttons">
    <button class="btn" data-lang="hr">🇭🇷 Hrvatski</button>
+   <button class="btn" data-lang="de">🇩🇪 Deutsch</button>
    <button class="btn" data-lang="en">🇬🇧 English</button>
   </div>
  </div>
@@ -88,7 +92,9 @@ input,textarea,select{
 <div id="screen-menu" class="screen">
  <button class="back" id="backMenu">←</button>
  <div class="content">
-  <button class="btn" id="btnTasks">📋 Obveze</button>
+  <div class="buttons">
+   <button class="btn" id="btnTasks">📋 Obveze</button>
+  </div>
  </div>
 </div>
 
@@ -96,9 +102,6 @@ input,textarea,select{
 <div id="screen-tasks" class="screen">
  <button class="back" id="backTasks">←</button>
  <div class="content scroll">
-
-  <label>Pregled dana</label>
-  <input type="date" id="dayPicker">
 
   <label>Obveza</label>
   <input id="taskTitle">
@@ -112,21 +115,27 @@ input,textarea,select{
   <label>Vrijeme</label>
   <input type="time" id="taskTime">
 
-  <button class="btn" id="saveTask" style="margin-top:1rem">💾 Spremi</button>
+  <button class="btn" id="saveTask" style="margin-top:1.2rem">💾 Spremi obvezu</button>
+
+  <button class="btn" id="btnByDay" style="margin-top:.6rem">
+   📅 Pregled obveza po danu
+  </button>
+
+  <!-- DATE PICKER -->
+  <div id="dayPicker" style="display:none">
+   <label>Odaberi datum</label>
+   <input type="date" id="viewDate">
+  </div>
 
   <div id="taskList"></div>
+
  </div>
 </div>
 
 </div>
 
 <script>
-let lang="hr";
-let tasks=[];
-let editTaskId=null;
-
-const today=()=>new Date().toISOString().split("T")[0];
-dayPicker.value=today();
+let tasks=[],editTaskId=null;
 
 function show(id){
  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
@@ -134,31 +143,25 @@ function show(id){
 }
 
 document.querySelectorAll("[data-lang]").forEach(b=>{
- b.onclick=()=>{
-  lang=b.dataset.lang;
-  document.body.className="static";
-  show("screen-menu");
- }
+ b.onclick=()=>{document.body.className="static";show("screen-menu")}
 });
-
-backMenu.onclick=()=>{document.body.className="home";show("screen-lang")};
-btnTasks.onclick=()=>{loadTasks();show("screen-tasks")};
-backTasks.onclick=()=>show("screen-menu");
+backMenu.onclick=()=>{document.body.className="home";show("screen-lang")}
+btnTasks.onclick=()=>{loadTasks();show("screen-tasks")}
+backTasks.onclick=()=>show("screen-menu")
 
 function loadTasks(){
  tasks=JSON.parse(localStorage.getItem("tasks")||"[]");
- dayPicker.value=today();
  renderTasks();
 }
 
-dayPicker.onchange=renderTasks;
-
 saveTask.onclick=()=>{
+ if(!taskTitle.value) return;
+
  const data={
   id:editTaskId||Date.now(),
   title:taskTitle.value,
   note:taskNote.value,
-  date:taskDate.value||today(),
+  date:taskDate.value,
   time:taskTime.value,
   status:"active"
  };
@@ -169,55 +172,74 @@ saveTask.onclick=()=>{
  } else tasks.push(data);
 
  localStorage.setItem("tasks",JSON.stringify(tasks));
- taskTitle.value=taskNote.value=taskTime.value="";
+ taskTitle.value=taskNote.value=taskDate.value=taskTime.value="";
  renderTasks();
 };
 
+btnByDay.onclick=()=>{
+ dayPicker.style.display="block";
+ taskList.innerHTML="";
+};
+
+viewDate.onchange=()=>{
+ const d=viewDate.value;
+ renderTasksForDate(d);
+};
+
+function renderTasksForDate(date){
+ taskList.innerHTML="";
+
+ const sections={
+  active:"⏳ Aktivne",
+  done:"✅ Obavljeno",
+  cancelled:"❌ Otkazano",
+  deleted:"🗑 Izbrisano"
+ };
+
+ Object.keys(sections).forEach(status=>{
+  const list=tasks.filter(t=>t.date===date && t.status===status);
+  if(!list.length) return;
+
+  const title=document.createElement("div");
+  title.className="section-title";
+  title.textContent=sections[status];
+  taskList.appendChild(title);
+
+  list.forEach(t=>{
+   const el=document.createElement("div");
+   el.className="item";
+   el.innerHTML=`
+    <strong>${t.title}</strong><br>${t.time||""}
+    <div class="actions">
+     <button onclick="updateStatus(${t.id},'done')">✅</button>
+     <button onclick="updateStatus(${t.id},'cancelled')">❌</button>
+     <button onclick="deleteTask(${t.id})">🗑</button>
+    </div>`;
+   taskList.appendChild(el);
+  });
+ });
+}
+
 function renderTasks(){
  taskList.innerHTML="";
- const day=dayPicker.value;
-
- tasks.filter(t=>t.date===day).forEach(t=>{
-  let statusIcon="⏳";
-  let cls="";
-  if(t.status==="done"){statusIcon="✅";cls="status-done"}
-  if(t.status==="cancelled"){statusIcon="❌";cls="status-cancelled"}
-
+ tasks.filter(t=>t.status==="active").forEach(t=>{
   const el=document.createElement("div");
-  el.className="item "+cls;
-  el.innerHTML=`
-   ${statusIcon} <strong>${t.title}</strong><br>
-   <span class="note">${t.time||""}</span>
-   <div class="actions">
-    ${t.status==="active"?`
-    <button onclick="setStatus(${t.id},'done')">✅</button>
-    <button onclick="setStatus(${t.id},'cancelled')">❌</button>
-    <button onclick="editTask(${t.id})">✏️</button>
-    <button onclick="removeTask(${t.id})">🗑</button>`:""}
-   </div>`;
+  el.className="item";
+  el.innerHTML=`<strong>${t.title}</strong><br>${t.date} ${t.time}`;
   taskList.appendChild(el);
  });
 }
 
-function setStatus(id,status){
+function updateStatus(id,status){
  tasks=tasks.map(t=>t.id===id?{...t,status}:t);
  localStorage.setItem("tasks",JSON.stringify(tasks));
- renderTasks();
+ if(viewDate.value) renderTasksForDate(viewDate.value);
 }
 
-function editTask(id){
- const t=tasks.find(x=>x.id===id);
- editTaskId=id;
- taskTitle.value=t.title;
- taskNote.value=t.note;
- taskDate.value=t.date;
- taskTime.value=t.time;
-}
-
-function removeTask(id){
- tasks=tasks.filter(t=>t.id!==id);
+function deleteTask(id){
+ tasks=tasks.map(t=>t.id===id?{...t,status:"deleted"}:t);
  localStorage.setItem("tasks",JSON.stringify(tasks));
- renderTasks();
+ if(viewDate.value) renderTasksForDate(viewDate.value);
 }
 </script>
 

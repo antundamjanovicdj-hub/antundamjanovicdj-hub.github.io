@@ -119,11 +119,32 @@ export function createTasksController({ T, AppState, platform, els }) {
   /* ================= STATUS / EDIT / DELETE ================= */
 
   function updateStatus(id, status) {
-    tasks = tasks.map(t => t.id === id ? { ...t, status } : t);
-    saveTasks(tasks);
-    render();
-    renderPopupIfOpen();
+  const t = tasks.find(x => x.id === id);
+  if (!t) return;
+
+  const updated = {
+    ...t,
+    status,
+    seq: Date.now()
+  };
+
+  tasks = tasks.map(x => x.id === id ? updated : x);
+  saveTasks(tasks);
+
+  // ➜ PAMETNO OTKAZIVANJE KALENDARA
+  if (t.date && t.time) {
+    exportToCalendar({
+      task: updated,
+      lang: AppState.lang,
+      T,
+      platform,
+      cancel: true
+    });
   }
+
+  render();
+  renderPopupIfOpen();
+}
 
   function editTask(id) {
     const t = tasks.find(x => x.id === id);

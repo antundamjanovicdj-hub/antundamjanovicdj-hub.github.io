@@ -47,7 +47,7 @@ export function renderPopupTasks({ date, tasks, popupTasksEl, T, lang }) {
 
     list.forEach(t => {
       const el = document.createElement("div");
-      el.className = "item";
+      el.className = `item task-${t.status}`;
 
       el.innerHTML = `
         <strong>${t.title}</strong><br>

@@ -112,3 +112,44 @@ select{-webkit-appearance:none;appearance:none;background:white}
 button {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Apple Color Emoji, EmojiOne Color, sans-serif;
 }
+/* ===== POPUP TASK STATUS ===== */
+
+.popup .item{
+  position: relative;
+}
+
+/* ACTIVE – default */
+.popup .task-active{
+  background: rgba(255,255,255,.95);
+}
+
+/* DONE */
+.popup .task-done{
+  background: rgba(120,200,120,.18);
+}
+.popup .task-done strong::before{
+  content:"✅ ";
+}
+
+/* CANCELLED / DELETED */
+.popup .task-cancelled{
+  background: rgba(180,180,180,.25);
+  opacity:.75;
+}
+.popup .task-cancelled strong::before{
+  content:"❌ ";
+}
+
+/* DELETE BUTTON IN POPUP */
+.popup-delete{
+  position:absolute;
+  top:8px;
+  right:10px;
+  background:none;
+  border:none;
+  font-size:1rem;
+  opacity:.6;
+}
+.popup-delete:hover{
+  opacity:1;
+}

@@ -31,7 +31,7 @@ body.static{
 .screen.active{opacity:1;pointer-events:auto}
 
 .content{width:100%;max-width:420px;padding:2rem 1.5rem;text-align:center}
-.scroll{max-height:100%;overflow-y:auto}
+.scroll{max-height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch}
 
 .title{font-size:4rem;font-weight:900;line-height:1;margin-bottom:2rem}
 .title span{
@@ -65,10 +65,37 @@ input,textarea,select{
 .actions{display:flex;justify-content:space-between;margin-top:8px}
 .actions button{background:none;border:none;font-size:1.2rem}
 
-.section-title{
- margin-top:1.5rem;
- font-weight:700;
- opacity:.7
+/* POPUP */
+.popup{
+ position:fixed;
+ inset:0;
+ background:rgba(0,0,0,.35);
+ display:none;
+ justify-content:center;
+ align-items:center;
+ z-index:10000;
+}
+.popup.active{display:flex}
+
+.popup-box{
+ background:#fff;
+ width:92%;
+ max-width:420px;
+ max-height:85%;
+ border-radius:20px;
+ padding:1rem;
+ overflow-y:auto;
+}
+.popup-header{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ margin-bottom:1rem;
+}
+.popup-header button{
+ border:none;
+ background:none;
+ font-size:1.4rem;
 }
 </style>
 </head>
@@ -117,21 +144,31 @@ input,textarea,select{
 
   <button class="btn" id="saveTask" style="margin-top:1.2rem">💾 Spremi obvezu</button>
 
+  <!-- NOVI GUMB -->
   <button class="btn" id="btnByDay" style="margin-top:.6rem">
-   📅 Pregled obveza po danu
+   📅 Pregled po danima
   </button>
-
-  <!-- DATE PICKER -->
-  <div id="dayPicker" style="display:none">
-   <label>Odaberi datum</label>
-   <input type="date" id="viewDate">
-  </div>
 
   <div id="taskList"></div>
 
  </div>
 </div>
 
+</div>
+
+<!-- POPUP -->
+<div id="dayPopup" class="popup">
+ <div class="popup-box">
+  <div class="popup-header">
+   <strong>📅 Pregled obveza po danu</strong>
+   <button onclick="closeDayPopup()">✕</button>
+  </div>
+
+  <label>Odaberi datum</label>
+  <input type="date" id="popupDate">
+
+  <div id="popupTasks"></div>
+ </div>
 </div>
 
 <script>
@@ -157,19 +194,14 @@ function loadTasks(){
 saveTask.onclick=()=>{
  if(!taskTitle.value) return;
 
- const data={
-  id:editTaskId||Date.now(),
+ tasks.push({
+  id:Date.now(),
   title:taskTitle.value,
   note:taskNote.value,
   date:taskDate.value,
   time:taskTime.value,
   status:"active"
- };
-
- if(editTaskId){
-  tasks=tasks.map(t=>t.id===editTaskId?data:t);
-  editTaskId=null;
- } else tasks.push(data);
+ });
 
  localStorage.setItem("tasks",JSON.stringify(tasks));
  taskTitle.value=taskNote.value=taskDate.value=taskTime.value="";
@@ -177,46 +209,27 @@ saveTask.onclick=()=>{
 };
 
 btnByDay.onclick=()=>{
- dayPicker.style.display="block";
- taskList.innerHTML="";
+ popupDate.value=new Date().toISOString().split("T")[0];
+ renderPopupTasks(popupDate.value);
+ dayPopup.classList.add("active");
 };
 
-viewDate.onchange=()=>{
- const d=viewDate.value;
- renderTasksForDate(d);
+popupDate.onchange=()=>{
+ renderPopupTasks(popupDate.value);
 };
 
-function renderTasksForDate(date){
- taskList.innerHTML="";
+function closeDayPopup(){
+ dayPopup.classList.remove("active");
+}
 
- const sections={
-  active:"⏳ Aktivne",
-  done:"✅ Obavljeno",
-  cancelled:"❌ Otkazano",
-  deleted:"🗑 Izbrisano"
- };
+function renderPopupTasks(date){
+ popupTasks.innerHTML="";
 
- Object.keys(sections).forEach(status=>{
-  const list=tasks.filter(t=>t.date===date && t.status===status);
-  if(!list.length) return;
-
-  const title=document.createElement("div");
-  title.className="section-title";
-  title.textContent=sections[status];
-  taskList.appendChild(title);
-
-  list.forEach(t=>{
-   const el=document.createElement("div");
-   el.className="item";
-   el.innerHTML=`
-    <strong>${t.title}</strong><br>${t.time||""}
-    <div class="actions">
-     <button onclick="updateStatus(${t.id},'done')">✅</button>
-     <button onclick="updateStatus(${t.id},'cancelled')">❌</button>
-     <button onclick="deleteTask(${t.id})">🗑</button>
-    </div>`;
-   taskList.appendChild(el);
-  });
+ tasks.filter(t=>t.date===date).forEach(t=>{
+  const el=document.createElement("div");
+  el.className="item";
+  el.innerHTML=`<strong>${t.title}</strong><br>${t.time||""}`;
+  popupTasks.appendChild(el);
  });
 }
 
@@ -228,18 +241,6 @@ function renderTasks(){
   el.innerHTML=`<strong>${t.title}</strong><br>${t.date} ${t.time}`;
   taskList.appendChild(el);
  });
-}
-
-function updateStatus(id,status){
- tasks=tasks.map(t=>t.id===id?{...t,status}:t);
- localStorage.setItem("tasks",JSON.stringify(tasks));
- if(viewDate.value) renderTasksForDate(viewDate.value);
-}
-
-function deleteTask(id){
- tasks=tasks.map(t=>t.id===id?{...t,status:"deleted"}:t);
- localStorage.setItem("tasks",JSON.stringify(tasks));
- if(viewDate.value) renderTasksForDate(viewDate.value);
 }
 </script>
 

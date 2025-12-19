@@ -1,8 +1,6 @@
 // core/i18n.js
+
 export const I18N = {
-  // ... tvoj postojeći sadržaj
-};
-window.I18N = {
   hr: {
     tasks: "Obveze",
 
@@ -33,7 +31,6 @@ window.I18N = {
       cancelled: "Otkazane"
     },
 
-    // ✅ KANONSKI KEYEVI (NE MIJENJATI)
     cats: {
       health: "Zdravlje",
       finance: "Financije",
@@ -72,7 +69,6 @@ window.I18N = {
       cancelled: "Cancelled"
     },
 
-    // ✅ KANONSKI KEYEVI (NE MIJENJATI)
     cats: {
       health: "Health",
       finance: "Finance",
@@ -111,7 +107,6 @@ window.I18N = {
       cancelled: "Abgebrochen"
     },
 
-    // ✅ KANONSKI KEYEVI (NE MIJENJATI)
     cats: {
       health: "Gesundheit",
       finance: "Finanzen",
@@ -120,4 +115,6 @@ window.I18N = {
     }
   }
 };
+
+// global fallback (za postojeći kod)
 window.I18N = I18N;

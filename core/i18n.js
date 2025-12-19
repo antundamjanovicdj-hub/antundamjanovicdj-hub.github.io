@@ -20,6 +20,7 @@ window.I18N = {
 
     popupTitle: "Obveze po danu",
     popupDate: "Odaberi datum",
+    popupDeleteConfirm: "Obrisati ovu obvezu?",
 
     emptyDay: "Nema obveza za ovaj dan",
 
@@ -58,6 +59,7 @@ window.I18N = {
 
     popupTitle: "Tasks by day",
     popupDate: "Select date",
+    popupDeleteConfirm: "Delete this task?",
 
     emptyDay: "No tasks for this day",
 
@@ -96,6 +98,7 @@ window.I18N = {
 
     popupTitle: "Aufgaben pro Tag",
     popupDate: "Datum auswählen",
+    popupDeleteConfirm: "Diese Aufgabe löschen?",
 
     emptyDay: "Keine Aufgaben für diesen Tag",
 

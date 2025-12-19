@@ -13,17 +13,17 @@
 html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 
 body.home{
-  background:linear-gradient(120deg,#1f6b4a,#2e8b57,#3fa37a,#2e8b57);
-  background-size:400% 400%;
-  animation:bgMove 12s infinite;
+ background:linear-gradient(120deg,#1f6b4a,#2e8b57,#3fa37a,#2e8b57);
+ background-size:400% 400%;
+ animation:bgMove 12s infinite;
 }
 body.static{
-  background:linear-gradient(to top,#d0f0c0,#a8e6cf,#61c09a,#2e8b57);
+ background:linear-gradient(to top,#d0f0c0,#a8e6cf,#61c09a,#2e8b57);
 }
 @keyframes bgMove{
-  0%{background-position:0% 50%}
-  50%{background-position:100% 50%}
-  100%{background-position:0% 50%}
+ 0%{background-position:0% 50%}
+ 50%{background-position:100% 50%}
+ 100%{background-position:0% 50%}
 }
 
 .app{position:relative;height:100%}
@@ -70,47 +70,11 @@ select{-webkit-appearance:none;appearance:none;background:white}
 .calendar-box{width:100%;margin-top:1rem}
 .calendar-label{display:flex;align-items:center;gap:.6rem;font-size:.9rem}
 .calendar-label input{width:18px;height:18px;flex-shrink:0}
-
-/* POPUP OVERLAY */
-.popup{
- position:fixed;
- inset:0;
- background:rgba(0,0,0,.35);
- display:none;
- justify-content:center;
- align-items:center;
- z-index:10000;
-}
-.popup.active{display:flex}
-.popup-box{
- background:#fff;
- width:92%;
- max-width:420px;
- max-height:85%;
- border-radius:20px;
- padding:1rem;
- overflow-y:auto;
-}
-.popup-header{
- display:flex;
- justify-content:space-between;
- align-items:center;
- margin-bottom:1rem;
-}
-.popup-header button{
- border:none;background:none;font-size:1.4rem
-}
-.popup-section{
- margin-top:1rem;
- font-weight:800;
- opacity:.75;
-}
-.popup-empty{
- margin-top:1rem;
- opacity:.7;
- font-size:.9rem;
-}
 </style>
+
+<!-- ✅ KORAK 2: UČITAVANJE JEZIKA -->
+<script src="core/i18n.js"></script>
+
 </head>
 
 <body class="home">
@@ -175,9 +139,6 @@ select{-webkit-appearance:none;appearance:none;background:white}
 
   <button class="btn" id="saveTask" style="margin-top:1.2rem"></button>
 
-  <!-- DODANO: GUMB PREGLED PO DANIMA -->
-  <button class="btn" id="btnByDay" style="margin-top:.6rem"></button>
-
   <div id="taskList"></div>
   <div id="calendarInfo" class="note"></div>
  </div>
@@ -185,77 +146,11 @@ select{-webkit-appearance:none;appearance:none;background:white}
 
 </div>
 
-<!-- DODANO: POPUP OVERLAY -->
-<div id="dayPopup" class="popup" aria-hidden="true">
- <div class="popup-box">
-  <div class="popup-header">
-   <strong id="popupTitle"></strong>
-   <button id="closeDayPopup" aria-label="Close">✕</button>
-  </div>
-
-  <label id="popupDateLabel"></label>
-  <input type="date" id="popupDate">
-
-  <div id="popupTasks"></div>
- </div>
-</div>
-
 <script>
-const T={
- hr:{
-  tasks:"📋 Obveze",
-  tTitle:"Obveza",tNote:"Bilješka",tCat:"Kategorija",
-  tDate:"Datum",tTime:"Vrijeme",tRem:"Podsjeti prije",
-  tSave:"💾 Spremi obvezu",
-  byDay:"📅 Pregled po danima",
-  popupTitle:"📅 Pregled obveza po danu",
-  popupDate:"Odaberi datum",
-  status:{active:"⏳ Aktivne",done:"✅ Obavljeno",cancelled:"❌ Otkazano"},
-  emptyDay:"Nema obveza za odabrani datum.",
-  calendarToggle:"Dodaj u kalendar (alarm)",
-  cats:{health:"Zdravlje",family:"Obitelj",finance:"Financije",personal:"Osobno",other:"Ostalo"},
-  calendarAdded:"📅 Kalendar ažuriran",
-  calendarNote:"Alarm iz LifeKompas aplikacije."
- },
- de:{
-  tasks:"📋 Aufgaben",
-  tTitle:"Aufgabe",tNote:"Notiz",tCat:"Kategorie",
-  tDate:"Datum",tTime:"Zeit",tRem:"Erinnerung",
-  tSave:"💾 Aufgabe speichern",
-  byDay:"📅 Ansicht nach Tagen",
-  popupTitle:"📅 Aufgaben nach Tag",
-  popupDate:"Datum auswählen",
-  status:{active:"⏳ Aktiv",done:"✅ Erledigt",cancelled:"❌ Abgesagt"},
-  emptyDay:"Keine Aufgaben für das ausgewählte Datum.",
-  calendarToggle:"Zum Kalender hinzufügen (Alarm)",
-  cats:{health:"Gesundheit",family:"Familie",finance:"Finanzen",personal:"Persönlich",other:"Sonstiges"},
-  calendarAdded:"📅 Kalender aktualisiert",
-  calendarNote:"Erinnerung von LifeKompas."
- },
- en:{
-  tasks:"📋 Tasks",
-  tTitle:"Task",tNote:"Note",tCat:"Category",
-  tDate:"Date",tTime:"Time",tRem:"Remind before",
-  tSave:"💾 Save task",
-  byDay:"📅 View by days",
-  popupTitle:"📅 Tasks by day",
-  popupDate:"Choose date",
-  status:{active:"⏳ Active",done:"✅ Done",cancelled:"❌ Cancelled"},
-  emptyDay:"No tasks for the selected date.",
-  calendarToggle:"Add to calendar (alarm)",
-  cats:{health:"Health",family:"Family",finance:"Finance",personal:"Personal",other:"Other"},
-  calendarAdded:"📅 Calendar updated",
-  calendarNote:"Reminder from LifeKompas."
- }
-};
+/* ✅ KORAK 2: PREUZIMANJE JEZIKA IZ MODULA */
+const T = window.I18N;
 
 let lang="hr",tasks=[],editTaskId=null;
-
-/* PLATFORM */
-const ua=navigator.userAgent;
-const isIOS=/iPad|iPhone|iPod/.test(ua);
-const isSamsung=/Samsung/i.test(ua);
-const isPixel=/Pixel/i.test(ua);
 
 function show(id){
  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
@@ -271,23 +166,13 @@ function applyLang(){
  tTimeL.textContent=T[lang].tTime;
  tRemL.textContent=T[lang].tRem;
  saveTask.textContent=T[lang].tSave;
- btnByDay.textContent=T[lang].byDay;
-
  calendarLabel.textContent=T[lang].calendarToggle;
-
- popupTitle.textContent=T[lang].popupTitle;
- popupDateLabel.textContent=T[lang].popupDate;
 
  taskCategory.innerHTML="";
  for(const k in T[lang].cats){
   const o=document.createElement("option");
   o.value=k;o.textContent=T[lang].cats[k];
   taskCategory.appendChild(o);
- }
-
- // ako je popup otvoren, osvježi tekstove + listu
- if(dayPopup.classList.contains("active")){
-  renderPopupTasks(popupDate.value);
  }
 }
 
@@ -304,12 +189,6 @@ backMenu.onclick=()=>{document.body.className="home";show("screen-lang")};
 btnTasks.onclick=()=>{loadTasks();show("screen-tasks")};
 backTasks.onclick=()=>show("screen-menu");
 
-function formatDate(d){
- if(!d) return "";
- const [y,m,day]=d.split("-");
- return `${day}/${m}/${y}`;
-}
-
 function loadTasks(){
  tasks=JSON.parse(localStorage.getItem("tasks")||"[]");
  renderTasks();
@@ -324,8 +203,7 @@ saveTask.onclick=()=>{
   date:taskDate.value,
   time:taskTime.value,
   reminder:+taskReminder.value,
-  status:"active",
-  seq:Date.now()
+  status:"active"
  };
 
  if(editTaskId){
@@ -335,57 +213,12 @@ saveTask.onclick=()=>{
 
  localStorage.setItem("tasks",JSON.stringify(tasks));
 
- if(addToCalendar.checked){
-  exportToCalendar(data);
-  calendarInfo.textContent=T[lang].calendarAdded;
- } else calendarInfo.textContent="";
-
  taskTitle.value=taskNote.value=taskDate.value=taskTime.value="";
  taskReminder.value="0";
  addToCalendar.checked=true;
 
  renderTasks();
-
- // ako je popup otvoren, osvježi ga
- if(dayPopup.classList.contains("active")){
-  renderPopupTasks(popupDate.value);
- }
 };
-
-function exportToCalendar(task){
- const start=new Date(task.date+"T"+task.time);
- if(isNaN(start)) return;
- const end=new Date(start.getTime()+30*60000);
- const uid=`lifekompas-${task.id}@lifekompas`;
- const dt=d=>d.toISOString().replace(/[-:]/g,"").split(".")[0]+"Z";
-
- let method="PUBLISH";
- let sequenceLine="";
-
- if(isIOS){
-  method="REQUEST";
-  sequenceLine=`SEQUENCE:${task.seq}\r\n`;
- } else if(isPixel){
-  sequenceLine=`SEQUENCE:${task.seq}\r\n`;
- }
-
- const alarm=task.reminder>0
- ? `BEGIN:VALARM\r\nTRIGGER:-PT${task.reminder}M\r\nACTION:DISPLAY\r\nDESCRIPTION:${task.title}\r\nEND:VALARM\r\n`
- : "";
-
- const ics=
- `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nMETHOD:${method}\r\nPRODID:-//LifeKompas//HR\r\nBEGIN:VEVENT\r\nUID:${uid}\r\n${sequenceLine}DTSTAMP:${dt(new Date())}\r\nSUMMARY:${task.title}\r\nDTSTART:${dt(start)}\r\nDTEND:${dt(end)}\r\nDESCRIPTION:${T[lang].calendarNote}\r\n${alarm}END:VEVENT\r\nEND:VCALENDAR`;
-
- const blob=new Blob([ics],{type:"text/calendar;charset=utf-8"});
- const url=URL.createObjectURL(blob);
- const a=document.createElement("a");
- a.href=url;
- a.download=`lifekompas-${task.id}.ics`;
- document.body.appendChild(a);
- a.click();
- document.body.removeChild(a);
- URL.revokeObjectURL(url);
-}
 
 function renderTasks(){
  taskList.innerHTML="";
@@ -394,10 +227,8 @@ function renderTasks(){
   el.className="item";
   el.innerHTML=`
    <strong>${t.title}</strong><br>
-   ${formatDate(t.date)} ${t.time}
+   ${t.date} ${t.time}
    <div class="actions">
-    <button onclick="updateStatus(${t.id},'done')">✅</button>
-    <button onclick="updateStatus(${t.id},'cancelled')">❌</button>
     <button onclick="editTask(${t.id})">✏️</button>
     <button onclick="deleteTask(${t.id})">🗑</button>
    </div>`;
@@ -405,18 +236,8 @@ function renderTasks(){
  });
 }
 
-function updateStatus(id,status){
- tasks=tasks.map(t=>t.id===id?{...t,status}:t);
- localStorage.setItem("tasks",JSON.stringify(tasks));
- renderTasks();
- if(dayPopup.classList.contains("active")){
-  renderPopupTasks(popupDate.value);
- }
-}
-
 function editTask(id){
  const t=tasks.find(x=>x.id===id);
- if(!t) return;
  editTaskId=id;
  taskTitle.value=t.title;
  taskNote.value=t.note;
@@ -430,75 +251,6 @@ function deleteTask(id){
  tasks=tasks.filter(t=>t.id!==id);
  localStorage.setItem("tasks",JSON.stringify(tasks));
  renderTasks();
- if(dayPopup.classList.contains("active")){
-  renderPopupTasks(popupDate.value);
- }
-}
-
-/* === POPUP: PREGLED PO DANIMA === */
-function openDayPopup(){
- loadTasks(); // sigurnost: povuci zadnje iz localStorage
- const today=new Date().toISOString().split("T")[0];
- popupDate.value = popupDate.value || today;
- renderPopupTasks(popupDate.value);
- dayPopup.classList.add("active");
- dayPopup.setAttribute("aria-hidden","false");
-}
-function closeDayPopupFn(){
- dayPopup.classList.remove("active");
- dayPopup.setAttribute("aria-hidden","true");
-}
-
-btnByDay.onclick=openDayPopup;
-closeDayPopup.onclick=closeDayPopupFn;
-dayPopup.addEventListener("click",(e)=>{
- if(e.target===dayPopup) closeDayPopupFn(); // klik na pozadinu zatvara
-});
-popupDate.onchange=()=>renderPopupTasks(popupDate.value);
-
-function renderPopupTasks(date){
- popupTasks.innerHTML="";
-
- const sections=[
-  {key:"active", label:T[lang].status.active},
-  {key:"done", label:T[lang].status.done},
-  {key:"cancelled", label:T[lang].status.cancelled}
- ];
-
- let any=false;
-
- sections.forEach(sec=>{
-  const list=tasks
-   .filter(t=>t.date===date && t.status===sec.key)
-   .sort((a,b)=> (a.time||"").localeCompare(b.time||""));
-
-  if(!list.length) return;
-  any=true;
-
-  const h=document.createElement("div");
-  h.className="popup-section";
-  h.textContent=sec.label;
-  popupTasks.appendChild(h);
-
-  list.forEach(t=>{
-   const el=document.createElement("div");
-   el.className="item";
-   el.innerHTML=`
-    <strong>${t.title}</strong><br>
-    ${t.time || ""}${t.time ? "<br>" : ""}
-    <small>${T[lang].cats[t.cat] || ""}</small>
-    ${t.note ? `<div class="note">${t.note}</div>` : ""}
-   `;
-   popupTasks.appendChild(el);
-  });
- });
-
- if(!any){
-  const p=document.createElement("div");
-  p.className="popup-empty";
-  p.textContent=T[lang].emptyDay;
-  popupTasks.appendChild(p);
- }
 }
 
 window.onload=applyLang;

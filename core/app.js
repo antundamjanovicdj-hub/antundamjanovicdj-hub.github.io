@@ -10,144 +10,143 @@ const $ = (id) => document.getElementById(id);
 
 let tasksCtrl = null;
 
-/* ===== ELEMENTI ===== */
-const els = {
-  // navigation / language
-  backMenu: $("backMenu"),
-  btnTasks: $("btnTasks"),
-  backTasks: $("backTasks"),
-  btnByDay: $("btnByDay"),
+document.addEventListener("DOMContentLoaded", () => {
 
-  // labels
-  tTitleL: $("tTitleL"),
-  tNoteL: $("tNoteL"),
-  tCatL: $("tCatL"),
-  tDateL: $("tDateL"),
-  tTimeL: $("tTimeL"),
-  tRemL: $("tRemL"),
+  const els = {
+    // navigation / language
+    backMenu: $("backMenu"),
+    btnTasks: $("btnTasks"),
+    backTasks: $("backTasks"),
+    btnByDay: $("btnByDay"),
 
-  // inputs
-  taskTitle: $("taskTitle"),
-  taskNote: $("taskNote"),
-  taskCategory: $("taskCategory"),
-  taskDate: $("taskDate"),
-  taskTime: $("taskTime"),
-  taskReminder: $("taskReminder"),
-  addToCalendar: $("addToCalendar"),
+    // labels
+    tTitleL: $("tTitleL"),
+    tNoteL: $("tNoteL"),
+    tCatL: $("tCatL"),
+    tDateL: $("tDateL"),
+    tTimeL: $("tTimeL"),
+    tRemL: $("tRemL"),
 
-  // buttons / lists
-  calendarLabel: $("calendarLabel"),
-  calendarInfo: $("calendarInfo"),
-  saveTask: $("saveTask"),
-  taskList: $("taskList"),
+    // inputs
+    taskTitle: $("taskTitle"),
+    taskNote: $("taskNote"),
+    taskCategory: $("taskCategory"),
+    taskDate: $("taskDate"),
+    taskTime: $("taskTime"),
+    taskReminder: $("taskReminder"),
+    addToCalendar: $("addToCalendar"),
 
-  // popup
-  dayPopup: $("dayPopup"),
-  popupTitle: $("popupTitle"),
-  closeDayPopup: $("closeDayPopup"),
-  popupDateLabel: $("popupDateLabel"),
-  popupDate: $("popupDate"),
-  popupTasks: $("popupTasks"),
+    // buttons / lists
+    calendarLabel: $("calendarLabel"),
+    calendarInfo: $("calendarInfo"),
+    saveTask: $("saveTask"),
+    taskList: $("taskList"),
 
-  // smart reminder hint (optional)
-  reminderHint: $("reminderHint")
-};
+    // popup
+    dayPopup: $("dayPopup"),
+    popupTitle: $("popupTitle"),
+    closeDayPopup: $("closeDayPopup"),
+    popupDateLabel: $("popupDateLabel"),
+    popupDate: $("popupDate"),
+    popupTasks: $("popupTasks"),
 
-const platform = getPlatformFlags();
-
-/* ===== LANGUAGE SELECTION (INIT APP) ===== */
-document.querySelectorAll("[data-lang]").forEach(btn => {
-  btn.addEventListener("click", () => {
-    AppState.lang = btn.dataset.lang;
-
-    // INIT CONTROLLER TEK NAKON ODABIRA JEZIKA
-    if (!tasksCtrl) {
-      tasksCtrl = createTasksController({
-        T,
-        AppState,
-        platform,
-        els
-      });
-
-      // globali za inline gumbe
-      window.updateStatus = tasksCtrl.updateStatus;
-      window.editTask = tasksCtrl.editTask;
-      window.deleteTask = tasksCtrl.deleteTask;
-      window.popupDeleteTask = tasksCtrl.popupDeleteTask;
-    }
-
-    tasksCtrl.applyLangToTasksUI();
-    document.body.className = "static";
-    showScreen("screen-menu");
-  });
-});
-
-/* ===== NAVIGATION ===== */
-if (els.backMenu) {
-  els.backMenu.onclick = () => {
-    document.body.className = "home";
-    showScreen("screen-lang");
+    // smart reminder hint
+    reminderHint: $("reminderHint")
   };
-}
 
-if (els.btnTasks) {
-  els.btnTasks.onclick = () => {
-    if (tasksCtrl) {
-      tasksCtrl.load();
-      showScreen("screen-tasks");
-    }
-  };
-}
+  const platform = getPlatformFlags();
 
-if (els.backTasks) {
-  els.backTasks.onclick = () => {
-    showScreen("screen-menu");
-  };
-}
+  /* ===== LANGUAGE SELECTION (START APP) ===== */
+  document.querySelectorAll("[data-lang]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      AppState.lang = btn.dataset.lang;
 
-/* ===== SAVE TASK ===== */
-if (els.saveTask) {
-  els.saveTask.onclick = () => {
-    if (tasksCtrl) {
-      tasksCtrl.onSaveTask();
-    }
-  };
-}
+      // init controller TEK SAD
+      if (!tasksCtrl) {
+        tasksCtrl = createTasksController({
+          T,
+          AppState,
+          platform,
+          els
+        });
 
-/* ===== POPUP (PREGLED PO DANIMA) ===== */
-if (els.btnByDay) {
-  els.btnByDay.onclick = () => {
-    if (!tasksCtrl) return;
+        // globali za inline gumbe
+        window.updateStatus = tasksCtrl.updateStatus;
+        window.editTask = tasksCtrl.editTask;
+        window.deleteTask = tasksCtrl.deleteTask;
+        window.popupDeleteTask = tasksCtrl.popupDeleteTask;
+      }
 
-    openDayPopup({
-      loadTasksFn: tasksCtrl.load,
-      popupDateEl: els.popupDate,
-      renderPopupTasksFn: (date) => tasksCtrl.renderPopup(date),
-      dayPopupEl: els.dayPopup
+      tasksCtrl.applyLangToTasksUI();
+      document.body.className = "static";
+      showScreen("screen-menu");
     });
-  };
-}
-
-if (els.closeDayPopup) {
-  els.closeDayPopup.onclick = () =>
-    closeDayPopup({ dayPopupEl: els.dayPopup });
-}
-
-if (els.dayPopup) {
-  els.dayPopup.addEventListener("click", (e) => {
-    if (e.target === els.dayPopup) {
-      closeDayPopup({ dayPopupEl: els.dayPopup });
-    }
   });
-}
 
-if (els.popupDate) {
-  els.popupDate.onchange = () => {
-    if (tasksCtrl) {
-      tasksCtrl.renderPopup(els.popupDate.value);
-    }
-  };
-}
+  /* ===== NAVIGATION ===== */
+  if (els.backMenu) {
+    els.backMenu.onclick = () => {
+      document.body.className = "home";
+      showScreen("screen-lang");
+    };
+  }
 
-/* ===== START ===== */
-window.onload = () => {};
+  if (els.btnTasks) {
+    els.btnTasks.onclick = () => {
+      if (tasksCtrl) {
+        tasksCtrl.load();
+        showScreen("screen-tasks");
+      }
+    };
+  }
+
+  if (els.backTasks) {
+    els.backTasks.onclick = () => {
+      showScreen("screen-menu");
+    };
+  }
+
+  /* ===== SAVE TASK ===== */
+  if (els.saveTask) {
+    els.saveTask.onclick = () => {
+      if (tasksCtrl) {
+        tasksCtrl.onSaveTask();
+      }
+    };
+  }
+
+  /* ===== POPUP ===== */
+  if (els.btnByDay) {
+    els.btnByDay.onclick = () => {
+      if (!tasksCtrl) return;
+
+      openDayPopup({
+        loadTasksFn: tasksCtrl.load,
+        popupDateEl: els.popupDate,
+        renderPopupTasksFn: (date) => tasksCtrl.renderPopup(date),
+        dayPopupEl: els.dayPopup
+      });
+    };
+  }
+
+  if (els.closeDayPopup) {
+    els.closeDayPopup.onclick = () =>
+      closeDayPopup({ dayPopupEl: els.dayPopup });
+  }
+
+  if (els.dayPopup) {
+    els.dayPopup.addEventListener("click", (e) => {
+      if (e.target === els.dayPopup) {
+        closeDayPopup({ dayPopupEl: els.dayPopup });
+      }
+    });
+  }
+
+  if (els.popupDate) {
+    els.popupDate.onchange = () => {
+      if (tasksCtrl) {
+        tasksCtrl.renderPopup(els.popupDate.value);
+      }
+    };
+  }
+});

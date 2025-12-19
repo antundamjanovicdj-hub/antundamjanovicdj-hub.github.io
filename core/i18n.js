@@ -16,6 +16,7 @@ window.I18N = {
     calendarToggle: "Dodaj u kalendar",
     calendarAdded: "Dodano u kalendar",
     calendarNote: "Obveza iz LifeKompasa",
+    calendarRemoveConfirm: "Želiš li ukloniti ovu obvezu iz kalendara?",
 
     popupTitle: "Obveze po danu",
     popupDate: "Odaberi datum",
@@ -53,6 +54,7 @@ window.I18N = {
     calendarToggle: "Add to calendar",
     calendarAdded: "Added to calendar",
     calendarNote: "Task from LifeKompas",
+    calendarRemoveConfirm: "Do you want to remove this task from your calendar?",
 
     popupTitle: "Tasks by day",
     popupDate: "Select date",
@@ -90,6 +92,7 @@ window.I18N = {
     calendarToggle: "Zum Kalender hinzufügen",
     calendarAdded: "Zum Kalender hinzugefügt",
     calendarNote: "Aufgabe aus LifeKompas",
+    calendarRemoveConfirm: "Möchtest du diese Aufgabe aus dem Kalender entfernen?",
 
     popupTitle: "Aufgaben pro Tag",
     popupDate: "Datum auswählen",

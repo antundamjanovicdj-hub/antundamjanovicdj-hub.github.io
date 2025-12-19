@@ -141,15 +141,20 @@ export function createTasksController({ T, AppState, platform, els }) {
           "Želiš li ukloniti ovu obvezu iz kalendara?"
         );
 
-  if (shouldCancelCalendar && t.date && t.time) {
-    exportToCalendar({
-      task: updated,
-      lang: AppState.lang,
-      T,
-      platform,
-      cancel: true
-    });
-  }
+ if (
+  shouldCancelCalendar &&
+  t.addToCalendar &&
+  t.date &&
+  t.time
+) {
+  exportToCalendar({
+    task: updated,
+    lang: AppState.lang,
+    T,
+    platform,
+    cancel: true
+  });
+}
 
   render();
   renderPopupIfOpen();

@@ -268,12 +268,12 @@ export function createTasksController({ T, AppState, platform, els }) {
   bindSmartReminder();
 
   return {
-    load,
-    onSaveTask,
-    applyLangToTasksUI,
-    renderPopup,
-    updateStatus,
-    editTask,
-    deleteTask
-  };
-}
+  load,
+  onSaveTask,
+  applyLangToTasksUI,
+  renderPopup,
+  updateStatus,
+  editTask,
+  deleteTask,
+  popupDeleteTask
+};

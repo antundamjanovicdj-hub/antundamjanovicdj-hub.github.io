@@ -6,8 +6,9 @@ import { createTasksController } from "../modules/tasks/tasks.controller.js";
 import { openDayPopup, closeDayPopup } from "../modules/tasks/tasks.popup.js";
 
 const T = window.I18N || {};
-
 const $ = (id) => document.getElementById(id);
+
+let tasksCtrl = null;
 
 /* ===== ELEMENTI ===== */
 const els = {
@@ -48,24 +49,33 @@ const els = {
   popupDate: $("popupDate"),
   popupTasks: $("popupTasks"),
 
-  // smart reminder hint (može biti null)
+  // smart reminder hint (optional)
   reminderHint: $("reminderHint")
 };
 
 const platform = getPlatformFlags();
 
-/* ===== TASKS CONTROLLER ===== */
-const tasksCtrl = createTasksController({
-  T,
-  AppState,
-  platform,
-  els
-});
-
-/* ===== LANGUAGE SELECTION ===== */
+/* ===== LANGUAGE SELECTION (INIT APP) ===== */
 document.querySelectorAll("[data-lang]").forEach(btn => {
   btn.addEventListener("click", () => {
     AppState.lang = btn.dataset.lang;
+
+    // INIT CONTROLLER TEK NAKON ODABIRA JEZIKA
+    if (!tasksCtrl) {
+      tasksCtrl = createTasksController({
+        T,
+        AppState,
+        platform,
+        els
+      });
+
+      // globali za inline gumbe
+      window.updateStatus = tasksCtrl.updateStatus;
+      window.editTask = tasksCtrl.editTask;
+      window.deleteTask = tasksCtrl.deleteTask;
+      window.popupDeleteTask = tasksCtrl.popupDeleteTask;
+    }
+
     tasksCtrl.applyLangToTasksUI();
     document.body.className = "static";
     showScreen("screen-menu");
@@ -82,8 +92,10 @@ if (els.backMenu) {
 
 if (els.btnTasks) {
   els.btnTasks.onclick = () => {
-    tasksCtrl.load();
-    showScreen("screen-tasks");
+    if (tasksCtrl) {
+      tasksCtrl.load();
+      showScreen("screen-tasks");
+    }
   };
 }
 
@@ -95,18 +107,25 @@ if (els.backTasks) {
 
 /* ===== SAVE TASK ===== */
 if (els.saveTask) {
-  els.saveTask.onclick = tasksCtrl.onSaveTask;
+  els.saveTask.onclick = () => {
+    if (tasksCtrl) {
+      tasksCtrl.onSaveTask();
+    }
+  };
 }
 
 /* ===== POPUP (PREGLED PO DANIMA) ===== */
 if (els.btnByDay) {
-  els.btnByDay.onclick = () =>
+  els.btnByDay.onclick = () => {
+    if (!tasksCtrl) return;
+
     openDayPopup({
       loadTasksFn: tasksCtrl.load,
       popupDateEl: els.popupDate,
       renderPopupTasksFn: (date) => tasksCtrl.renderPopup(date),
       dayPopupEl: els.dayPopup
     });
+  };
 }
 
 if (els.closeDayPopup) {
@@ -123,17 +142,12 @@ if (els.dayPopup) {
 }
 
 if (els.popupDate) {
-  els.popupDate.onchange = () =>
-    tasksCtrl.renderPopup(els.popupDate.value);
+  els.popupDate.onchange = () => {
+    if (tasksCtrl) {
+      tasksCtrl.renderPopup(els.popupDate.value);
+    }
+  };
 }
 
-/* ===== GLOBALI ZA INLINE GUMBE ===== */
-window.updateStatus = tasksCtrl.updateStatus;
-window.editTask = tasksCtrl.editTask;
-window.deleteTask = tasksCtrl.deleteTask;
-window.popupDeleteTask = tasksCtrl.popupDeleteTask;
-
 /* ===== START ===== */
-window.onload = () => {
-  tasksCtrl.applyLangToTasksUI();
-};
+window.onload = () => {};

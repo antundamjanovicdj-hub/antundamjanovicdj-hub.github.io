@@ -193,12 +193,33 @@ export function createTasksController({ T, AppState, platform, els }) {
     }
   }
 
-  function deleteTask(id) {
-    tasks = tasks.filter(t => t.id !== id);
-    saveTasks(tasks);
-    render();
-    renderPopupIfOpen();
+  function popupDeleteTask(id) {
+  const t = tasks.find(x => x.id === id);
+  if (!t) return;
+
+  const ok = confirm(
+    T[AppState.lang].popupDeleteConfirm || "Obrisati ovu obvezu?"
+  );
+  if (!ok) return;
+
+  tasks = tasks.filter(x => x.id !== id);
+  saveTasks(tasks);
+
+  // ako je bio u kalendaru → pametno otkaži
+  if (t.addToCalendar === true) {
+    exportToCalendar({
+      task: { ...t, seq: Date.now() },
+      lang: AppState.lang,
+      T,
+      platform,
+      cancel: true
+    });
   }
+
+  render();
+  renderPopupIfOpen();
+}
+
 
   function renderPopup(date) {
     renderPopupTasks({

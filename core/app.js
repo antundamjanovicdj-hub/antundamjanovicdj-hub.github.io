@@ -138,3 +138,66 @@ langButtons.forEach(btn => {
     tasksCtrl.renderPopup(els.popupDate.value);
   };
 });
+// ===== GLOBAL LANG SELECT (BULLETPROOF) =====
+window.selectLang = function (lang) {
+  AppState.lang = lang;
+
+  if (!window.__tasksCtrl) {
+    const T = window.I18N;
+    const platform = getPlatformFlags();
+    const $ = (id) => document.getElementById(id);
+
+    const els = {
+      backMenu: $("backMenu"),
+      btnTasks: $("btnTasks"),
+      backTasks: $("backTasks"),
+      btnByDay: $("btnByDay"),
+
+      tTitleL: $("tTitleL"),
+      tNoteL: $("tNoteL"),
+      tCatL: $("tCatL"),
+      tDateL: $("tDateL"),
+      tTimeL: $("tTimeL"),
+      tRemL: $("tRemL"),
+
+      taskTitle: $("taskTitle"),
+      taskNote: $("taskNote"),
+      taskCategory: $("taskCategory"),
+      taskDate: $("taskDate"),
+      taskTime: $("taskTime"),
+      taskReminder: $("taskReminder"),
+      addToCalendar: $("addToCalendar"),
+
+      calendarLabel: $("calendarLabel"),
+      calendarInfo: $("calendarInfo"),
+      saveTask: $("saveTask"),
+      taskList: $("taskList"),
+
+      dayPopup: $("dayPopup"),
+      popupTitle: $("popupTitle"),
+      closeDayPopup: $("closeDayPopup"),
+      popupDateLabel: $("popupDateLabel"),
+      popupDate: $("popupDate"),
+      popupTasks: $("popupTasks"),
+
+      reminderHint: $("reminderHint")
+    };
+
+    window.__tasksCtrl = createTasksController({
+      T,
+      AppState,
+      platform,
+      els
+    });
+  }
+
+  window.__tasksCtrl.applyLangToTasksUI();
+
+  const menuText = document.querySelector("#btnTasks .menu-text");
+  if (menuText) {
+    menuText.textContent = window.I18N[lang].tasks;
+  }
+
+  document.body.className = "static";
+  showScreen("screen-menu");
+};

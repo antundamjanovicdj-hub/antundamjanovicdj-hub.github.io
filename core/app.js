@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const T = window.I18N;
   const $ = (id) => document.getElementById(id);
 
-  showScreen("screen-lang");
+  showScreen("screen-lang"); //
 
   /* ===== ELEMENTI ===== */
   const els = {

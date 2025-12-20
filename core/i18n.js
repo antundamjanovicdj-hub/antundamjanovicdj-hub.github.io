@@ -1,6 +1,5 @@
 // core/i18n.js
-
-export const I18N = {
+const I18N = {
   hr: {
     tasks: "Obveze",
 
@@ -116,5 +115,5 @@ export const I18N = {
   }
 };
 
-// global fallback (za postojeći kod)
+// Postavi globalno za kompatibilnost s običnim <script>
 window.I18N = I18N;

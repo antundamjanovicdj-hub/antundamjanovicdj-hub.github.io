@@ -1,7 +1,5 @@
 // core/platform.js
 // 100% null-safe, bez side-effectova
-alert("PLATFORM.JS LOADED");
-
 export function getPlatformFlags() {
   let ua = "";
 

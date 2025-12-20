@@ -205,3 +205,18 @@ button {
 .menu-text{
   font-weight:600;
 }
+/* ===== HIT-TEST HARD RESET ===== */
+
+/* ništa ne smije hvatati klik osim aktivnog screena */
+.app,
+.content,
+.popup,
+.popup * {
+  pointer-events: none !important;
+}
+
+/* SAMO aktivni screen i njegov sadržaj smiju hvatati klik */
+.screen.active,
+.screen.active * {
+  pointer-events: auto !important;
+}

@@ -1,9 +1,25 @@
 // core/platform.js
+// 100% null-safe, bez side-effectova
+
 export function getPlatformFlags() {
-  const ua = navigator.userAgent;
+  let ua = "";
+
+  try {
+    ua = navigator.userAgent || "";
+  } catch (e) {
+    ua = "";
+  }
+
+  const isIOS = /iPad|iPhone|iPod/i.test(ua);
+  const isAndroid = /Android/i.test(ua);
+
+  const isSamsung = /Samsung/i.test(ua);
+  const isPixel = /Pixel/i.test(ua);
+
   return {
-    isIOS: /iPad|iPhone|iPod/.test(ua),
-    isSamsung: /Samsung/i.test(ua),
-    isPixel: /Pixel/i.test(ua),
+    isIOS,
+    isAndroid,
+    isSamsung,
+    isPixel
   };
 }

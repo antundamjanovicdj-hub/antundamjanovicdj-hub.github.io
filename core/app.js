@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const tasksCtrl = createTasksController({ T, AppState, platform, els });
 
-  // ✅ OMOGUĆI BRISANJE IZ POPUPA
+  // ✅ Omogući brisanje iz popupa
   window.popupDeleteTask = tasksCtrl.deleteTask;
 
   tasksCtrl.load();
@@ -95,6 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
     showScreen("screen-menu");
   });
 
+  // GUMB "←" IZ IZBORNIKA
   if (els.backMenu) {
     els.backMenu.onclick = () => {
       document.body.className = "home";
@@ -102,19 +103,22 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
+  // GUMB "Obveze"
   if (els.btnTasks) {
     els.btnTasks.onclick = () => showScreen("screen-tasks");
   }
 
+  // GUMB "←" IZ OBVEZA
   if (els.backTasks) {
     els.backTasks.onclick = () => showScreen("screen-menu");
   }
 
+  // SPREMI OBAVEZU
   if (els.saveTask) {
     els.saveTask.onclick = () => tasksCtrl.onSaveTask();
   }
 
-  // POPUP: PRIKAZ OBVEZA PO DANU
+  // ✅ POPUP: PRIKAZ OBVEZA PO DANU
   if (els.btnByDay) {
     els.btnByDay.onclick = () => {
       if (!els.dayPopup) return;
@@ -127,14 +131,28 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  // ZATVORI POPUP
+  // ✅ ZATVORI POPUP — RADI ČAK I AKO SE NEKAKO IZGUBI REF
+  const closePopup = () => {
+    const popup = document.getElementById("dayPopup");
+    if (popup) popup.classList.remove("active");
+  };
+
   if (els.closeDayPopup) {
-    els.closeDayPopup.onclick = () => {
-      if (els.dayPopup) els.dayPopup.classList.remove("active");
-    };
+    els.closeDayPopup.onclick = closePopup;
   }
 
-  // PROMJENA DATUMA U POPUPU
+  // ✅ ZATVORI POPUP NA KLIKNUTI IZVAN NJEGA
+  document.addEventListener("click", (e) => {
+    const popup = document.getElementById("dayPopup");
+    const btnByDay = document.getElementById("btnByDay");
+    if (!popup || !popup.classList.contains("active")) return;
+
+    if (!popup.contains(e.target) && e.target !== btnByDay) {
+      closePopup();
+    }
+  });
+
+  // ✅ PROMJENA DATUMA U POPUPU
   if (els.popupDate) {
     els.popupDate.onchange = (e) => {
       tasksCtrl.renderPopup(e.target.value);

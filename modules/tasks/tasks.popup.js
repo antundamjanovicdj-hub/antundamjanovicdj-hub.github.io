@@ -68,7 +68,7 @@ export function renderPopupTasks({ date, tasks, popupTasksEl, T, lang }) {
     popupTasksEl.appendChild(p);
   }
 
-  // Poveži brisanje putem event delegation
+  // ✅ PONOVNO POVEŽI BRISANJE NAKON SVAKOG RENDERIRANJA
   popupTasksEl.querySelectorAll(".popup-delete").forEach(btn => {
     btn.onclick = () => {
       const id = Number(btn.dataset.taskId);

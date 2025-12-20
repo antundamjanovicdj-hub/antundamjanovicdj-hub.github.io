@@ -7,18 +7,15 @@
 
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
-
 <link rel="stylesheet" href="styles/main.css">
 
-<!-- i18n -->
 <script type="module" src="core/i18n.js"></script>
-<!-- app bootstrap -->
 <script type="module" src="core/app.js"></script>
 </head>
 
 <body class="home">
 
-<!-- ================= LANGUAGE (IZVAN .app) ================= -->
+<!-- LANGUAGE -->
 <div id="screen-lang" class="screen active">
  <div class="content">
   <h1 class="title">
@@ -26,14 +23,13 @@
     <span>Kompas</span>
   </h1>
   <div class="buttons">
-   <button class="btn" onclick="selectLang('hr')">🇭🇷 Hrvatski</button>
-   <button class="btn" onclick="selectLang('de')">🇩🇪 Deutsch</button>
-   <button class="btn" onclick="selectLang('en')">🇬🇧 English</button>
+   <button class="btn" data-lang="hr">🇭🇷 Hrvatski</button>
+   <button class="btn" data-lang="de">🇩🇪 Deutsch</button>
+   <button class="btn" data-lang="en">🇬🇧 English</button>
   </div>
  </div>
 </div>
 
-<!-- ================= APP WRAPPER ================= -->
 <div class="app">
 
 <!-- MENU -->
@@ -53,23 +49,18 @@
 <div id="screen-tasks" class="screen">
  <button class="back" id="backTasks">←</button>
  <div class="content scroll">
-
   <label id="tTitleL"></label>
   <input id="taskTitle">
-
   <label id="tNoteL"></label>
   <textarea id="taskNote"></textarea>
-
   <label id="tCatL"></label>
   <select id="taskCategory"></select>
-
   <label id="tDateL"></label>
   <input type="date" id="taskDate">
-
   <label id="tTimeL"></label>
   <input type="time" id="taskTime">
-
   <label id="tRemL"></label>
+
   <select id="taskReminder">
     <option value="0">—</option>
     <option value="30">30 min</option>
@@ -87,8 +78,8 @@
    </label>
   </div>
 
-  <button class="btn" id="saveTask" style="margin-top:1.2rem"></button>
-  <button class="btn" id="btnByDay" style="margin-top:.6rem"></button>
+  <button class="btn" id="saveTask"></button>
+  <button class="btn" id="btnByDay"></button>
 
   <div id="taskList"></div>
   <div id="calendarInfo" class="note"></div>
@@ -97,17 +88,15 @@
 
 </div>
 
-<!-- ================= POPUP ================= -->
-<div id="dayPopup" class="popup" aria-hidden="true">
+<!-- POPUP -->
+<div id="dayPopup" class="popup">
  <div class="popup-box">
   <div class="popup-header">
    <strong id="popupTitle"></strong>
-   <button id="closeDayPopup" aria-label="Close">✕</button>
+   <button id="closeDayPopup">✕</button>
   </div>
-
   <label id="popupDateLabel"></label>
   <input type="date" id="popupDate">
-
   <div id="popupTasks"></div>
  </div>
 </div>

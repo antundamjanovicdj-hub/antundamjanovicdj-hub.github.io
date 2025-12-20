@@ -16,17 +16,17 @@ body.static{
 }
 
 .app{position:relative;height:100%}
-.screen {
-  position: absolute;
-  inset: 0;
-
-  display: none;
-  justify-content: center;
-  align-items: center;
+.screen{
+  position:fixed;
+  inset:0;
+  display:none;
+  justify-content:center;
+  align-items:center;
+  z-index:10;
 }
 
-.screen.active {
-  display: flex;
+.screen.active{
+  display:flex;
 }
 
 .content{width:100%;max-width:420px;padding:2rem 1.5rem;text-align:center}

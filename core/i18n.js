@@ -1,5 +1,5 @@
 // core/i18n.js
-export const I18N = {
+const I18N = {
   hr: {
     tasks: "Obveze",
     tTitle: "Naslov",
@@ -94,3 +94,5 @@ export const I18N = {
     }
   }
 };
+
+window.I18N = I18N;

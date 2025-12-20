@@ -273,7 +273,7 @@ export function createTasksController({ T, AppState, platform, els }) {
     renderPopup,
     updateStatus,
     editTask,
-    deleteTask: popupDeleteTask, // ✅ FUNKCIJA "deleteTask" DEFINIRANA
+    deleteTask: popupDeleteTask,
     popupDeleteTask
   };
-} // ✅ OVO JE NEDOSTAJALO: zatvarajuća vitičasta zagrada
+}

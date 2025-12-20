@@ -7,7 +7,7 @@ let AppState = window.AppState || {
   lang: 'hr',
   set lang(val) {
     localStorage.setItem('userLang', val);
-    this._lang = val; // ✅ Spremi u privatnu varijablu
+    this._lang = val;
   },
   get lang() {
     return this._lang || localStorage.getItem('userLang') || 'hr';

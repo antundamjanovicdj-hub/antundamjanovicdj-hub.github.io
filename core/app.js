@@ -7,13 +7,15 @@ let AppState = window.AppState || {
   lang: 'hr',
   set lang(val) {
     localStorage.setItem('userLang', val);
-    window.AppState = window.AppState || {};
-    window.AppState.lang = val;
+    this._lang = val; // ✅ Spremi u privatnu varijablu
   },
   get lang() {
-    return localStorage.getItem('userLang') || 'hr';
+    return this._lang || localStorage.getItem('userLang') || 'hr';
   }
 };
+
+// Inicijaliziraj _lang iz localStorage
+AppState._lang = localStorage.getItem('userLang') || 'hr';
 window.AppState = AppState;
 
 document.addEventListener("DOMContentLoaded", () => {

@@ -194,3 +194,18 @@ button {
 .popup .task-cancelled strong::before{
   content:"❌ ";
 }
+.menu-btn{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:.6rem;
+}
+
+.menu-icon{
+  font-size:1.3rem;
+  line-height:1;
+}
+
+.menu-text{
+  font-weight:600;
+}

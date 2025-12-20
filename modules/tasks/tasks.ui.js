@@ -11,13 +11,14 @@ export function renderTasks({ tasks, taskListEl }) {
       el.className = "item";
       el.innerHTML = `
         <strong>${t.title}</strong><br>
-        ${formatDate(t.date)} ${t.time}
+        ${formatDate(t.date)} ${t.time}<br>
         <div class="actions">
-          <button onclick="updateStatus(${t.id},'done')">✅</button>
-          <button onclick="updateStatus(${t.id},'cancelled')">❌</button>
+          <button onclick="updateStatus(${t.id}, 'done')">✅</button>
+          <button onclick="updateStatus(${t.id}, 'cancelled')">❌</button>
           <button onclick="editTask(${t.id})">✏️</button>
-          <button onclick="deleteTask(${t.id})">🗑</button>
-        </div>`;
+          <button onclick="deleteTask(${t.id})">🗑️</button>
+        </div>
+      `;
       taskListEl.appendChild(el);
     });
 }

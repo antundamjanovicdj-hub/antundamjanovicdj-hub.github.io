@@ -1,13 +1,15 @@
-// core/app.js — HARD TEST
+// core/app.js — STEP 1
 
-alert("APP.JS START");
+alert("APP START");
+
+import { AppState } from "./state.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   alert("DOM READY");
 
   document.querySelectorAll("[data-lang]").forEach(btn => {
     btn.addEventListener("click", () => {
-      alert("CLICK: " + btn.dataset.lang);
+      alert("CLICK " + btn.dataset.lang);
     });
   });
 });

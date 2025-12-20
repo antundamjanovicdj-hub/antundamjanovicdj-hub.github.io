@@ -26,12 +26,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const $ = (id) => document.getElementById(id);
 
-  // ✅ DEFINIRAJ 'els' ODMAH NA POČETKU
+  // ✅ DEFINIRAJ 'els' ispravno, bez sintaktičkih grešaka
   const els = {
     backMenu: $("backMenu"),
     btnTasks: $("btnTasks"),
     backTasks: $("backTasks"),
-    btnBy Day: $("btnByDay"),
+    btnByDay: $("btnByDay"), // ✅ bez razmaka!
 
     tTitleL: $("tTitleL"),
     tNoteL: $("tNoteL"),

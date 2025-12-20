@@ -267,13 +267,40 @@ export function createTasksController({ T, AppState, platform, els }) {
   bindSmartReminder();
 
   return {
-    load,
-    onSaveTask,
-    applyLangToTasksUI,
-    renderPopup,
-    updateStatus,
-    editTask,
-    deleteTask: popupDeleteTask,
-    popupDeleteTask
-  };
-}
+  load,
+  onSaveTask,
+  applyLangToTasksUI,
+  renderPopup,
+  updateStatus,
+  editTask,
+  deleteTask: popupDeleteTask,
+  popupDeleteTask,
+
+  // ✅ NOVA FUNKCIJA ZA RUKOVANJE SVIM AKCIJAMA
+  handleTaskAction: ({ id, action }) => {
+    switch (action) {
+      case "done":
+        updateStatus(id, "done");
+        break;
+      case "cancel":
+        updateStatus(id, "cancelled");
+        break;
+      case "delete":
+        const t = tasks.find(x => x.id === id);
+        if (t && confirm("Obrisati ovu obvezu?")) {
+          tasks = tasks.filter(x => x.id !== id);
+          saveTasks(tasks);
+          if (t.addToCalendar === true) {
+            exportToCalendar({ task: { ...t, seq: Date.now() }, lang: AppState.lang, T, platform, cancel: true });
+          }
+          render();
+          renderPopupIfOpen();
+        }
+        break;
+      case "edit":
+        editTask(id);
+        showScreen("screen-tasks");
+        break;
+    }
+  }
+};

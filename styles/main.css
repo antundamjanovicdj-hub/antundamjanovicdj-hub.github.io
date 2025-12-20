@@ -205,18 +205,30 @@ button {
 .menu-text{
   font-weight:600;
 }
+
 /* ===== HIT-TEST HARD RESET ===== */
 
-/* ništa ne smije hvatati klik osim aktivnog screena */
+/* Sve osim aktivnog screena i aktivnog popupa je neklikljivo */
 .app,
 .content,
-.popup,
-.popup * {
+.screen:not(.active),
+.screen:not(.active) *,
+.popup:not(.active),
+.popup:not(.active) * {
   pointer-events: none !important;
 }
 
-/* SAMO aktivni screen i njegov sadržaj smiju hvatati klik */
+/* Aktivni screen i aktivni popup su klikljivi */
 .screen.active,
-.screen.active * {
+.screen.active *,
+.popup.active,
+.popup.active * {
   pointer-events: auto !important;
+}
+
+/* Spusti gumb "Pregled po danima" ispod "Spremi" */
+#btnByDay {
+  margin-top: 16px;
+  display: block;
+  width: 100%;
 }

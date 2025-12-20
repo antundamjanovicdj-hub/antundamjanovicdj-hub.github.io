@@ -71,6 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ✅ Omogući brisanje iz popupa
   window.popupDeleteTask = tasksCtrl.deleteTask;
+  window.handleTaskAction = tasksCtrl.handleTaskAction;
 
   tasksCtrl.load();
   tasksCtrl.applyLangToTasksUI();

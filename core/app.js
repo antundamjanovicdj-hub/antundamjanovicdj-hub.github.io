@@ -1,5 +1,4 @@
 // core/app.js
-// import { I18N } from "./i18n.js"; // ❌ Uklonjeno
 import { showScreen } from "./ui.js";
 
 // Fallback AppState
@@ -19,7 +18,7 @@ AppState._lang = localStorage.getItem('userLang') || 'hr';
 window.AppState = AppState;
 
 document.addEventListener("DOMContentLoaded", () => {
-  const T = window.I18N; // ✅ Koristi globalnu varijablu
+  const T = window.I18N;
   if (!T) {
     console.error("I18N not loaded!");
     return;
@@ -27,9 +26,46 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const $ = (id) => document.getElementById(id);
 
+  // ✅ DEFINIRAJ 'els' ODMAH NA POČETKU
+  const els = {
+    backMenu: $("backMenu"),
+    btnTasks: $("btnTasks"),
+    backTasks: $("backTasks"),
+    btnBy Day: $("btnByDay"),
+
+    tTitleL: $("tTitleL"),
+    tNoteL: $("tNoteL"),
+    tCatL: $("tCatL"),
+    tDateL: $("tDateL"),
+    tTimeL: $("tTimeL"),
+    tRemL: $("tRemL"),
+
+    taskTitle: $("taskTitle"),
+    taskNote: $("taskNote"),
+    taskCategory: $("taskCategory"),
+    taskDate: $("taskDate"),
+    taskTime: $("taskTime"),
+    taskReminder: $("taskReminder"),
+    addToCalendar: $("addToCalendar"),
+
+    calendarLabel: $("calendarLabel"),
+    calendarInfo: $("calendarInfo"),
+    saveTask: $("saveTask"),
+    taskList: $("taskList"),
+
+    dayPopup: $("dayPopup"),
+    popupTitle: $("popupTitle"),
+    closeDayPopup: $("closeDayPopup"),
+    popupDateLabel: $("popupDateLabel"),
+    popupDate: $("popupDate"),
+    popupTasks: $("popupTasks"),
+
+    reminderHint: $("reminderHint")
+  };
+
   showScreen("screen-lang");
 
-  // ✅ EVENT DELEGATION
+  // ✅ EVENT ZA IZBOR JEZIKA
   document.getElementById("screen-lang").addEventListener("click", (e) => {
     const btn = e.target.closest("[data-lang]");
     if (!btn) return;
@@ -37,6 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const lang = btn.dataset.lang;
     AppState.lang = lang;
 
+    // Ažuriraj tekst gumba u izborniku
     if (els.btnTasks) {
       const menuText = els.btnTasks.querySelector(".menu-text");
       if (menuText) menuText.textContent = T[lang]?.tasks || "Tasks";
@@ -46,7 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
     showScreen("screen-menu");
   });
 
-  // Ostali handleri...
+  // Gumb "←" iz izbornika
   if (els.backMenu) {
     els.backMenu.onclick = () => {
       document.body.className = "home";
@@ -54,35 +91,34 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
+  // Gumb "Obveze"
   if (els.btnTasks) {
     els.btnTasks.onclick = () => {
       showScreen("screen-tasks");
     };
   }
 
+  // Gumb "←" iz obveza
   if (els.backTasks) {
     els.backTasks.onclick = () => showScreen("screen-menu");
   }
 
+  // Ostali gumbi (bez funkcionalnosti dok ne implementiraš tasks)
   if (els.saveTask) {
     els.saveTask.onclick = () => {
-      // Ne radi bez tasks.controller.js
+      alert("Funkcionalnost 'Obveze' još nije implementirana.");
     };
   }
 
   if (els.btnByDay) {
     els.btnByDay.onclick = () => {
-      // Ne radi bez tasks.controller.js
+      alert("Pregled po danima još nije implementiran.");
     };
   }
 
   if (els.closeDayPopup) {
-    els.closeDayPopup.onclick = () => closeDayPopup({ dayPopupEl: els.dayPopup });
-  }
-
-  if (els.popupDate) {
-    els.popupDate.onchange = () => {
-      // Ne radi bez tasks.controller.js
+    els.closeDayPopup.onclick = () => {
+      els.dayPopup?.classList.remove("active");
     };
   }
 });

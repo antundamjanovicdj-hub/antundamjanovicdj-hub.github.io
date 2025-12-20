@@ -5,12 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>LifeKompas</title>
 
+  <!-- Manifest for PWA -->
   <link rel="manifest" href="manifest.json">
+
+  <!-- Favicon (optional, avoids 404) -->
+  <link rel="icon" href="icon-192.png">
+
+  <!-- Icons for Android -->
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+
+  <!-- Icons and meta for iOS -->
   <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="LifeKompas">
+
+  <!-- Theme color -->
+  <meta name="theme-color" content="#0d5e32">
+
+  <!-- Styles -->
   <link rel="stylesheet" href="styles/main.css">
 
-  <!-- Učitaj i18n.js PRIJE app.js -->
+  <!-- i18n.js MUST be loaded BEFORE app.js (as a classic script) -->
   <script src="core/i18n.js"></script>
+  <!-- app.js is a module -->
   <script type="module" src="core/app.js"></script>
 </head>
 
@@ -101,5 +120,13 @@
     </div>
   </div>
 
+  <!-- Register Service Worker (optional but recommended for PWA) -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js').catch(console.warn);
+      });
+    }
+  </script>
 </body>
 </html>

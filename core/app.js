@@ -60,36 +60,40 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let tasksCtrl = null;
 
-  /* ===== LANGUAGE SELECTION ===== */
-  document.querySelectorAll("[data-lang]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      AppState.lang = btn.dataset.lang;
+ /* ===== LANGUAGE SELECTION (BULLETPROOF) ===== */
+const langButtons = document.querySelectorAll("#screen-lang [data-lang]");
 
-      if (!tasksCtrl) {
-        tasksCtrl = createTasksController({
-          T,
-          AppState,
-          platform,
-          els
-        });
+langButtons.forEach(btn => {
+  btn.onclick = () => {
+    AppState.lang = btn.dataset.lang;
 
-        // globali za inline onclick gumbe
-        window.updateStatus = tasksCtrl.updateStatus;
-        window.editTask = tasksCtrl.editTask;
-        window.deleteTask = tasksCtrl.deleteTask;
-        window.popupDeleteTask = tasksCtrl.popupDeleteTask;
-      }
+    if (!tasksCtrl) {
+      tasksCtrl = createTasksController({
+        T,
+        AppState,
+        platform,
+        els
+      });
 
-      tasksCtrl.applyLangToTasksUI();
-     const menuText = els.btnTasks.querySelector(".menu-text");
-if (menuText) {
-  menuText.textContent = T[AppState.lang].tasks;
-}
-      document.body.className = "static";
-      showScreen("screen-menu");
-    });
-  });
+      // globali za inline onclick gumbe
+      window.updateStatus = tasksCtrl.updateStatus;
+      window.editTask = tasksCtrl.editTask;
+      window.deleteTask = tasksCtrl.deleteTask;
+      window.popupDeleteTask = tasksCtrl.popupDeleteTask;
+    }
 
+    // UI tekstovi
+    tasksCtrl.applyLangToTasksUI();
+
+    const menuText = els.btnTasks?.querySelector(".menu-text");
+    if (menuText) {
+      menuText.textContent = T[AppState.lang].tasks;
+    }
+
+    document.body.className = "static";
+    showScreen("screen-menu");
+  };
+});
   /* ===== NAVIGATION ===== */
   els.backMenu.onclick = () => {
     document.body.className = "home";

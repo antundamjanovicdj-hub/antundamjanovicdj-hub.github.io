@@ -163,33 +163,7 @@ button {
 .popup-delete:hover{
   opacity:1;
 }
-/* ===== POPUP – VIZUALNE OZNAKE STATUSA ===== */
 
-.popup .item{
-  position: relative;
-}
-
-/* ACTIVE – default */
-.popup .task-active{
-  background: rgba(255,255,255,.95);
-}
-
-/* DONE – završeno */
-.popup .task-done{
-  background: rgba(120,200,120,.18);
-}
-.popup .task-done strong::before{
-  content:"✅ ";
-}
-
-/* CANCELLED – otkazano */
-.popup .task-cancelled{
-  background: rgba(180,180,180,.25);
-  opacity:.75;
-}
-.popup .task-cancelled strong::before{
-  content:"❌ ";
-}
 .menu-btn{
   display:flex;
   align-items:center;
@@ -231,4 +205,18 @@ button {
   margin-top: 16px;
   display: block;
   width: 100%;
+}
+
+/* ✅ MOBILNA PODRŠKA: osiguraj da su interaktivni elementi klikljivi */
+.btn, .back, .task-btn, .popup-delete, #screen-lang .btn {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* ✅ Osiguraj da je cijeli zaslon za jezik klikljiv */
+#screen-lang {
+  pointer-events: auto !important;
 }

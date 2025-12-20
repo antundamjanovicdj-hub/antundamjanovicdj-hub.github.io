@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const tasksCtrl = createTasksController({ T, AppState, platform, els });
 
-  // ✅ Omogući brisanje iz popupa
+  // Omogući globalni pristup akcijama
   window.popupDeleteTask = tasksCtrl.deleteTask;
   window.handleTaskAction = tasksCtrl.handleTaskAction;
 
@@ -78,8 +78,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   showScreen("screen-lang");
 
-  // IZBOR JEZIKA
-  document.getElementById("screen-lang").addEventListener("click", (e) => {
+  // ✅ PODRŠKA ZA MOBIL: touchstart + click za izbor jezika
+  function onLangSelect(e) {
     const btn = e.target.closest("[data-lang]");
     if (!btn) return;
 
@@ -94,69 +94,81 @@ document.addEventListener("DOMContentLoaded", () => {
     tasksCtrl.applyLangToTasksUI();
     document.body.className = "static";
     showScreen("screen-menu");
-  });
+  }
+
+  const langScreen = document.getElementById("screen-lang");
+  langScreen.addEventListener("touchstart", onLangSelect, { passive: true });
+  langScreen.addEventListener("click", onLangSelect);
 
   // GUMB "←" IZ IZBORNIKA
   if (els.backMenu) {
-    els.backMenu.onclick = () => {
+    const onBackMenu = () => {
       document.body.className = "home";
       showScreen("screen-lang");
     };
+    els.backMenu.addEventListener("touchstart", onBackMenu, { passive: true });
+    els.backMenu.addEventListener("click", onBackMenu);
   }
 
   // GUMB "Obveze"
   if (els.btnTasks) {
-    els.btnTasks.onclick = () => showScreen("screen-tasks");
+    const onBtnTasks = () => showScreen("screen-tasks");
+    els.btnTasks.addEventListener("touchstart", onBtnTasks, { passive: true });
+    els.btnTasks.addEventListener("click", onBtnTasks);
   }
 
   // GUMB "←" IZ OBVEZA
   if (els.backTasks) {
-    els.backTasks.onclick = () => showScreen("screen-menu");
+    const onBackTasks = () => showScreen("screen-menu");
+    els.backTasks.addEventListener("touchstart", onBackTasks, { passive: true });
+    els.backTasks.addEventListener("click", onBackTasks);
   }
 
   // SPREMI OBAVEZU
   if (els.saveTask) {
-    els.saveTask.onclick = () => tasksCtrl.onSaveTask();
+    const onSave = () => tasksCtrl.onSaveTask();
+    els.saveTask.addEventListener("touchstart", onSave, { passive: true });
+    els.saveTask.addEventListener("click", onSave);
   }
 
-  // ✅ POPUP: PRIKAZ OBVEZA PO DANU
+  // POPUP: PRIKAZ OBVEZA PO DANU
   if (els.btnByDay) {
-    els.btnByDay.onclick = () => {
+    const onByDay = () => {
       if (!els.dayPopup) return;
-
       const today = new Date().toISOString().split('T')[0];
       els.popupDate.value = today;
-
       els.dayPopup.classList.add("active");
       tasksCtrl.renderPopup(today);
     };
+    els.btnByDay.addEventListener("touchstart", onByDay, { passive: true });
+    els.btnByDay.addEventListener("click", onByDay);
   }
 
-  // ✅ ZATVORI POPUP — RADI ČAK I AKO SE NEKAKO IZGUBI REF
+  // ZATVORI POPUP
   const closePopup = () => {
     const popup = document.getElementById("dayPopup");
     if (popup) popup.classList.remove("active");
   };
 
   if (els.closeDayPopup) {
-    els.closeDayPopup.onclick = closePopup;
+    els.closeDayPopup.addEventListener("touchstart", closePopup, { passive: true });
+    els.closeDayPopup.addEventListener("click", closePopup);
   }
 
-  // ✅ ZATVORI POPUP NA KLIKNUTI IZVAN NJEGA
-  document.addEventListener("click", (e) => {
+  // ZATVORI POPUP NA KLIKNUTI IZVAN NJEGA
+  document.addEventListener("touchstart", (e) => {
     const popup = document.getElementById("dayPopup");
     const btnByDay = document.getElementById("btnByDay");
     if (!popup || !popup.classList.contains("active")) return;
-
     if (!popup.contains(e.target) && e.target !== btnByDay) {
       closePopup();
     }
-  });
+  }, { passive: true });
 
-  // ✅ PROMJENA DATUMA U POPUPU
+  // PROMJENA DATUMA U POPUPU
   if (els.popupDate) {
-    els.popupDate.onchange = (e) => {
+    els.popupDate.addEventListener("change", (e) => {
       tasksCtrl.renderPopup(e.target.value);
-    };
+    });
   }
 });

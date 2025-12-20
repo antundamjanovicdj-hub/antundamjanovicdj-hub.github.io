@@ -84,12 +84,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!tasksCtrl) {
       const localizedT = T[lang] || T.hr;
-      tasksCtrl = createTasksController({ T: { [lang]: localizedT }, AppState, platform, els });
-      window.updateStatus = tasksCtrl.updateStatus;
-      window.editTask = tasksCtrl.editTask;
-      window.deleteTask = tasksCtrl.deleteTask;
-      window.popupDeleteTask = tasksCtrl.popupDeleteTask;
-    }
+    if (!tasksCtrl) {
+  console.log("Tasks controller not initialized yet — skipping for now.");
+  // tasksCtrl = createTasksController({ T: { [lang]: localizedT }, AppState, platform, els });
+  // window.updateStatus = tasksCtrl.updateStatus;
+  // window.editTask = tasksCtrl.editTask;
+  // window.deleteTask = tasksCtrl.deleteTask;
+  // window.popupDeleteTask = tasksCtrl.popupDeleteTask;
+}
 
     if (els.btnTasks) {
       const menuText = els.btnTasks.querySelector(".menu-text");

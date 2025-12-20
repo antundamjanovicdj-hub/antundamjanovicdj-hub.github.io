@@ -9,15 +9,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const T = window.I18N;
   const $ = (id) => document.getElementById(id);
 
-  /* ===== ELEMENTI ===== */
   const els = {
-    // navigation
     backMenu: $("backMenu"),
     btnTasks: $("btnTasks"),
     backTasks: $("backTasks"),
     btnByDay: $("btnByDay"),
 
-    // labels
     tTitleL: $("tTitleL"),
     tNoteL: $("tNoteL"),
     tCatL: $("tCatL"),
@@ -25,7 +22,6 @@ document.addEventListener("DOMContentLoaded", () => {
     tTimeL: $("tTimeL"),
     tRemL: $("tRemL"),
 
-    // inputs
     taskTitle: $("taskTitle"),
     taskNote: $("taskNote"),
     taskCategory: $("taskCategory"),
@@ -34,13 +30,11 @@ document.addEventListener("DOMContentLoaded", () => {
     taskReminder: $("taskReminder"),
     addToCalendar: $("addToCalendar"),
 
-    // buttons / lists
     calendarLabel: $("calendarLabel"),
     calendarInfo: $("calendarInfo"),
     saveTask: $("saveTask"),
     taskList: $("taskList"),
 
-    // popup
     dayPopup: $("dayPopup"),
     popupTitle: $("popupTitle"),
     closeDayPopup: $("closeDayPopup"),
@@ -48,53 +42,36 @@ document.addEventListener("DOMContentLoaded", () => {
     popupDate: $("popupDate"),
     popupTasks: $("popupTasks"),
 
-    // smart reminder hint
     reminderHint: $("reminderHint")
   };
 
-  /* ===== PLATFORM ===== */
   const platform = getPlatformFlags();
-
-  /* ===== INIT STATE ===== */
-  showScreen("screen-lang");
-
   let tasksCtrl = null;
 
- /* ===== LANGUAGE SELECTION (BULLETPROOF) ===== */
-const langButtons = document.querySelectorAll("#screen-lang [data-lang]");
+  showScreen("screen-lang");
 
-langButtons.forEach(btn => {
-  btn.onclick = () => {
-    AppState.lang = btn.dataset.lang;
+  // ✅ JEDINI JEZIČNI HANDLER
+  document.querySelectorAll("#screen-lang [data-lang]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      AppState.lang = btn.dataset.lang;
 
-    if (!tasksCtrl) {
-      tasksCtrl = createTasksController({
-        T,
-        AppState,
-        platform,
-        els
-      });
+      if (!tasksCtrl) {
+        tasksCtrl = createTasksController({ T, AppState, platform, els });
+        window.updateStatus = tasksCtrl.updateStatus;
+        window.editTask = tasksCtrl.editTask;
+        window.deleteTask = tasksCtrl.deleteTask;
+        window.popupDeleteTask = tasksCtrl.popupDeleteTask;
+      }
 
-      // globali za inline onclick gumbe
-      window.updateStatus = tasksCtrl.updateStatus;
-      window.editTask = tasksCtrl.editTask;
-      window.deleteTask = tasksCtrl.deleteTask;
-      window.popupDeleteTask = tasksCtrl.popupDeleteTask;
-    }
+      tasksCtrl.applyLangToTasksUI();
+      els.btnTasks.querySelector(".menu-text").textContent =
+        T[AppState.lang].tasks;
 
-    // UI tekstovi
-    tasksCtrl.applyLangToTasksUI();
+      document.body.className = "static";
+      showScreen("screen-menu");
+    });
+  });
 
-    const menuText = els.btnTasks?.querySelector(".menu-text");
-    if (menuText) {
-      menuText.textContent = T[AppState.lang].tasks;
-    }
-
-    document.body.className = "static";
-    showScreen("screen-menu");
-  };
-});
-  /* ===== NAVIGATION ===== */
   els.backMenu.onclick = () => {
     document.body.className = "home";
     showScreen("screen-lang");
@@ -109,17 +86,15 @@ langButtons.forEach(btn => {
     showScreen("screen-menu");
   };
 
-  /* ===== SAVE TASK ===== */
   els.saveTask.onclick = () => {
     tasksCtrl.onSaveTask();
   };
 
-  /* ===== POPUP: PREGLED PO DANIMA ===== */
   els.btnByDay.onclick = () => {
     openDayPopup({
       loadTasksFn: tasksCtrl.load,
       popupDateEl: els.popupDate,
-      renderPopupTasksFn: (date) => tasksCtrl.renderPopup(date),
+      renderPopupTasksFn: (d) => tasksCtrl.renderPopup(d),
       dayPopupEl: els.dayPopup
     });
   };
@@ -128,76 +103,7 @@ langButtons.forEach(btn => {
     closeDayPopup({ dayPopupEl: els.dayPopup });
   };
 
-  els.dayPopup.addEventListener("click", (e) => {
-    if (e.target === els.dayPopup) {
-      closeDayPopup({ dayPopupEl: els.dayPopup });
-    }
-  });
-
   els.popupDate.onchange = () => {
     tasksCtrl.renderPopup(els.popupDate.value);
   };
 });
-// ===== GLOBAL LANG SELECT (BULLETPROOF) =====
-window.selectLang = function (lang) {
-  AppState.lang = lang;
-
-  if (!window.__tasksCtrl) {
-    const T = window.I18N;
-    const platform = getPlatformFlags();
-    const $ = (id) => document.getElementById(id);
-
-    const els = {
-      backMenu: $("backMenu"),
-      btnTasks: $("btnTasks"),
-      backTasks: $("backTasks"),
-      btnByDay: $("btnByDay"),
-
-      tTitleL: $("tTitleL"),
-      tNoteL: $("tNoteL"),
-      tCatL: $("tCatL"),
-      tDateL: $("tDateL"),
-      tTimeL: $("tTimeL"),
-      tRemL: $("tRemL"),
-
-      taskTitle: $("taskTitle"),
-      taskNote: $("taskNote"),
-      taskCategory: $("taskCategory"),
-      taskDate: $("taskDate"),
-      taskTime: $("taskTime"),
-      taskReminder: $("taskReminder"),
-      addToCalendar: $("addToCalendar"),
-
-      calendarLabel: $("calendarLabel"),
-      calendarInfo: $("calendarInfo"),
-      saveTask: $("saveTask"),
-      taskList: $("taskList"),
-
-      dayPopup: $("dayPopup"),
-      popupTitle: $("popupTitle"),
-      closeDayPopup: $("closeDayPopup"),
-      popupDateLabel: $("popupDateLabel"),
-      popupDate: $("popupDate"),
-      popupTasks: $("popupTasks"),
-
-      reminderHint: $("reminderHint")
-    };
-
-    window.__tasksCtrl = createTasksController({
-      T,
-      AppState,
-      platform,
-      els
-    });
-  }
-
-  window.__tasksCtrl.applyLangToTasksUI();
-
-  const menuText = document.querySelector("#btnTasks .menu-text");
-  if (menuText) {
-    menuText.textContent = window.I18N[lang].tasks;
-  }
-
-  document.body.className = "static";
-  showScreen("screen-menu");
-};

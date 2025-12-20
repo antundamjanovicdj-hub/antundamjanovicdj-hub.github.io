@@ -147,7 +147,7 @@ export function createTasksController({ T, AppState, platform, els }) {
     tasks = tasks.map(x => (x.id === id ? updated : x));
     saveTasks(tasks);
 
-    // 👉 OTKAZIVANJE KALENDARA – SAMO AKO JE STVARNO BIO DODAN
+    // 👉 OTKAZIVANJE KALENDARA – SAMO AKO JE STVARNO BILO DODANO
     if (updated.addToCalendar === true) {
       const shouldCancel =
         platform.isIOS ||
@@ -194,32 +194,31 @@ export function createTasksController({ T, AppState, platform, els }) {
   }
 
   function popupDeleteTask(id) {
-  const t = tasks.find(x => x.id === id);
-  if (!t) return;
+    const t = tasks.find(x => x.id === id);
+    if (!t) return;
 
-  const ok = confirm(
-    T[AppState.lang].popupDeleteConfirm || "Obrisati ovu obvezu?"
-  );
-  if (!ok) return;
+    const ok = confirm(
+      T[AppState.lang].popupDeleteConfirm || "Obrisati ovu obvezu?"
+    );
+    if (!ok) return;
 
-  tasks = tasks.filter(x => x.id !== id);
-  saveTasks(tasks);
+    tasks = tasks.filter(x => x.id !== id);
+    saveTasks(tasks);
 
-  // ako je bio u kalendaru → pametno otkaži
-  if (t.addToCalendar === true) {
-    exportToCalendar({
-      task: { ...t, seq: Date.now() },
-      lang: AppState.lang,
-      T,
-      platform,
-      cancel: true
-    });
+    // ako je bio u kalendaru → pametno otkaži
+    if (t.addToCalendar === true) {
+      exportToCalendar({
+        task: { ...t, seq: Date.now() },
+        lang: AppState.lang,
+        T,
+        platform,
+        cancel: true
+      });
+    }
+
+    render();
+    renderPopupIfOpen();
   }
-
-  render();
-  renderPopupIfOpen();
-}
-
 
   function renderPopup(date) {
     renderPopupTasks({
@@ -267,13 +266,14 @@ export function createTasksController({ T, AppState, platform, els }) {
 
   bindSmartReminder();
 
- return {
-  load,
-  onSaveTask,
-  applyLangToTasksUI,
-  renderPopup,
-  updateStatus,
-  editTask,
-  deleteTask,
-  popupDeleteTask
-};
+  return {
+    load,
+    onSaveTask,
+    applyLangToTasksUI,
+    renderPopup,
+    updateStatus,
+    editTask,
+    deleteTask: popupDeleteTask, // ✅ FUNKCIJA "deleteTask" DEFINIRANA
+    popupDeleteTask
+  };
+} // ✅ OVO JE NEDOSTAJALO: zatvarajuća vitičasta zagrada

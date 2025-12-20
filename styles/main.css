@@ -16,8 +16,22 @@ body.static{
 }
 
 .app{position:relative;height:100%}
-.screen{position:absolute;inset:0;display:flex;justify-content:center;align-items:center;opacity:0;pointer-events:none}
-.screen.active{opacity:1;pointer-events:auto}
+.screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s ease;
+}
+
+.screen.active {
+  opacity: 1;
+  pointer-events: auto;
+}
 
 .content{width:100%;max-width:420px;padding:2rem 1.5rem;text-align:center}
 .scroll{max-height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch}

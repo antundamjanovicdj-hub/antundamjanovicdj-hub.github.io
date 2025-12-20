@@ -19,18 +19,14 @@ body.static{
 .screen {
   position: absolute;
   inset: 0;
-  display: flex;
+
+  display: none;
   justify-content: center;
   align-items: center;
-
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .25s ease;
 }
 
 .screen.active {
-  opacity: 1;
-  pointer-events: auto;
+  display: flex;
 }
 
 .content{width:100%;max-width:420px;padding:2rem 1.5rem;text-align:center}

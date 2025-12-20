@@ -1,108 +1,160 @@
-<!DOCTYPE html>
-<html lang="hr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>LifeKompas</title>
+// core/app.js
+import { showScreen } from "./ui.js";
+import { createTasksController } from "../modules/tasks/tasks.controller.js";
+import { openDayPopup, closeDayPopup } from "../modules/tasks/tasks.popup.js";
 
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
-<link rel="stylesheet" href="styles/main.css">
+// Fallback AppState ako state.js nije učitan ili ne postoji
+let AppState = window.AppState || {
+  lang: 'hr',
+  set lang(val) {
+    localStorage.setItem('userLang', val);
+    window.AppState = window.AppState || {};
+    window.AppState.lang = val;
+  },
+  get lang() {
+    return localStorage.getItem('userLang') || 'hr';
+  }
+};
+window.AppState = AppState;
 
-<script src="core/i18n.js"></script>
-<script type="module" src="core/app.js"></script>
-</head>
+document.addEventListener("DOMContentLoaded", () => {
+  // Učitaj T iz globalnog I18N (pretpostavka da i18n.js postavlja window.I18N)
+  const T = window.I18N;
+  if (!T) {
+    console.error("I18N not loaded!");
+    return;
+  }
 
-<body class="home">
+  const $ = (id) => document.getElementById(id);
 
-<!-- LANGUAGE -->
-<div id="screen-lang" class="screen active">
- <div class="content">
-  <h1 class="title">
-    <span>Life</span>
-    <span>Kompas</span>
-  </h1>
-  <div class="buttons">
-   <button class="btn" data-lang="hr">🇭🇷 Hrvatski</button>
-   <button class="btn" data-lang="de">🇩🇪 Deutsch</button>
-   <button class="btn" data-lang="en">🇬🇧 English</button>
-  </div>
- </div>
-</div>
+  const els = {
+    backMenu: $("backMenu"),
+    btnTasks: $("btnTasks"),
+    backTasks: $("backTasks"),
+    btnByDay: $("btnByDay"),
 
-<div class="app">
+    tTitleL: $("tTitleL"),
+    tNoteL: $("tNoteL"),
+    tCatL: $("tCatL"),
+    tDateL: $("tDateL"),
+    tTimeL: $("tTimeL"),
+    tRemL: $("tRemL"),
 
-<!-- MENU -->
-<div id="screen-menu" class="screen">
- <button class="back" id="backMenu">←</button>
- <div class="content">
-  <div class="buttons">
-   <button class="btn menu-btn" id="btnTasks">
-    <span class="menu-icon">🧭</span>
-    <span class="menu-text"></span>
-   </button>
-  </div>
- </div>
-</div>
+    taskTitle: $("taskTitle"),
+    taskNote: $("taskNote"),
+    taskCategory: $("taskCategory"),
+    taskDate: $("taskDate"),
+    taskTime: $("taskTime"),
+    taskReminder: $("taskReminder"),
+    addToCalendar: $("addToCalendar"),
 
-<!-- TASKS -->
-<div id="screen-tasks" class="screen">
- <button class="back" id="backTasks">←</button>
- <div class="content scroll">
-  <label id="tTitleL"></label>
-  <input id="taskTitle">
-  <label id="tNoteL"></label>
-  <textarea id="taskNote"></textarea>
-  <label id="tCatL"></label>
-  <select id="taskCategory"></select>
-  <label id="tDateL"></label>
-  <input type="date" id="taskDate">
-  <label id="tTimeL"></label>
-  <input type="time" id="taskTime">
-  <label id="tRemL"></label>
+    calendarLabel: $("calendarLabel"),
+    calendarInfo: $("calendarInfo"),
+    saveTask: $("saveTask"),
+    taskList: $("taskList"),
 
-  <select id="taskReminder">
-    <option value="0">—</option>
-    <option value="30">30 min</option>
-    <option value="60">1 h</option>
-    <option value="120">2 h</option>
-    <option value="1440">1 dan</option>
-  </select>
+    dayPopup: $("dayPopup"),
+    popupTitle: $("popupTitle"),
+    closeDayPopup: $("closeDayPopup"),
+    popupDateLabel: $("popupDateLabel"),
+    popupDate: $("popupDate"),
+    popupTasks: $("popupTasks"),
 
-  <div id="reminderHint" class="reminder-hint hidden"></div>
+    reminderHint: $("reminderHint")
+  };
 
-  <div class="calendar-box">
-   <label class="calendar-label">
-    <input type="checkbox" id="addToCalendar" checked>
-    <span id="calendarLabel"></span>
-   </label>
-  </div>
+  // Platform flags — fallback ako platform.js nije dostupan
+  const getPlatformFlags = () => {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isAndroid = /Android/.test(navigator.userAgent);
+    return { isIOS, isAndroid };
+  };
+  const platform = getPlatformFlags();
 
-  <button class="btn" id="saveTask"></button>
-  <button class="btn" id="btnByDay"></button>
+  let tasksCtrl = null;
 
-  <div id="taskList"></div>
-  <div id="calendarInfo" class="note"></div>
- </div>
-</div>
+  // Pokreni sa zaslonom za jezik
+  showScreen("screen-lang");
 
-</div>
+  // ✅ ROBUSTAN JEZIČNI HANDLER — koristi event delegation
+  document.getElementById("screen-lang").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-lang]");
+    if (!btn) return;
 
-<!-- POPUP -->
-<div id="dayPopup" class="popup">
- <div class="popup-box">
-  <div class="popup-header">
-   <strong id="popupTitle"></strong>
-   <button id="closeDayPopup">✕</button>
-  </div>
-  <label id="popupDateLabel"></label>
-  <input type="date" id="popupDate">
-  <div id="popupTasks"></div>
- </div>
-</div>
+    const lang = btn.dataset.lang;
+    AppState.lang = lang;
 
-</body>
-</html>
+    // Inicijaliziraj kontroller ako nije već inicijaliziran
+    if (!tasksCtrl) {
+      // Dinamički uvoz I18N za odabrani jezik
+      const localizedT = T[lang] || T.hr;
+      tasksCtrl = createTasksController({ T: { [lang]: localizedT }, AppState, platform, els });
+      window.updateStatus = tasksCtrl.updateStatus;
+      window.editTask = tasksCtrl.editTask;
+      window.deleteTask = tasksCtrl.deleteTask;
+      window.popupDeleteTask = tasksCtrl.popupDeleteTask;
+    }
 
+    // Ažuriraj UI
+    if (els.btnTasks) {
+      const menuText = els.btnTasks.querySelector(".menu-text");
+      if (menuText) menuText.textContent = T[lang]?.tasks || "Tasks";
+    }
 
+    // Prijeđi na glavni izbornik
+    document.body.className = "static";
+    showScreen("screen-menu");
+  });
 
+  // Ostale funkcionalnosti
+  if (els.backMenu) {
+    els.backMenu.onclick = () => {
+      document.body.className = "home";
+      showScreen("screen-lang");
+    };
+  }
+
+  if (els.btnTasks) {
+    els.btnTasks.onclick = () => {
+      if (tasksCtrl && typeof tasksCtrl.load === 'function') {
+        tasksCtrl.load();
+      }
+      showScreen("screen-tasks");
+    };
+  }
+
+  if (els.backTasks) {
+    els.backTasks.onclick = () => showScreen("screen-menu");
+  }
+
+  if (els.saveTask) {
+    els.saveTask.onclick = () => {
+      if (tasksCtrl && typeof tasksCtrl.onSaveTask === 'function') {
+        tasksCtrl.onSaveTask();
+      }
+    };
+  }
+
+  if (els.btnByDay) {
+    els.btnByDay.onclick = () => {
+      openDayPopup({
+        loadTasksFn: () => tasksCtrl?.load?.(),
+        popupDateEl: els.popupDate,
+        renderPopupTasksFn: (d) => tasksCtrl?.renderPopup?.(d),
+        dayPopupEl: els.dayPopup
+      });
+    };
+  }
+
+  if (els.closeDayPopup) {
+    els.closeDayPopup.onclick = () => closeDayPopup({ dayPopupEl: els.dayPopup });
+  }
+
+  if (els.popupDate) {
+    els.popupDate.onchange = () => {
+      if (tasksCtrl && tasksCtrl.renderPopup) {
+        tasksCtrl.renderPopup(els.popupDate.value);
+      }
+    };
+  }
+});

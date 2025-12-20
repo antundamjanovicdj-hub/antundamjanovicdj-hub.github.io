@@ -28,40 +28,40 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ✅ DEFINIRAJ 'els' ispravno, bez sintaktičkih grešaka
   const els = {
-    backMenu: $("backMenu"),
-    btnTasks: $("btnTasks"),
-    backTasks: $("backTasks"),
-    btnByDay: $("btnByDay"), // ✅ bez razmaka!
+  backMenu: $("backMenu"),
+  btnTasks: $("btnTasks"),
+  backTasks: $("backTasks"),
+  btnByDay: $("btnByDay"),
 
-    tTitleL: $("tTitleL"),
-    tNoteL: $("tNoteL"),
-    tCatL: $("tCatL"),
-    tDateL: $("tDateL"),
-    tTimeL: $("tTimeL"),
-    tRemL: $("tRemL"),
+  tTitleL: $("tTitleL"),
+  tNoteL: $("tNoteL"),
+  tCatL: $("tCatL"),
+  tDateL: $("tDateL"),
+  tTimeL: $("tTimeL"),
+  tRemL: $("tRemL"),
 
-    taskTitle: $("taskTitle"),
-    taskNote: $("taskNote"),
-    taskCategory: $("taskCategory"),
-    taskDate: $("taskDate"),
-    taskTime: $("taskTime"),
-    taskReminder: $("taskReminder"),
-    addToCalendar: $("addToCalendar"),
+  taskTitle: $("taskTitle"),
+  taskNote: $("taskNote"),
+  taskCategory: $("taskCategory"),
+  taskDate: $("taskDate"),
+  taskTime: $("taskTime"),
+  taskReminder: $("taskReminder"),
+  addToCalendar: $("addToCalendar"),
 
-    calendarLabel: $("calendarLabel"),
-    calendarInfo: $("calendarInfo"),
-    saveTask: $("saveTask"),
-    taskList: $("taskList"),
+  calendarLabel: $("calendarLabel"),
+  calendarInfo: $("calendarInfo"),
+  saveTask: $("saveTask"),
+  taskList: $("taskList"),
 
-    dayPopup: $("dayPopup"),
-    popupTitle: $("popupTitle"),
-    closeDayPopup: $("closeDayPopup"),
-    popupDateLabel: $("popupDateLabel"),
-    popupDate: $("popupDate"),
-    popupTasks: $("popupTasks"),
+  dayPopup: $("dayPopup"),
+  popupTitle: $("popupTitle"),
+  closeDayPopup: $("closeDayPopup"),
+  popupDateLabel: $("popupDateLabel"),
+  popupDate: $("popupDate"),
+  popupTasks: $("popupTasks"),
 
-    reminderHint: $("reminderHint")
-  };
+  reminderHint: $("reminderHint")
+};
 
   showScreen("screen-lang");
 

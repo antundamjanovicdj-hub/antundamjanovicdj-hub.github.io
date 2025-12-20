@@ -50,7 +50,7 @@ export function renderPopupTasks({ date, tasks, popupTasksEl, T, lang }) {
       el.className = `item task-${t.status}`;
 
       el.innerHTML = `
-        <button class="popup-delete" onclick="popupDeleteTask(${t.id})">🗑</button>
+        <button class="popup-delete" data-task-id="${t.id}">🗑</button>
         <strong>${t.title}</strong><br>
         ${t.time || ""}${t.time ? "<br>" : ""}
         <small>${T[lang].cats[t.cat] || ""}</small>
@@ -67,4 +67,14 @@ export function renderPopupTasks({ date, tasks, popupTasksEl, T, lang }) {
     p.textContent = T[lang].emptyDay;
     popupTasksEl.appendChild(p);
   }
+
+  // Poveži brisanje putem event delegation
+  popupTasksEl.querySelectorAll(".popup-delete").forEach(btn => {
+    btn.onclick = () => {
+      const id = Number(btn.dataset.taskId);
+      if (typeof window.popupDeleteTask === "function") {
+        window.popupDeleteTask(id);
+      }
+    };
+  });
 }

@@ -62,22 +62,22 @@ document.addEventListener("DOMContentLoaded", () => {
     reminderHint: $("reminderHint")
   };
 
-  // Platform detection (for calendar)
   const platform = {
     isIOS: /iPad|iPhone|iPod/.test(navigator.userAgent),
     isAndroid: /Android/.test(navigator.userAgent)
   };
 
-  // ✅ KREIRAJ KONTROLER ZA OBAVEZE
   const tasksCtrl = createTasksController({ T, AppState, platform, els });
 
-  // Učitaj podatke i lokalizaciju
+  // ✅ OMOGUĆI BRISANJE IZ POPUPA
+  window.popupDeleteTask = tasksCtrl.deleteTask;
+
   tasksCtrl.load();
   tasksCtrl.applyLangToTasksUI();
 
   showScreen("screen-lang");
 
-  // ✅ IZBOR JEZIKA
+  // IZBOR JEZIKA
   document.getElementById("screen-lang").addEventListener("click", (e) => {
     const btn = e.target.closest("[data-lang]");
     if (!btn) return;
@@ -95,7 +95,6 @@ document.addEventListener("DOMContentLoaded", () => {
     showScreen("screen-menu");
   });
 
-  // Gumb "←" iz izbornika
   if (els.backMenu) {
     els.backMenu.onclick = () => {
       document.body.className = "home";
@@ -103,41 +102,39 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  // ✅ GUMB "Obveze"
   if (els.btnTasks) {
-    els.btnTasks.onclick = () => {
-      showScreen("screen-tasks");
-    };
+    els.btnTasks.onclick = () => showScreen("screen-tasks");
   }
 
-  // Gumb "←" iz obveza
   if (els.backTasks) {
     els.backTasks.onclick = () => showScreen("screen-menu");
   }
 
-  // ✅ SPREMI OBAVEZU
   if (els.saveTask) {
     els.saveTask.onclick = () => tasksCtrl.onSaveTask();
   }
 
-  // ✅ PREGLED PO DANIMA
+  // POPUP: PRIKAZ OBVEZA PO DANU
   if (els.btnByDay) {
     els.btnByDay.onclick = () => {
-      if (els.dayPopup) {
-        els.dayPopup.classList.add("active");
-        tasksCtrl.renderPopup(new Date().toISOString().split('T')[0]);
-      }
+      if (!els.dayPopup) return;
+
+      const today = new Date().toISOString().split('T')[0];
+      els.popupDate.value = today;
+
+      els.dayPopup.classList.add("active");
+      tasksCtrl.renderPopup(today);
     };
   }
 
-  // ✅ ZATVORI POPUP
+  // ZATVORI POPUP
   if (els.closeDayPopup) {
     els.closeDayPopup.onclick = () => {
       if (els.dayPopup) els.dayPopup.classList.remove("active");
     };
   }
 
-  // ✅ DATUM U POPUPU
+  // PROMJENA DATUMA U POPUPU
   if (els.popupDate) {
     els.popupDate.onchange = (e) => {
       tasksCtrl.renderPopup(e.target.value);

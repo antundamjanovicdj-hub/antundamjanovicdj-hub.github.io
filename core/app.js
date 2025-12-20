@@ -81,8 +81,10 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       tasksCtrl.applyLangToTasksUI();
-      els.btnTasks.querySelector(".menu-text").textContent =
-  T[AppState.lang].tasks;
+     const menuText = els.btnTasks.querySelector(".menu-text");
+if (menuText) {
+  menuText.textContent = T[AppState.lang].tasks;
+}
       document.body.className = "static";
       showScreen("screen-menu");
     });

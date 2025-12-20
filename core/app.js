@@ -1,23 +1,127 @@
-// core/app.js — STEP 3
-
-alert("APP START");
-
+// core/app.js
 import { AppState } from "./state.js";
 import { getPlatformFlags } from "./platform.js";
 import { showScreen } from "./ui.js";
+import { createTasksController } from "../modules/tasks/tasks.controller.js";
+import { openDayPopup, closeDayPopup } from "../modules/tasks/tasks.popup.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-  alert("DOM READY");
+  const T = window.I18N;
+  const $ = (id) => document.getElementById(id);
+
+  /* ===== ELEMENTI ===== */
+  const els = {
+    // navigation / language
+    backMenu: $("backMenu"),
+    btnTasks: $("btnTasks"),
+    backTasks: $("backTasks"),
+    btnByDay: $("btnByDay"),
+
+    // labels
+    tTitleL: $("tTitleL"),
+    tNoteL: $("tNoteL"),
+    tCatL: $("tCatL"),
+    tDateL: $("tDateL"),
+    tTimeL: $("tTimeL"),
+    tRemL: $("tRemL"),
+
+    // inputs
+    taskTitle: $("taskTitle"),
+    taskNote: $("taskNote"),
+    taskCategory: $("taskCategory"),
+    taskDate: $("taskDate"),
+    taskTime: $("taskTime"),
+    taskReminder: $("taskReminder"),
+    addToCalendar: $("addToCalendar"),
+
+    // buttons / lists
+    calendarLabel: $("calendarLabel"),
+    calendarInfo: $("calendarInfo"),
+    saveTask: $("saveTask"),
+    taskList: $("taskList"),
+
+    // popup
+    dayPopup: $("dayPopup"),
+    popupTitle: $("popupTitle"),
+    closeDayPopup: $("closeDayPopup"),
+    popupDateLabel: $("popupDateLabel"),
+    popupDate: $("popupDate"),
+    popupTasks: $("popupTasks"),
+
+    // smart reminder hint
+    reminderHint: $("reminderHint")
+  };
 
   const platform = getPlatformFlags();
-  alert("PLATFORM OK");
+  let tasksCtrl = null;
 
-  showScreen("screen-lang");
-  alert("UI OK");
-
+  /* ===== LANGUAGE SELECTION ===== */
   document.querySelectorAll("[data-lang]").forEach(btn => {
     btn.addEventListener("click", () => {
-      alert("CLICK " + btn.dataset.lang);
+      AppState.lang = btn.dataset.lang;
+
+      if (!tasksCtrl) {
+        tasksCtrl = createTasksController({
+          T,
+          AppState,
+          platform,
+          els
+        });
+
+        // globali za inline onclick
+        window.updateStatus = tasksCtrl.updateStatus;
+        window.editTask = tasksCtrl.editTask;
+        window.deleteTask = tasksCtrl.deleteTask;
+        window.popupDeleteTask = tasksCtrl.popupDeleteTask;
+      }
+
+      tasksCtrl.applyLangToTasksUI();
+      document.body.className = "static";
+      showScreen("screen-menu");
     });
   });
+
+  /* ===== NAVIGATION ===== */
+  els.backMenu.onclick = () => {
+    document.body.className = "home";
+    showScreen("screen-lang");
+  };
+
+  els.btnTasks.onclick = () => {
+    tasksCtrl.load();
+    showScreen("screen-tasks");
+  };
+
+  els.backTasks.onclick = () => {
+    showScreen("screen-menu");
+  };
+
+  /* ===== SAVE TASK ===== */
+  els.saveTask.onclick = () => {
+    tasksCtrl.onSaveTask();
+  };
+
+  /* ===== POPUP: PREGLED PO DANIMA ===== */
+  els.btnByDay.onclick = () => {
+    openDayPopup({
+      loadTasksFn: tasksCtrl.load,
+      popupDateEl: els.popupDate,
+      renderPopupTasksFn: (date) => tasksCtrl.renderPopup(date),
+      dayPopupEl: els.dayPopup
+    });
+  };
+
+  els.closeDayPopup.onclick = () => {
+    closeDayPopup({ dayPopupEl: els.dayPopup });
+  };
+
+  els.dayPopup.addEventListener("click", (e) => {
+    if (e.target === els.dayPopup) {
+      closeDayPopup({ dayPopupEl: els.dayPopup });
+    }
+  });
+
+  els.popupDate.onchange = () => {
+    tasksCtrl.renderPopup(els.popupDate.value);
+  };
 });

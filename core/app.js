@@ -1,4 +1,4 @@
-/ core/app.js — STEP 3
+// core/app.js — STEP 3
 
 alert("APP START");
 

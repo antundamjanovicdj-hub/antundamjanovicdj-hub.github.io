@@ -17,19 +17,24 @@
 </head>
 
 <body class="home">
-<div class="app">
 
-<!-- LANGUAGE -->
+<!-- ================= LANGUAGE (IZVAN .app) ================= -->
 <div id="screen-lang" class="screen active">
  <div class="content">
-  <h1 class="title"><span>Life</span><span>Kompas</span></h1>
+  <h1 class="title">
+    <span>Life</span>
+    <span>Kompas</span>
+  </h1>
   <div class="buttons">
    <button class="btn" onclick="selectLang('hr')">🇭🇷 Hrvatski</button>
-<button class="btn" onclick="selectLang('de')">🇩🇪 Deutsch</button>
-<button class="btn" onclick="selectLang('en')">🇬🇧 English</button>
+   <button class="btn" onclick="selectLang('de')">🇩🇪 Deutsch</button>
+   <button class="btn" onclick="selectLang('en')">🇬🇧 English</button>
   </div>
  </div>
 </div>
+
+<!-- ================= APP WRAPPER ================= -->
+<div class="app">
 
 <!-- MENU -->
 <div id="screen-menu" class="screen">
@@ -37,9 +42,9 @@
  <div class="content">
   <div class="buttons">
    <button class="btn menu-btn" id="btnTasks">
-  <span class="menu-icon">🧭</span>
-  <span class="menu-text"></span>
-</button>
+    <span class="menu-icon">🧭</span>
+    <span class="menu-text"></span>
+   </button>
   </div>
  </div>
 </div>
@@ -66,14 +71,15 @@
 
   <label id="tRemL"></label>
   <select id="taskReminder">
-  <option value="0">—</option>
-  <option value="30">30 min</option>
-  <option value="60">1 h</option>
-  <option value="120">2 h</option>
-  <option value="1440">1 dan</option>
-</select>
-  
-<div id="reminderHint" class="reminder-hint hidden"></div>
+    <option value="0">—</option>
+    <option value="30">30 min</option>
+    <option value="60">1 h</option>
+    <option value="120">2 h</option>
+    <option value="1440">1 dan</option>
+  </select>
+
+  <div id="reminderHint" class="reminder-hint hidden"></div>
+
   <div class="calendar-box">
    <label class="calendar-label">
     <input type="checkbox" id="addToCalendar" checked>
@@ -91,7 +97,7 @@
 
 </div>
 
-<!-- POPUP -->
+<!-- ================= POPUP ================= -->
 <div id="dayPopup" class="popup" aria-hidden="true">
  <div class="popup-box">
   <div class="popup-header">
@@ -108,8 +114,3 @@
 
 </body>
 </html>
-
-
-
-
-

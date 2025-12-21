@@ -232,3 +232,30 @@ button {
   -webkit-user-select: none;
   user-select: none;
 }
+/* ✅ PORAVNANJE DATUMA I VREMENA NA iOS-u */
+input[type="date"],
+input[type="time"] {
+  height: 52px;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  font-size: 16px;
+  background: white;
+  -webkit-appearance: none;
+  appearance: none;
+  box-sizing: border-box;
+}
+
+/* ✅ Osiguraj da su labeli i inputi u istom redku */
+label {
+  display: block;
+  text-align: left;
+  font-size: .9rem;
+  margin-top: 1rem;
+}
+
+/* ✅ Ako je potrebno, dodaj margin-bottom za bolji razmak */
+input[type="date"],
+input[type="time"] {
+  margin-bottom: 1rem;
+}

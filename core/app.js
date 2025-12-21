@@ -80,21 +80,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ✅ PODRŠKA ZA MOBIL: touchstart + click za izbor jezika
   function onLangSelect(e) {
-    const btn = e.target.closest("[data-lang]");
-    if (!btn) return;
+  // ✅ DODAJ OVO ZA DIJAGNOSTIKU
+  console.log("Lang select triggered", e.type, e.target);
 
-    const lang = btn.dataset.lang;
-    AppState.lang = lang;
+  const btn = e.target.closest("[data-lang]");
+  if (!btn) return;
 
-    if (els.btnTasks) {
-      const menuText = els.btnTasks.querySelector(".menu-text");
-      if (menuText) menuText.textContent = T[lang]?.tasks || "Tasks";
-    }
+  const lang = btn.dataset.lang;
+  AppState.lang = lang;
 
-    tasksCtrl.applyLangToTasksUI();
-    document.body.className = "static";
-    showScreen("screen-menu");
+  if (els.btnTasks) {
+    const menuText = els.btnTasks.querySelector(".menu-text");
+    if (menuText) menuText.textContent = T[lang]?.tasks || "Tasks";
   }
+
+  tasksCtrl.applyLangToTasksUI();
+  document.body.className = "static";
+  showScreen("screen-menu");
+}
 
   const langScreen = document.getElementById("screen-lang");
   langScreen.addEventListener("touchstart", onLangSelect, { passive: true });

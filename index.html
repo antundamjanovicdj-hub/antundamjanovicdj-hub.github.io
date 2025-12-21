@@ -8,16 +8,16 @@
   <!-- Manifest for PWA -->
   <link rel="manifest" href="manifest.json">
 
-  <!-- Favicon (optional, avoids 404) -->
+  <!-- Favicon -->
   <link rel="icon" href="icon-192.png">
 
   <!-- Icons for Android -->
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
 
-  <!-- Icons and meta for iOS -->
+  <!-- Icons and meta for iOS & modern browsers -->
   <link rel="apple-touch-icon" href="icon-192.png">
-  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="LifeKompas">
 
@@ -27,13 +27,13 @@
   <!-- Styles -->
   <link rel="stylesheet" href="styles/main.css">
 
-  <!-- i18n.js MUST be loaded BEFORE app.js (as a classic script) -->
+  <!-- i18n.js MUST be loaded BEFORE app.js -->
   <script src="core/i18n.js"></script>
   <!-- app.js is a module -->
   <script type="module" src="core/app.js"></script>
 </head>
 
-<body class="home">
+<body class="home" onclick="">
 
   <!-- LANGUAGE SCREEN -->
   <div id="screen-lang" class="screen active">

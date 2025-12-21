@@ -1,6 +1,5 @@
 // core/app.js
-import { showScreen } from "./ui.js";
-import { createTasksController } from "../modules/tasks/tasks.controller.js";
+// ✅ KORISTI GLOBALNE FUNKCIJE (BEZ import)
 
 // Fallback AppState
 let AppState = window.AppState || {
@@ -23,6 +22,9 @@ document.addEventListener("DOMContentLoaded", () => {
     console.error("I18N not loaded!");
     return;
   }
+
+  const showScreen = window.showScreen;
+  const createTasksController = window.createTasksController;
 
   const $ = (id) => document.getElementById(id);
 
@@ -69,7 +71,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const tasksCtrl = createTasksController({ T, AppState, platform, els });
 
-  // Omogući globalni pristup akcijama
   window.popupDeleteTask = tasksCtrl.deleteTask;
   window.handleTaskAction = tasksCtrl.handleTaskAction;
 
@@ -78,32 +79,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
   showScreen("screen-lang");
 
-  // ✅ PODRŠKA ZA MOBIL: touchstart + click za izbor jezika
   function onLangSelect(e) {
-  // ✅ DODAJ OVO ZA DIJAGNOSTIKU
-  console.log("Lang select triggered", e.type, e.target);
+    console.log("Lang select triggered", e.type, e.target);
+    const btn = e.target.closest("[data-lang]");
+    if (!btn) return;
 
-  const btn = e.target.closest("[data-lang]");
-  if (!btn) return;
+    const lang = btn.dataset.lang;
+    AppState.lang = lang;
 
-  const lang = btn.dataset.lang;
-  AppState.lang = lang;
+    if (els.btnTasks) {
+      const menuText = els.btnTasks.querySelector(".menu-text");
+      if (menuText) menuText.textContent = T[lang]?.tasks || "Tasks";
+    }
 
-  if (els.btnTasks) {
-    const menuText = els.btnTasks.querySelector(".menu-text");
-    if (menuText) menuText.textContent = T[lang]?.tasks || "Tasks";
+    tasksCtrl.applyLangToTasksUI();
+    document.body.className = "static";
+    showScreen("screen-menu");
   }
-
-  tasksCtrl.applyLangToTasksUI();
-  document.body.className = "static";
-  showScreen("screen-menu");
-}
 
   const langScreen = document.getElementById("screen-lang");
   langScreen.addEventListener("touchstart", onLangSelect, { passive: true });
   langScreen.addEventListener("click", onLangSelect);
 
-  // GUMB "←" IZ IZBORNIKA
   if (els.backMenu) {
     const onBackMenu = () => {
       document.body.className = "home";
@@ -113,28 +110,24 @@ document.addEventListener("DOMContentLoaded", () => {
     els.backMenu.addEventListener("click", onBackMenu);
   }
 
-  // GUMB "Obveze"
   if (els.btnTasks) {
     const onBtnTasks = () => showScreen("screen-tasks");
     els.btnTasks.addEventListener("touchstart", onBtnTasks, { passive: true });
     els.btnTasks.addEventListener("click", onBtnTasks);
   }
 
-  // GUMB "←" IZ OBVEZA
   if (els.backTasks) {
     const onBackTasks = () => showScreen("screen-menu");
     els.backTasks.addEventListener("touchstart", onBackTasks, { passive: true });
     els.backTasks.addEventListener("click", onBackTasks);
   }
 
-  // SPREMI OBAVEZU
   if (els.saveTask) {
     const onSave = () => tasksCtrl.onSaveTask();
     els.saveTask.addEventListener("touchstart", onSave, { passive: true });
     els.saveTask.addEventListener("click", onSave);
   }
 
-  // POPUP: PRIKAZ OBVEZA PO DANU
   if (els.btnByDay) {
     const onByDay = () => {
       if (!els.dayPopup) return;
@@ -147,7 +140,6 @@ document.addEventListener("DOMContentLoaded", () => {
     els.btnByDay.addEventListener("click", onByDay);
   }
 
-  // ZATVORI POPUP
   const closePopup = () => {
     const popup = document.getElementById("dayPopup");
     if (popup) popup.classList.remove("active");
@@ -158,7 +150,6 @@ document.addEventListener("DOMContentLoaded", () => {
     els.closeDayPopup.addEventListener("click", closePopup);
   }
 
-  // ZATVORI POPUP NA KLIKNUTI IZVAN NJEGA
   document.addEventListener("touchstart", (e) => {
     const popup = document.getElementById("dayPopup");
     const btnByDay = document.getElementById("btnByDay");
@@ -168,7 +159,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }, { passive: true });
 
-  // PROMJENA DATUMA U POPUPU
   if (els.popupDate) {
     els.popupDate.addEventListener("change", (e) => {
       tasksCtrl.renderPopup(e.target.value);

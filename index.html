@@ -5,32 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>LifeKompas</title>
 
-  <!-- Manifest for PWA -->
   <link rel="manifest" href="manifest.json">
-
-  <!-- Favicon -->
   <link rel="icon" href="icon-192.png">
-
-  <!-- Icons for Android -->
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
-
-  <!-- Icons and meta for iOS & modern browsers -->
   <link rel="apple-touch-icon" href="icon-192.png">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="LifeKompas">
-
-  <!-- Theme color -->
   <meta name="theme-color" content="#0d5e32">
 
-  <!-- Styles -->
   <link rel="stylesheet" href="styles/main.css">
-
-  <!-- i18n.js MUST be loaded BEFORE app.js -->
-  <script src="core/i18n.js"></script>
-  <!-- app.js is a module -->
-  <script type="module" src="core/app.js"></script>
 </head>
 
 <body class="home" onclick="">
@@ -120,7 +103,17 @@
     </div>
   </div>
 
-  <!-- Register Service Worker (optional but recommended for PWA) -->
+  <!-- SKRIPTOVE U REDOSLIJEDU (KLASIČNI, BEZ MODULE) -->
+  <script src="core/i18n.js"></script>
+  <script src="core/ui.js"></script>
+  <script src="modules/tasks/tasks.state.js"></script>
+  <script src="modules/tasks/tasks.ui.js"></script>
+  <script src="modules/tasks/tasks.popup.js"></script>
+  <script src="modules/tasks/tasks.calendar.js"></script>
+  <script src="modules/tasks/tasks.controller.js"></script>
+  <script src="core/app.js"></script>
+
+  <!-- Service Worker -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {

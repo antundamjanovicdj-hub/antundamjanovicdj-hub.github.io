@@ -264,20 +264,8 @@ export function createTasksController({ T, AppState, platform, els }) {
     renderPopupIfOpen();
   }
 
-  bindSmartReminder();
-
-  return {
-  load,
-  onSaveTask,
-  applyLangToTasksUI,
-  renderPopup,
-  updateStatus,
-  editTask,
-  deleteTask: popupDeleteTask,
-  popupDeleteTask,
-
   // ✅ NOVA FUNKCIJA ZA RUKOVANJE SVIM AKCIJAMA
-  handleTaskAction: ({ id, action }) => {
+  function handleTaskAction({ id, action }) {
     switch (action) {
       case "done":
         updateStatus(id, "done");
@@ -299,8 +287,27 @@ export function createTasksController({ T, AppState, platform, els }) {
         break;
       case "edit":
         editTask(id);
-        showScreen("screen-tasks");
+        // Pretpostavimo da postoji globalna funkcija showScreen
+        if (typeof showScreen === "function") {
+          showScreen("screen-tasks");
+        }
         break;
     }
   }
-};
+
+  bindSmartReminder();
+
+  return {
+    load,
+    onSaveTask,
+    applyLangToTasksUI,
+    renderPopup,
+    updateStatus,
+    editTask,
+    deleteTask: popupDeleteTask,
+    popupDeleteTask,
+    handleTaskAction // ✅ Izloži novu funkciju
+  };
+}
+// ✅ IZLOŽI GLOBALNO
+window.createTasksController = createTasksController;

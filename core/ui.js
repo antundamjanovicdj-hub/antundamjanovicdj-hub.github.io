@@ -29,3 +29,6 @@ export function formatDate(dateString, lang = 'hr') {
   }
   return date.toLocaleDateString(lang, options);
 }
+/ ✅ IZLOŽI GLOBALNO ZA KOMPATIBILNOST
+window.showScreen = showScreen;
+window.formatDate = formatDate;

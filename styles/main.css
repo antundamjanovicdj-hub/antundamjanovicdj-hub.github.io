@@ -244,6 +244,11 @@ input[type="time"] {
   -webkit-appearance: none;
   appearance: none;
   box-sizing: border-box;
+  margin-bottom: 1rem; /* ✅ Dodano ovdje */
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
 }
 
 /* ✅ Osiguraj da su labeli i inputi u istom redku */
@@ -252,10 +257,4 @@ label {
   text-align: left;
   font-size: .9rem;
   margin-top: 1rem;
-}
-
-/* ✅ Ako je potrebno, dodaj margin-bottom za bolji razmak */
-input[type="date"],
-input[type="time"] {
-  margin-bottom: 1rem;
 }

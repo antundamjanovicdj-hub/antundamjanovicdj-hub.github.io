@@ -8,6 +8,7 @@ function createTasksController({ T, AppState, platform, els }) {
   let tasks = [];
   let editTaskId = null;
   let userTouchedReminder = false;
+  let isApplyingLang = false; // ✅ ZAŠTITA OD AUTOMATSKOG RENDERA
 
   const SMART_REMINDERS = {
     health: 1440,
@@ -24,11 +25,11 @@ function createTasksController({ T, AppState, platform, els }) {
     render();
   }
 
-  let allowRender = true;
-
-function render() {
-  renderTasks({ tasks, taskListEl: els.taskList });
-}
+  function render() {
+    // ✅ SPRIJEČI RENDER DOK SE POSTAVLJA JEZIK
+    if (isApplyingLang) return;
+    renderTasks({ tasks, taskListEl: els.taskList });
+  }
 
   function renderPopupIfOpen() {
     if (els.dayPopup && els.dayPopup.classList.contains("active")) {
@@ -163,51 +164,54 @@ function render() {
   }
 
   function applyLangToTasksUI() {
-  const lang = AppState.lang;
+    // ✅ ULAZI U REŽIM POSTAVLJANJA JEZIKA
+    isApplyingLang = true;
 
-  // ✅ OSIGURAJ DA SE NE POKRENE AUTOMATSKI REMINDER
-  userTouchedReminder = true;
+    const lang = AppState.lang;
 
-  if (els.btnTasks) {
-    const menuText = els.btnTasks.querySelector(".menu-text");
-    if (menuText) menuText.textContent = T[lang].tasks || "Tasks";
-  }
-
-  if (els.tTitleL) els.tTitleL.textContent = T[lang].tTitle || "";
-  if (els.tNoteL) els.tNoteL.textContent = T[lang].tNote || "";
-  if (els.tCatL) els.tCatL.textContent = T[lang].tCat || "";
-  if (els.tDateL) els.tDateL.textContent = T[lang].tDate || "";
-  if (els.tTimeL) els.tTimeL.textContent = T[lang].tTime || "";
-  if (els.tRemL) els.tRemL.textContent = T[lang].tRem || "";
-  if (els.saveTask) els.saveTask.textContent = T[lang].tSave || "";
-  if (els.btnByDay) els.btnByDay.textContent = T[lang].byDay || "";
-  if (els.calendarLabel) els.calendarLabel.textContent = T[lang].calendarToggle || "";
-
-  if (els.popupTitle) els.popupTitle.textContent = T[lang].popupTitle || "";
-  if (els.popupDateLabel) els.popupDateLabel.textContent = T[lang].popupDate || "";
-
-  // ✅ UPDATE KATEGORIJA BEZ TRIGGERA
-  if (els.taskCategory) {
-    const oldValue = els.taskCategory.value;
-    els.taskCategory.innerHTML = "";
-    for (const k in T[lang].cats) {
-      const o = document.createElement("option");
-      o.value = k;
-      o.textContent = T[lang].cats[k];
-      els.taskCategory.appendChild(o);
+    if (els.btnTasks) {
+      const menuText = els.btnTasks.querySelector(".menu-text");
+      if (menuText) menuText.textContent = T[lang].tasks || "Tasks";
     }
-    // Vrati stari odabir ako postoji
-    if (T[lang].cats[oldValue]) {
-      els.taskCategory.value = oldValue;
+
+    if (els.tTitleL) els.tTitleL.textContent = T[lang].tTitle || "";
+    if (els.tNoteL) els.tNoteL.textContent = T[lang].tNote || "";
+    if (els.tCatL) els.tCatL.textContent = T[lang].tCat || "";
+    if (els.tDateL) els.tDateL.textContent = T[lang].tDate || "";
+    if (els.tTimeL) els.tTimeL.textContent = T[lang].tTime || "";
+    if (els.tRemL) els.tRemL.textContent = T[lang].tRem || "";
+    if (els.saveTask) els.saveTask.textContent = T[lang].tSave || "";
+    if (els.btnByDay) els.btnByDay.textContent = T[lang].byDay || "";
+    if (els.calendarLabel) els.calendarLabel.textContent = T[lang].calendarToggle || "";
+
+    if (els.popupTitle) els.popupTitle.textContent = T[lang].popupTitle || "";
+    if (els.popupDateLabel) els.popupDateLabel.textContent = T[lang].popupDate || "";
+
+    // ✅ AŽURIRAJ KATEGORIJE BEZ TRIGGERA
+    if (els.taskCategory) {
+      const oldValue = els.taskCategory.value;
+      els.taskCategory.innerHTML = "";
+      for (const k in T[lang].cats) {
+        const o = document.createElement("option");
+        o.value = k;
+        o.textContent = T[lang].cats[k];
+        els.taskCategory.appendChild(o);
+      }
+      if (T[lang].cats[oldValue]) {
+        els.taskCategory.value = oldValue;
+      }
     }
-  }
 
-  if (els.reminderHint) {
-    els.reminderHint.classList.add("hidden");
-  }
+    if (els.reminderHint) {
+      els.reminderHint.classList.add("hidden");
+    }
 
-  renderPopupIfOpen();
-}
+    // ❌ NE RENDERIRAJ TIJEKOM POSTAVLJANJA JEZIKA
+    // renderPopupIfOpen();
+
+    // ✅ IZLAZI IZ REŽIMA
+    isApplyingLang = false;
+  }
 
   function handleTaskAction({ id, action }) {
     switch (action) {
@@ -232,7 +236,7 @@ function render() {
     }
   }
 
-  //bindSmartReminder();
+  bindSmartReminder();
 
   return {
     load,

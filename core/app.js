@@ -71,8 +71,9 @@ document.addEventListener("DOMContentLoaded", () => {
   window.popupDeleteTask = tasksCtrl.deleteTask;
   window.handleTaskAction = tasksCtrl.handleTaskAction;
 
-  tasksCtrl.load();
-  tasksCtrl.applyLangToTasksUI();
+  // ✅ NE UČITAVAJ ODMAH — ČEKAJ ODABIR JEZIKA
+  // tasksCtrl.load();
+  // tasksCtrl.applyLangToTasksUI();
 
   showScreen("screen-lang");
 
@@ -91,12 +92,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const lang = btn.dataset.lang;
     AppState.lang = lang;
 
+    // ✅ UČITAJ TEK NAKON ODABIRA JEZIKA
+    tasksCtrl.load();
+    tasksCtrl.applyLangToTasksUI();
+
     if (els.btnTasks) {
       const menuText = els.btnTasks.querySelector(".menu-text");
       if (menuText) menuText.textContent = T[lang]?.tasks || "Tasks";
     }
 
-    tasksCtrl.applyLangToTasksUI();
     document.body.className = "static";
     showScreen("screen-menu");
 
@@ -115,7 +119,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // GUMB "←" IZ IZBORNIKA
   if (els.backMenu) {
     const onBackMenu = () => {
-      // ✅ SPRIJEČI POVRAK AKO SE VEĆ NA screen-lang
       if (document.getElementById("screen-lang").classList.contains("active")) return;
       document.body.className = "home";
       showScreen("screen-lang");

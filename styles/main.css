@@ -220,3 +220,16 @@ button {
 #screen-lang {
   pointer-events: auto !important;
 }
+/* ✅ OSIGURAJ DA SU GUMBOVI ZA JEZIK KLIKLJIVI NA SVIM UREĐAJIMA */
+#screen-lang {
+  pointer-events: auto !important;
+}
+
+#screen-lang .btn {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  pointer-events: auto !important;
+}

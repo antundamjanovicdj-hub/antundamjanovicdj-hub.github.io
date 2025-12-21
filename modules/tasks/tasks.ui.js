@@ -1,5 +1,5 @@
 // modules/tasks/tasks.ui.js
-export function renderTasks({ tasks, taskListEl }) {
+function renderTasks({ tasks, taskListEl }) {
   if (!taskListEl) return;
 
   taskListEl.innerHTML = "";
@@ -19,7 +19,6 @@ export function renderTasks({ tasks, taskListEl }) {
     item.className = "task-item";
     item.dataset.taskId = task.id;
 
-    // Formatiraj datum za prikaz
     const dateDisplay = task.date ? new Date(task.date).toLocaleDateString() : "—";
 
     item.innerHTML = `
@@ -40,12 +39,11 @@ export function renderTasks({ tasks, taskListEl }) {
     taskListEl.appendChild(item);
   });
 
-  // ✅ EVENT DELEGATION ZA SVE AKCIJE
   taskListEl.querySelectorAll(".task-btn").forEach(btn => {
     btn.onclick = (e) => {
       const taskItem = e.target.closest(".task-item");
       const id = Number(taskItem.dataset.taskId);
-      const action = e.target.className.split(" ")[1]; // 'done', 'edit', 'cancel', 'delete'
+      const action = e.target.className.split(" ")[1];
 
       if (typeof window.handleTaskAction === "function") {
         window.handleTaskAction({ id, action });
@@ -53,3 +51,6 @@ export function renderTasks({ tasks, taskListEl }) {
     };
   });
 }
+
+// ✅ IZLOŽI GLOBALNO
+window.renderTasks = renderTasks;

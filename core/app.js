@@ -66,13 +66,14 @@ document.addEventListener("DOMContentLoaded", () => {
     isAndroid: /Android/.test(navigator.userAgent)
   };
 
-  const tasksCtrl = createTasksController({ T, AppState, platform, els });
-
-  window.popupDeleteTask = tasksCtrl.deleteTask;
-  window.handleTaskAction = tasksCtrl.handleTaskAction;
-
-  tasksCtrl.load();
-  tasksCtrl.applyLangToTasksUI();
+  // ✅ SAMO ZA TEST — onemogući task kontroler
+// const tasksCtrl = createTasksController({ T, AppState, platform, els });
+// 
+// window.popupDeleteTask = tasksCtrl.deleteTask;
+// window.handleTaskAction = tasksCtrl.handleTaskAction;
+// 
+// tasksCtrl.load();
+// tasksCtrl.applyLangToTasksUI();
 
   showScreen("screen-lang");
 
@@ -84,12 +85,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const lang = btn.dataset.lang;
     AppState.lang = lang;
 
-    if (els.btnTasks) {
-      const menuText = els.btnTasks.querySelector(".menu-text");
-      if (menuText) menuText.textContent = T[lang]?.tasks || "Tasks";
-    }
+    //if (els.btnTasks) {
+      //const menuText = els.btnTasks.querySelector(".menu-text");
+      //if (menuText) menuText.textContent = T[lang]?.tasks || "Tasks";
+    //}
 
-    tasksCtrl.applyLangToTasksUI();
+    //tasksCtrl.applyLangToTasksUI();
     document.body.className = "static";
     showScreen("screen-menu");
   }

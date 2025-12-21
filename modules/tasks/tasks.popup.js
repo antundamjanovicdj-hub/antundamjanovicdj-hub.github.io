@@ -1,27 +1,24 @@
 // modules/tasks/tasks.popup.js
-export function openDayPopup({
+function openDayPopup({
   loadTasksFn,
   popupDateEl,
   renderPopupTasksFn,
   dayPopupEl
 }) {
   loadTasksFn();
-
   const today = new Date().toISOString().split("T")[0];
   popupDateEl.value = popupDateEl.value || today;
-
   renderPopupTasksFn(popupDateEl.value);
-
   dayPopupEl.classList.add("active");
   dayPopupEl.setAttribute("aria-hidden", "false");
 }
 
-export function closeDayPopup({ dayPopupEl }) {
+function closeDayPopup({ dayPopupEl }) {
   dayPopupEl.classList.remove("active");
   dayPopupEl.setAttribute("aria-hidden", "true");
 }
 
-export function renderPopupTasks({ date, tasks, popupTasksEl, T, lang }) {
+function renderPopupTasks({ date, tasks, popupTasksEl, T, lang }) {
   popupTasksEl.innerHTML = "";
 
   const sections = [
@@ -68,7 +65,6 @@ export function renderPopupTasks({ date, tasks, popupTasksEl, T, lang }) {
     popupTasksEl.appendChild(p);
   }
 
-  // ✅ PONOVNO POVEŽI BRISANJE NAKON SVAKOG RENDERIRANJA
   popupTasksEl.querySelectorAll(".popup-delete").forEach(btn => {
     btn.onclick = () => {
       const id = Number(btn.dataset.taskId);
@@ -78,3 +74,8 @@ export function renderPopupTasks({ date, tasks, popupTasksEl, T, lang }) {
     };
   });
 }
+
+// ✅ IZLOŽI GLOBALNO
+window.openDayPopup = openDayPopup;
+window.closeDayPopup = closeDayPopup;
+window.renderPopupTasks = renderPopupTasks;

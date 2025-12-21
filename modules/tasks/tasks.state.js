@@ -1,10 +1,18 @@
 // modules/tasks/tasks.state.js
-const KEY = "tasks";
-
-export function loadTasks() {
-  return JSON.parse(localStorage.getItem(KEY) || "[]");
+function loadTasks() {
+  const raw = localStorage.getItem("tasks") || "[]";
+  try {
+    return JSON.parse(raw);
+  } catch (e) {
+    console.warn("Invalid tasks data, resetting");
+    return [];
+  }
 }
 
-export function saveTasks(tasks) {
-  localStorage.setItem(KEY, JSON.stringify(tasks));
+function saveTasks(tasks) {
+  localStorage.setItem("tasks", JSON.stringify(tasks));
 }
+
+// ✅ IZLOŽI GLOBALNO
+window.loadTasks = loadTasks;
+window.saveTasks = saveTasks;

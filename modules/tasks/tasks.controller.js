@@ -1,39 +1,31 @@
 // modules/tasks/tasks.controller.js
-import { loadTasks, saveTasks } from "./tasks.state.js";
-import { renderTasks } from "./tasks.ui.js";
-import { exportToCalendar } from "./tasks.calendar.js";
-import { renderPopupTasks } from "./tasks.popup.js";
+function createTasksController({ T, AppState, platform, els }) {
+  const { loadTasks, saveTasks } = window;
+  const { renderTasks } = window;
+  const { renderPopupTasks } = window;
+  const { exportToCalendar } = window;
 
-const SMART_REMINDERS = {
-  health: 1440,   // 1 dan
-  finance: 1440,  // 1 dan
-  family: 60,     // 1 sat
-  personal: 30    // 30 min
-};
-
-export function createTasksController({ T, AppState, platform, els }) {
   let tasks = [];
   let editTaskId = null;
   let userTouchedReminder = false;
 
-  /* ================= LOAD ================= */
+  const SMART_REMINDERS = {
+    health: 1440,
+    finance: 1440,
+    family: 60,
+    personal: 30
+  };
 
   function load() {
     tasks = loadTasks().map(t => ({
       ...t,
-      // NORMALIZACIJA: bez remindera = nema kalendara
       addToCalendar: t.addToCalendar === true && t.reminder > 0
     }));
     render();
   }
 
-  /* ================= RENDER ================= */
-
   function render() {
-    renderTasks({
-      tasks,
-      taskListEl: els.taskList
-    });
+    renderTasks({ tasks, taskListEl: els.taskList });
   }
 
   function renderPopupIfOpen() {
@@ -48,21 +40,14 @@ export function createTasksController({ T, AppState, platform, els }) {
     }
   }
 
-  /* ================= SMART REMINDER ================= */
-
   function bindSmartReminder() {
     if (!els.taskReminder || !els.taskCategory) return;
-
     els.taskReminder.addEventListener("change", () => {
       userTouchedReminder = true;
-      if (els.reminderHint) {
-        els.reminderHint.classList.add("hidden");
-      }
+      if (els.reminderHint) els.reminderHint.classList.add("hidden");
     });
-
     els.taskCategory.addEventListener("change", () => {
       const suggested = SMART_REMINDERS[els.taskCategory.value];
-
       if (!userTouchedReminder && suggested) {
         els.taskReminder.value = String(suggested);
         if (els.reminderHint) {
@@ -73,11 +58,8 @@ export function createTasksController({ T, AppState, platform, els }) {
     });
   }
 
-  /* ================= SAVE ================= */
-
   function onSaveTask() {
     const reminder = +els.taskReminder.value;
-
     const data = {
       id: editTaskId || Date.now(),
       title: els.taskTitle.value,
@@ -100,23 +82,13 @@ export function createTasksController({ T, AppState, platform, els }) {
 
     saveTasks(tasks);
 
-    // 👉 EXPORT U KALENDAR SAMO OVDJE
     if (data.addToCalendar && data.date && data.time) {
-      exportToCalendar({
-        task: data,
-        lang: AppState.lang,
-        T,
-        platform,
-        cancel: false
-      });
-      if (els.calendarInfo) {
-        els.calendarInfo.textContent = T[AppState.lang].calendarAdded || "";
-      }
+      exportToCalendar({ task: data, lang: AppState.lang, T, platform, cancel: false });
+      if (els.calendarInfo) els.calendarInfo.textContent = T[AppState.lang].calendarAdded || "";
     } else if (els.calendarInfo) {
       els.calendarInfo.textContent = "";
     }
 
-    // reset forme
     els.taskTitle.value = "";
     els.taskNote.value = "";
     els.taskDate.value = "";
@@ -124,54 +96,30 @@ export function createTasksController({ T, AppState, platform, els }) {
     els.taskReminder.value = "0";
     els.addToCalendar.checked = true;
     userTouchedReminder = false;
-    if (els.reminderHint) {
-      els.reminderHint.classList.add("hidden");
-    }
+    if (els.reminderHint) els.reminderHint.classList.add("hidden");
 
     render();
     renderPopupIfOpen();
   }
 
-  /* ================= STATUS CHANGE ================= */
-
   function updateStatus(id, status) {
     const t = tasks.find(x => x.id === id);
     if (!t) return;
 
-    const updated = {
-      ...t,
-      status,
-      seq: Date.now()
-    };
-
+    const updated = { ...t, status, seq: Date.now() };
     tasks = tasks.map(x => (x.id === id ? updated : x));
     saveTasks(tasks);
 
-    // 👉 OTKAZIVANJE KALENDARA – SAMO AKO JE STVARNO BILO DODANO
     if (updated.addToCalendar === true) {
-      const shouldCancel =
-        platform.isIOS ||
-        confirm(
-          T[AppState.lang].calendarRemoveConfirm ||
-          "Želiš li ukloniti ovu obvezu iz kalendara?"
-        );
-
+      const shouldCancel = platform.isIOS || confirm(T[AppState.lang].calendarRemoveConfirm || "Ukloniti iz kalendara?");
       if (shouldCancel) {
-        exportToCalendar({
-          task: updated,
-          lang: AppState.lang,
-          T,
-          platform,
-          cancel: true
-        });
+        exportToCalendar({ task: updated, lang: AppState.lang, T, platform, cancel: true });
       }
     }
 
     render();
     renderPopupIfOpen();
   }
-
-  /* ================= EDIT / DELETE ================= */
 
   function editTask(id) {
     const t = tasks.find(x => x.id === id);
@@ -188,32 +136,20 @@ export function createTasksController({ T, AppState, platform, els }) {
     els.taskReminder.value = String(t.reminder || 0);
     els.addToCalendar.checked = t.addToCalendar === true;
 
-    if (els.reminderHint) {
-      els.reminderHint.classList.add("hidden");
-    }
+    if (els.reminderHint) els.reminderHint.classList.add("hidden");
   }
 
   function popupDeleteTask(id) {
     const t = tasks.find(x => x.id === id);
     if (!t) return;
 
-    const ok = confirm(
-      T[AppState.lang].popupDeleteConfirm || "Obrisati ovu obvezu?"
-    );
-    if (!ok) return;
+    if (!confirm(T[AppState.lang].popupDeleteConfirm || "Obrisati obvezu?")) return;
 
     tasks = tasks.filter(x => x.id !== id);
     saveTasks(tasks);
 
-    // ako je bio u kalendaru → pametno otkaži
     if (t.addToCalendar === true) {
-      exportToCalendar({
-        task: { ...t, seq: Date.now() },
-        lang: AppState.lang,
-        T,
-        platform,
-        cancel: true
-      });
+      exportToCalendar({ task: { ...t, seq: Date.now() }, lang: AppState.lang, T, platform, cancel: true });
     }
 
     render();
@@ -221,20 +157,11 @@ export function createTasksController({ T, AppState, platform, els }) {
   }
 
   function renderPopup(date) {
-    renderPopupTasks({
-      date,
-      tasks,
-      popupTasksEl: els.popupTasks,
-      T,
-      lang: AppState.lang
-    });
+    renderPopupTasks({ date, tasks, popupTasksEl: els.popupTasks, T, lang: AppState.lang });
   }
-
-  /* ================= LANG ================= */
 
   function applyLangToTasksUI() {
     const lang = AppState.lang;
-
     els.btnTasks.textContent = T[lang].tasks;
     els.tTitleL.textContent = T[lang].tTitle;
     els.tNoteL.textContent = T[lang].tNote;
@@ -257,22 +184,14 @@ export function createTasksController({ T, AppState, platform, els }) {
       els.taskCategory.appendChild(o);
     }
 
-    if (els.reminderHint) {
-      els.reminderHint.classList.add("hidden");
-    }
-
+    if (els.reminderHint) els.reminderHint.classList.add("hidden");
     renderPopupIfOpen();
   }
 
-  // ✅ NOVA FUNKCIJA ZA RUKOVANJE SVIM AKCIJAMA
   function handleTaskAction({ id, action }) {
     switch (action) {
-      case "done":
-        updateStatus(id, "done");
-        break;
-      case "cancel":
-        updateStatus(id, "cancelled");
-        break;
+      case "done": updateStatus(id, "done"); break;
+      case "cancel": updateStatus(id, "cancelled"); break;
       case "delete":
         const t = tasks.find(x => x.id === id);
         if (t && confirm("Obrisati ovu obvezu?")) {
@@ -287,10 +206,7 @@ export function createTasksController({ T, AppState, platform, els }) {
         break;
       case "edit":
         editTask(id);
-        // Pretpostavimo da postoji globalna funkcija showScreen
-        if (typeof showScreen === "function") {
-          showScreen("screen-tasks");
-        }
+        if (typeof showScreen === "function") showScreen("screen-tasks");
         break;
     }
   }
@@ -306,8 +222,9 @@ export function createTasksController({ T, AppState, platform, els }) {
     editTask,
     deleteTask: popupDeleteTask,
     popupDeleteTask,
-    handleTaskAction // ✅ Izloži novu funkciju
+    handleTaskAction
   };
 }
+
 // ✅ IZLOŽI GLOBALNO
 window.createTasksController = createTasksController;

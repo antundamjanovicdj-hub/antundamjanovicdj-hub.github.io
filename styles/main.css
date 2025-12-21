@@ -231,5 +231,4 @@ button {
   touch-action: manipulation;
   -webkit-user-select: none;
   user-select: none;
-  pointer-events: auto !important;
 }

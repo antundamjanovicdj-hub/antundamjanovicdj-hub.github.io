@@ -74,10 +74,10 @@ document.addEventListener("DOMContentLoaded", () => {
   tasksCtrl.load();
   tasksCtrl.applyLangToTasksUI();
 
-  // ✅ UVJEK prikaži izbornik za jezik na početku
   showScreen("screen-lang");
 
   function onLangSelect(e) {
+    console.log("Lang select triggered", e.type, e.target);
     const btn = e.target.closest("[data-lang]");
     if (!btn) return;
 
@@ -91,7 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     tasksCtrl.applyLangToTasksUI();
     document.body.className = "static";
-    showScreen("screen-menu"); // ✅ OVO MORA BITI "screen-menu"
+    showScreen("screen-menu");
   }
 
   const langScreen = document.getElementById("screen-lang");

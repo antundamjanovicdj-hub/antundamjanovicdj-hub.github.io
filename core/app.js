@@ -76,7 +76,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   showScreen("screen-lang");
 
-  // ✅ SPRIJEČI DVOSTRUKI KLIK NA ANDROIDU
   let langSelectHandled = false;
 
   function onLangSelect(e) {
@@ -101,19 +100,23 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.className = "static";
     showScreen("screen-menu");
 
-    // Reset za sljedeći odabir
     setTimeout(() => {
       langSelectHandled = false;
     }, 1000);
   }
 
-  // ✅ SAMO touchstart — dovoljno za sve uređaje
-  const langScreen = document.getElementById("screen-lang");
-  langScreen.addEventListener("touchstart", onLangSelect, { passive: true });
+  // EVENT DELEGATION ZA JEZIK
+  document.addEventListener("touchstart", (e) => {
+    if (e.target.closest("[data-lang]")) {
+      onLangSelect(e);
+    }
+  }, { passive: true });
 
   // GUMB "←" IZ IZBORNIKA
   if (els.backMenu) {
     const onBackMenu = () => {
+      // ✅ SPRIJEČI POVRAK AKO SE VEĆ NA screen-lang
+      if (document.getElementById("screen-lang").classList.contains("active")) return;
       document.body.className = "home";
       showScreen("screen-lang");
     };

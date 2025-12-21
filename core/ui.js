@@ -6,6 +6,7 @@ function formatDate(dateString) {
 }
 
 function showScreen(screenId) {
+  console.log("🎯 showScreen:", screenId);
   document.querySelectorAll(".screen").forEach(el => {
     el.classList.remove("active");
   });

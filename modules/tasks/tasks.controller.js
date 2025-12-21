@@ -24,9 +24,11 @@ function createTasksController({ T, AppState, platform, els }) {
     render();
   }
 
-  function render() {
-    renderTasks({ tasks, taskListEl: els.taskList });
-  }
+  let allowRender = true;
+
+function render() {
+  renderTasks({ tasks, taskListEl: els.taskList });
+}
 
   function renderPopupIfOpen() {
     if (els.dayPopup && els.dayPopup.classList.contains("active")) {
@@ -161,21 +163,32 @@ function createTasksController({ T, AppState, platform, els }) {
   }
 
   function applyLangToTasksUI() {
-    const lang = AppState.lang;
-    els.btnTasks.textContent = T[lang].tasks;
-    els.tTitleL.textContent = T[lang].tTitle;
-    els.tNoteL.textContent = T[lang].tNote;
-    els.tCatL.textContent = T[lang].tCat;
-    els.tDateL.textContent = T[lang].tDate;
-    els.tTimeL.textContent = T[lang].tTime;
-    els.tRemL.textContent = T[lang].tRem;
-    els.saveTask.textContent = T[lang].tSave;
-    els.btnByDay.textContent = T[lang].byDay;
-    els.calendarLabel.textContent = T[lang].calendarToggle;
+  const lang = AppState.lang;
 
-    els.popupTitle.textContent = T[lang].popupTitle;
-    els.popupDateLabel.textContent = T[lang].popupDate;
+  // ✅ OSIGURAJ DA SE NE POKRENE AUTOMATSKI REMINDER
+  userTouchedReminder = true;
 
+  if (els.btnTasks) {
+    const menuText = els.btnTasks.querySelector(".menu-text");
+    if (menuText) menuText.textContent = T[lang].tasks || "Tasks";
+  }
+
+  if (els.tTitleL) els.tTitleL.textContent = T[lang].tTitle || "";
+  if (els.tNoteL) els.tNoteL.textContent = T[lang].tNote || "";
+  if (els.tCatL) els.tCatL.textContent = T[lang].tCat || "";
+  if (els.tDateL) els.tDateL.textContent = T[lang].tDate || "";
+  if (els.tTimeL) els.tTimeL.textContent = T[lang].tTime || "";
+  if (els.tRemL) els.tRemL.textContent = T[lang].tRem || "";
+  if (els.saveTask) els.saveTask.textContent = T[lang].tSave || "";
+  if (els.btnByDay) els.btnByDay.textContent = T[lang].byDay || "";
+  if (els.calendarLabel) els.calendarLabel.textContent = T[lang].calendarToggle || "";
+
+  if (els.popupTitle) els.popupTitle.textContent = T[lang].popupTitle || "";
+  if (els.popupDateLabel) els.popupDateLabel.textContent = T[lang].popupDate || "";
+
+  // ✅ UPDATE KATEGORIJA BEZ TRIGGERA
+  if (els.taskCategory) {
+    const oldValue = els.taskCategory.value;
     els.taskCategory.innerHTML = "";
     for (const k in T[lang].cats) {
       const o = document.createElement("option");
@@ -183,10 +196,18 @@ function createTasksController({ T, AppState, platform, els }) {
       o.textContent = T[lang].cats[k];
       els.taskCategory.appendChild(o);
     }
-
-    if (els.reminderHint) els.reminderHint.classList.add("hidden");
-    renderPopupIfOpen();
+    // Vrati stari odabir ako postoji
+    if (T[lang].cats[oldValue]) {
+      els.taskCategory.value = oldValue;
+    }
   }
+
+  if (els.reminderHint) {
+    els.reminderHint.classList.add("hidden");
+  }
+
+  renderPopupIfOpen();
+}
 
   function handleTaskAction({ id, action }) {
     switch (action) {
@@ -211,7 +232,7 @@ function createTasksController({ T, AppState, platform, els }) {
     }
   }
 
-  bindSmartReminder();
+  //bindSmartReminder();
 
   return {
     load,

@@ -66,41 +66,52 @@ document.addEventListener("DOMContentLoaded", () => {
     isAndroid: /Android/.test(navigator.userAgent)
   };
 
-  // ✅ SAMO ZA TEST — onemogući task kontroler
-const tasksCtrl = createTasksController({ T, AppState, platform, els });
+  const tasksCtrl = createTasksController({ T, AppState, platform, els });
 
-window.popupDeleteTask = tasksCtrl.deleteTask;
-window.handleTaskAction = tasksCtrl.handleTaskAction;
+  window.popupDeleteTask = tasksCtrl.deleteTask;
+  window.handleTaskAction = tasksCtrl.handleTaskAction;
 
-// ✅ UČITAJ PODATKE SAMO JEDNOM NA POČETKU
-tasksCtrl.load();
-tasksCtrl.applyLangToTasksUI();
+  tasksCtrl.load();
+  tasksCtrl.applyLangToTasksUI();
 
   showScreen("screen-lang");
 
+  // ✅ SPRIJEČI DVOSTRUKI KLIK NA ANDROIDU
+  let langSelectHandled = false;
+
   function onLangSelect(e) {
-    console.log("Lang select triggered", e.type, e.target);
+    if (langSelectHandled) return;
+    langSelectHandled = true;
+
     const btn = e.target.closest("[data-lang]");
-    if (!btn) return;
+    if (!btn) {
+      langSelectHandled = false;
+      return;
+    }
 
     const lang = btn.dataset.lang;
     AppState.lang = lang;
 
     if (els.btnTasks) {
-  const menuText = els.btnTasks.querySelector(".menu-text");
-  if (menuText) menuText.textContent = T[lang]?.tasks || "Tasks";
-}
+      const menuText = els.btnTasks.querySelector(".menu-text");
+      if (menuText) menuText.textContent = T[lang]?.tasks || "Tasks";
+    }
 
-tasksCtrl.applyLangToTasksUI();
+    tasksCtrl.applyLangToTasksUI();
     document.body.className = "static";
     showScreen("screen-menu");
+
+    // Reset za sljedeći odabir
+    setTimeout(() => {
+      langSelectHandled = false;
+    }, 1000);
   }
 
+  // ✅ SAMO touchstart — dovoljno za sve uređaje
   const langScreen = document.getElementById("screen-lang");
   langScreen.addEventListener("touchstart", onLangSelect, { passive: true });
-  langScreen.addEventListener("click", onLangSelect);
 
-  // Ostali handleri...
+  // GUMB "←" IZ IZBORNIKA
   if (els.backMenu) {
     const onBackMenu = () => {
       document.body.className = "home";
@@ -110,24 +121,28 @@ tasksCtrl.applyLangToTasksUI();
     els.backMenu.addEventListener("click", onBackMenu);
   }
 
+  // GUMB "Obveze"
   if (els.btnTasks) {
     const onBtnTasks = () => showScreen("screen-tasks");
     els.btnTasks.addEventListener("touchstart", onBtnTasks, { passive: true });
     els.btnTasks.addEventListener("click", onBtnTasks);
   }
 
+  // GUMB "←" IZ OBVEZA
   if (els.backTasks) {
     const onBackTasks = () => showScreen("screen-menu");
     els.backTasks.addEventListener("touchstart", onBackTasks, { passive: true });
     els.backTasks.addEventListener("click", onBackTasks);
   }
 
+  // SPREMI OBAVEZU
   if (els.saveTask) {
     const onSave = () => tasksCtrl.onSaveTask();
     els.saveTask.addEventListener("touchstart", onSave, { passive: true });
     els.saveTask.addEventListener("click", onSave);
   }
 
+  // PREGLED PO DANIMA
   if (els.btnByDay) {
     const onByDay = () => {
       if (!els.dayPopup) return;
@@ -140,6 +155,7 @@ tasksCtrl.applyLangToTasksUI();
     els.btnByDay.addEventListener("click", onByDay);
   }
 
+  // ZATVORI POPUP
   const closePopup = () => {
     const popup = document.getElementById("dayPopup");
     if (popup) popup.classList.remove("active");
@@ -150,6 +166,7 @@ tasksCtrl.applyLangToTasksUI();
     els.closeDayPopup.addEventListener("click", closePopup);
   }
 
+  // ZATVORI POPUP NA DODIR IZVAN NJEGA
   document.addEventListener("touchstart", (e) => {
     const popup = document.getElementById("dayPopup");
     const btnByDay = document.getElementById("btnByDay");
@@ -159,6 +176,7 @@ tasksCtrl.applyLangToTasksUI();
     }
   }, { passive: true });
 
+  // PROMJENA DATUMA U POPUPU
   if (els.popupDate) {
     els.popupDate.addEventListener("change", (e) => {
       tasksCtrl.renderPopup(e.target.value);

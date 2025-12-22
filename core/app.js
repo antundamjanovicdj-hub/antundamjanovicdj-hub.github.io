@@ -23,7 +23,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const showScreen = window.showScreen;
   const createTasksController = window.createTasksController;
-  const loadTasks = window.loadTasks;
 
   const $ = (id) => document.getElementById(id);
 
@@ -73,35 +72,17 @@ document.addEventListener("DOMContentLoaded", () => {
   window.popupDeleteTask = tasksCtrl.deleteTask;
   window.handleTaskAction = tasksCtrl.handleTaskAction;
 
-  // ===== ISPRAVNA INIT LOGIKA =====
-  const storedLang = localStorage.getItem("userLang");
-  const hasTasks = loadTasks().length > 0;
+  // ===== START: UVIJEK JEZIK =====
+  document.body.className = "home";
+  showScreen("screen-lang");
 
-  if (!storedLang) {
-    // ⬅️ PRVI START: izbor jezika
-    document.body.className = "home";
-    showScreen("screen-lang");
-  } else {
-    // ⬅️ JEZIK POSTOJI: idi na menu
-    tasksCtrl.applyLangToTasksUI();
-    document.body.className = "static";
-    showScreen("screen-menu");
-
-    if (hasTasks) {
-      tasksCtrl.load();
-    }
-  }
-
-  // ===== LANGUAGE SELECT =====
+  // ===== ODABIR JEZIKA (NE DIRATI OBVEZE) =====
   document.querySelectorAll("[data-lang]").forEach(btn => {
     btn.addEventListener("click", () => {
       AppState.lang = btn.dataset.lang;
 
-      document.querySelectorAll(".screen").forEach(s =>
-        s.classList.remove("active")
-      );
-
       tasksCtrl.applyLangToTasksUI();
+
       document.body.className = "static";
       showScreen("screen-menu");
     });
@@ -110,7 +91,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // ===== MENU → TASKS =====
   if (els.btnTasks) {
     els.btnTasks.addEventListener("click", () => {
-      tasksCtrl.enableRender();
+      tasksCtrl.load();          // UČITAJ OBVEZE
+      tasksCtrl.enableRender();  // OMOGUĆI RENDER
       if (els.taskList) els.taskList.style.display = "block";
       showScreen("screen-tasks");
     });
@@ -124,7 +106,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ===== MENU ← LANGUAGE =====
+  // ===== MENU ← JEZIK =====
   if (els.backMenu) {
     els.backMenu.addEventListener("click", () => {
       document.body.className = "home";
@@ -132,7 +114,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ===== SAVE =====
+  // ===== SAVE TASK =====
   if (els.saveTask) {
     els.saveTask.addEventListener("click", () => {
       tasksCtrl.onSaveTask();

@@ -20,9 +20,9 @@ function renderTasks({ tasks, taskListEl }) {
   }
 
   activeTasks.forEach(task => {
-    const item = document.createElement("div");
-    item.className = "task-card";
-    item.dataset.taskId = task.id;
+    const card = document.createElement("div");
+    card.className = "task-card";
+    card.dataset.taskId = task.id;
 
     const dateText = task.date
       ? new Date(task.date).toLocaleDateString()
@@ -30,7 +30,7 @@ function renderTasks({ tasks, taskListEl }) {
 
     const A = T[lang].actions;
 
-    item.innerHTML = `
+    card.innerHTML = `
       <div class="task-header">
         <div class="task-title">${task.title}</div>
         <div class="task-date">${dateText} ${task.time || ""}</div>
@@ -40,7 +40,7 @@ function renderTasks({ tasks, taskListEl }) {
 
       ${task.note ? `<div class="task-note">${task.note}</div>` : ""}
 
-      <div class="task-actions labeled">
+      <div class="task-actions grid">
         <button class="task-btn done">
           <span class="icon">✔</span>
           <span class="label">${A.done}</span>
@@ -63,7 +63,7 @@ function renderTasks({ tasks, taskListEl }) {
       </div>
     `;
 
-    taskListEl.appendChild(item);
+    taskListEl.appendChild(card);
   });
 
   taskListEl.querySelectorAll(".task-btn").forEach(btn => {

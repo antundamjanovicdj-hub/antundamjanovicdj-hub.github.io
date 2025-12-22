@@ -24,6 +24,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const showScreen = window.showScreen;
   const createTasksController = window.createTasksController;
+  const loadTasks = window.loadTasks;
+
   const $ = (id) => document.getElementById(id);
 
   const els = {
@@ -72,23 +74,35 @@ document.addEventListener("DOMContentLoaded", () => {
   window.popupDeleteTask = tasksCtrl.deleteTask;
   window.handleTaskAction = tasksCtrl.handleTaskAction;
 
-  // ===== START SCREEN =====
-  document.body.className = "home";
-  showScreen("screen-lang");
+  // ===== INIT STATE AFTER REFRESH =====
+  const hasLang = !!AppState.lang;
+  const hasTasks = loadTasks().length > 0;
 
-  // ===== LANGUAGE SELECT (CLICK ONLY – FIX ZA HR BUG) =====
+  tasksCtrl.applyLangToTasksUI();
+
+  if (hasLang) {
+    document.body.className = "static";
+    showScreen("screen-menu");
+
+    // pripremi taskove unaprijed
+    if (hasTasks) {
+      tasksCtrl.load();
+    }
+  } else {
+    document.body.className = "home";
+    showScreen("screen-lang");
+  }
+
+  // ===== LANGUAGE SELECT =====
   document.querySelectorAll("[data-lang]").forEach(btn => {
     btn.addEventListener("click", () => {
-      const lang = btn.dataset.lang;
-      AppState.lang = lang;
+      AppState.lang = btn.dataset.lang;
 
-      // reset svih ekrana
       document.querySelectorAll(".screen").forEach(s =>
         s.classList.remove("active")
       );
 
       tasksCtrl.applyLangToTasksUI();
-
       document.body.className = "static";
       showScreen("screen-menu");
     });
@@ -97,7 +111,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // ===== MENU → TASKS =====
   if (els.btnTasks) {
     els.btnTasks.addEventListener("click", () => {
-      tasksCtrl.load();
       tasksCtrl.enableRender();
       if (els.taskList) els.taskList.style.display = "block";
       showScreen("screen-tasks");
@@ -115,21 +128,19 @@ document.addEventListener("DOMContentLoaded", () => {
   // ===== MENU ← LANGUAGE =====
   if (els.backMenu) {
     els.backMenu.addEventListener("click", () => {
-      if (document.getElementById("screen-menu").classList.contains("active")) {
-        document.body.className = "home";
-        showScreen("screen-lang");
-      }
+      document.body.className = "home";
+      showScreen("screen-lang");
     });
   }
 
-  // ===== SAVE TASK =====
+  // ===== SAVE =====
   if (els.saveTask) {
     els.saveTask.addEventListener("click", () => {
       tasksCtrl.onSaveTask();
     });
   }
 
-  // ===== BY DAY POPUP =====
+  // ===== BY DAY =====
   if (els.btnByDay) {
     els.btnByDay.addEventListener("click", () => {
       const today = new Date().toISOString().split("T")[0];
@@ -146,7 +157,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   if (els.popupDate) {
-    els.popupDate.addEventListener("change", (e) => {
+    els.popupDate.addEventListener("change", e => {
       tasksCtrl.renderPopup(e.target.value);
     });
   }

@@ -1,6 +1,5 @@
 // core/app.js
 let AppState = window.AppState || {
-  lang: 'hr',
   set lang(val) {
     localStorage.setItem('userLang', val);
     this._lang = val;
@@ -10,7 +9,7 @@ let AppState = window.AppState || {
   }
 };
 
-AppState._lang = localStorage.getItem('userLang') || 'hr';
+AppState._lang = localStorage.getItem('userLang');
 window.AppState = AppState;
 
 let tasksCtrl = null;
@@ -74,23 +73,23 @@ document.addEventListener("DOMContentLoaded", () => {
   window.popupDeleteTask = tasksCtrl.deleteTask;
   window.handleTaskAction = tasksCtrl.handleTaskAction;
 
-  // ===== INIT STATE AFTER REFRESH =====
-  const hasLang = !!AppState.lang;
+  // ===== ISPRAVNA INIT LOGIKA =====
+  const storedLang = localStorage.getItem("userLang");
   const hasTasks = loadTasks().length > 0;
 
-  tasksCtrl.applyLangToTasksUI();
-
-  if (hasLang) {
+  if (!storedLang) {
+    // ⬅️ PRVI START: izbor jezika
+    document.body.className = "home";
+    showScreen("screen-lang");
+  } else {
+    // ⬅️ JEZIK POSTOJI: idi na menu
+    tasksCtrl.applyLangToTasksUI();
     document.body.className = "static";
     showScreen("screen-menu");
 
-    // pripremi taskove unaprijed
     if (hasTasks) {
       tasksCtrl.load();
     }
-  } else {
-    document.body.className = "home";
-    showScreen("screen-lang");
   }
 
   // ===== LANGUAGE SELECT =====

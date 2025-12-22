@@ -35,8 +35,7 @@ function renderTasks({ tasks, taskListEl }) {
       <div class="task-actions-bar">
         <button class="task-action done" title="Potvrdi">✔</button>
         <button class="task-action edit" title="Uredi">✏</button>
-        <button class="task-action cancel" title="Otkaži">✖</button>
-        <button class="task-action delete" title="Izbriši">🗑</button>
+        <button class="task-action delete" title="Ukloni">✖</button>
       </div>
     `;
 
@@ -47,7 +46,7 @@ function renderTasks({ tasks, taskListEl }) {
     btn.onclick = (e) => {
       const card = e.target.closest(".task-card");
       const id = Number(card.dataset.taskId);
-      const action = btn.classList[1];
+      const action = btn.classList[1]; // done | edit | delete
 
       if (typeof window.handleTaskAction === "function") {
         window.handleTaskAction({ id, action });

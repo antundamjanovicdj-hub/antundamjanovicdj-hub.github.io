@@ -680,3 +680,86 @@ label {
   transform: scale(0.92);
   filter: brightness(0.9);
 }
+/* ===== CLEAN TASK CARD – 3 ACTIONS ===== */
+
+.task-card.clean {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 16px;
+  margin-top: 16px;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.25);
+  border: 2px solid rgba(0,0,0,0.15);
+  display: flex;
+  flex-direction: column;
+}
+
+/* CONTENT */
+.task-content {
+  padding-bottom: 14px;
+}
+
+.task-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #000;
+}
+
+.task-date {
+  margin-top: 4px;
+  font-size: 0.85rem;
+  color: #222;
+  opacity: 0.85;
+}
+
+.task-note {
+  margin-top: 10px;
+  font-size: 0.95rem;
+  color: #000;
+  opacity: 0.9;
+}
+
+/* ===== ACTION BAR (3 IKONE) ===== */
+
+.task-actions-bar {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  border-top: 1px solid rgba(0,0,0,0.15);
+  padding-top: 14px;
+}
+
+.task-action {
+  flex: 1;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  font-size: 1.6rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ✔ POTVRDI – ZELENA */
+.task-action.done {
+  background: #2ecc71;
+  color: #0b3d1f;
+}
+
+/* ✏ UREDI – PLAVA */
+.task-action.edit {
+  background: #4a90e2;
+  color: #0b1f3a;
+}
+
+/* ✖ UKLONI – CRVENA */
+.task-action.delete {
+  background: #e74c3c;
+  color: #3b0500;
+}
+
+/* TAP FEEDBACK */
+.task-action:active {
+  transform: scale(0.92);
+  filter: brightness(0.9);
+}

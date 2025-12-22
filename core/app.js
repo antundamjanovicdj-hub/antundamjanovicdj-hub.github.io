@@ -76,23 +76,21 @@ document.addEventListener("DOMContentLoaded", () => {
   document.body.className = "home";
   showScreen("screen-lang");
 
-  // ===== ODABIR JEZIKA (NE DIRATI OBVEZE) =====
+  // ===== ODABIR JEZIKA =====
   document.querySelectorAll("[data-lang]").forEach(btn => {
     btn.addEventListener("click", () => {
       AppState.lang = btn.dataset.lang;
-
       tasksCtrl.applyLangToTasksUI();
-
       document.body.className = "static";
       showScreen("screen-menu");
     });
   });
 
-  // ===== MENU → TASKS =====
+  // ===== MENU → TASKS (FIX) =====
   if (els.btnTasks) {
     els.btnTasks.addEventListener("click", () => {
-      tasksCtrl.load();          // UČITAJ OBVEZE
-      tasksCtrl.enableRender();  // OMOGUĆI RENDER
+      tasksCtrl.enableRender(); // ✅ PRVO omogući render
+      tasksCtrl.load();         // ✅ ONDA učitaj → render radi
       if (els.taskList) els.taskList.style.display = "block";
       showScreen("screen-tasks");
     });
@@ -114,7 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ===== SAVE TASK =====
+  // ===== SAVE =====
   if (els.saveTask) {
     els.saveTask.addEventListener("click", () => {
       tasksCtrl.onSaveTask();

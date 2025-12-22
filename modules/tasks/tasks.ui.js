@@ -2,6 +2,9 @@
 function renderTasks({ tasks, taskListEl }) {
   if (!taskListEl) return;
 
+  const T = window.I18N;
+  const lang = window.AppState?.lang || "hr";
+
   taskListEl.innerHTML = "";
 
   const activeTasks = tasks
@@ -12,7 +15,7 @@ function renderTasks({ tasks, taskListEl }) {
     });
 
   if (activeTasks.length === 0) {
-    taskListEl.innerHTML = `<p class="empty-tasks">Nema aktivnih obveza.</p>`;
+    taskListEl.innerHTML = `<p class="empty-tasks">—</p>`;
     return;
   }
 
@@ -25,23 +28,38 @@ function renderTasks({ tasks, taskListEl }) {
       ? new Date(task.date).toLocaleDateString()
       : "—";
 
+    const A = T[lang].actions;
+
     item.innerHTML = `
       <div class="task-header">
         <div class="task-title">${task.title}</div>
         <div class="task-date">${dateText} ${task.time || ""}</div>
       </div>
 
-      <div class="task-meta">
-        <span class="task-cat">${task.cat}</span>
-      </div>
+      <div class="task-meta">${task.cat}</div>
 
       ${task.note ? `<div class="task-note">${task.note}</div>` : ""}
 
-      <div class="task-actions">
-        <button class="task-btn done" title="Završeno">✓</button>
-        <button class="task-btn edit" title="Uredi">✎</button>
-        <button class="task-btn cancel" title="Otkaži">✗</button>
-        <button class="task-btn delete" title="Izbriši">🗑</button>
+      <div class="task-actions labeled">
+        <button class="task-btn done">
+          <span class="icon">✔</span>
+          <span class="label">${A.done}</span>
+        </button>
+
+        <button class="task-btn edit">
+          <span class="icon">✏</span>
+          <span class="label">${A.edit}</span>
+        </button>
+
+        <button class="task-btn cancel">
+          <span class="icon">✖</span>
+          <span class="label">${A.cancel}</span>
+        </button>
+
+        <button class="task-btn delete">
+          <span class="icon">🗑</span>
+          <span class="label">${A.delete}</span>
+        </button>
       </div>
     `;
 
@@ -52,7 +70,7 @@ function renderTasks({ tasks, taskListEl }) {
     btn.onclick = (e) => {
       const card = e.target.closest(".task-card");
       const id = Number(card.dataset.taskId);
-      const action = e.target.classList[1];
+      const action = btn.classList[1];
 
       if (typeof window.handleTaskAction === "function") {
         window.handleTaskAction({ id, action });
@@ -61,5 +79,4 @@ function renderTasks({ tasks, taskListEl }) {
   });
 }
 
-// ✅ GLOBAL
 window.renderTasks = renderTasks;

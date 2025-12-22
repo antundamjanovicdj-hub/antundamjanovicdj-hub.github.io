@@ -19,18 +19,28 @@ const I18N = {
     popupDate: "Odaberi datum",
     popupDeleteConfirm: "Obrisati ovu obvezu?",
     emptyDay: "Nema obveza za ovaj dan",
+
     status: {
       active: "Aktivne",
       done: "Završene",
       cancelled: "Otkazane"
     },
+
     cats: {
       health: "Zdravlje",
       finance: "Financije",
       family: "Obitelj",
       personal: "Osobno"
+    },
+
+    actions: {
+      done: "Potvrdi",
+      edit: "Uredi",
+      cancel: "Otkaži",
+      delete: "Izbriši"
     }
   },
+
   en: {
     tasks: "Tasks",
     tTitle: "Title",
@@ -50,18 +60,28 @@ const I18N = {
     popupDate: "Select date",
     popupDeleteConfirm: "Delete this task?",
     emptyDay: "No tasks for this day",
+
     status: {
       active: "Active",
       done: "Done",
       cancelled: "Cancelled"
     },
+
     cats: {
       health: "Health",
       finance: "Finance",
       family: "Family",
       personal: "Personal"
+    },
+
+    actions: {
+      done: "Done",
+      edit: "Edit",
+      cancel: "Cancel",
+      delete: "Delete"
     }
   },
+
   de: {
     tasks: "Aufgaben",
     tTitle: "Titel",
@@ -81,16 +101,25 @@ const I18N = {
     popupDate: "Datum auswählen",
     popupDeleteConfirm: "Diese Aufgabe löschen?",
     emptyDay: "Keine Aufgaben für diesen Tag",
+
     status: {
       active: "Aktiv",
       done: "Erledigt",
       cancelled: "Abgebrochen"
     },
+
     cats: {
       health: "Gesundheit",
       finance: "Finanzen",
       family: "Familie",
       personal: "Persönlich"
+    },
+
+    actions: {
+      done: "Erledigt",
+      edit: "Bearbeiten",
+      cancel: "Abbrechen",
+      delete: "Löschen"
     }
   }
 };

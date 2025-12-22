@@ -467,3 +467,65 @@ label {
   transform: scale(0.94);
   filter: brightness(0.85);
 }
+/* ===== GUMBI S OPISOM ISPOD IKONE ===== */
+
+.task-actions.labeled {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.task-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  padding: 10px 0;
+  border: none;
+}
+
+.task-btn .icon {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.task-btn .label {
+  margin-top: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* ===== BOJE AKCIJA ===== */
+
+/* ✔ POTVRDI – ZELENA */
+.task-btn.done {
+  background: #2ecc71;
+  color: #0b3d1f;
+}
+
+/* ✏ UREDI – PLAVA */
+.task-btn.edit {
+  background: #4a90e2;
+  color: #0b1f3a;
+}
+
+/* ✖ OTKAŽI – TAMNO SIVA */
+.task-btn.cancel {
+  background: #9b9b9b;
+  color: #1f1f1f;
+}
+
+/* 🗑 IZBRIŠI – CRVENA */
+.task-btn.delete {
+  background: #e74c3c;
+  color: #3b0500;
+}
+
+/* Tap feedback */
+.task-btn:active {
+  transform: scale(0.94);
+  filter: brightness(0.9);
+}

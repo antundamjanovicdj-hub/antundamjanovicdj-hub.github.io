@@ -13,6 +13,8 @@ let AppState = window.AppState || {
 AppState._lang = localStorage.getItem('userLang') || 'hr';
 window.AppState = AppState;
 
+let tasksCtrl = null;
+
 document.addEventListener("DOMContentLoaded", () => {
   const T = window.I18N;
   if (!T) {
@@ -22,7 +24,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const showScreen = window.showScreen;
   const createTasksController = window.createTasksController;
-
   const $ = (id) => document.getElementById(id);
 
   const els = {
@@ -66,123 +67,84 @@ document.addEventListener("DOMContentLoaded", () => {
     isAndroid: /Android/.test(navigator.userAgent)
   };
 
-  const tasksCtrl = createTasksController({ T, AppState, platform, els });
+  tasksCtrl = createTasksController({ T, AppState, platform, els });
 
   window.popupDeleteTask = tasksCtrl.deleteTask;
   window.handleTaskAction = tasksCtrl.handleTaskAction;
 
-  // ✅ NE UČITAVAJ ODMAH — ČEKAJ ODABIR JEZIKA
-  // tasksCtrl.load();
-  // tasksCtrl.applyLangToTasksUI();
-
+  // ===== START SCREEN =====
+  document.body.className = "home";
   showScreen("screen-lang");
 
-  let langSelectHandled = false;
+  // ===== LANGUAGE SELECT (CLICK ONLY – FIX ZA HR BUG) =====
+  document.querySelectorAll("[data-lang]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const lang = btn.dataset.lang;
+      AppState.lang = lang;
 
-  function onLangSelect(e) {
-    if (langSelectHandled) return;
-    langSelectHandled = true;
+      // reset svih ekrana
+      document.querySelectorAll(".screen").forEach(s =>
+        s.classList.remove("active")
+      );
 
-    const btn = e.target.closest("[data-lang]");
-    if (!btn) {
-      langSelectHandled = false;
-      return;
-    }
+      tasksCtrl.applyLangToTasksUI();
 
-    const lang = btn.dataset.lang;
-    AppState.lang = lang;
+      document.body.className = "static";
+      showScreen("screen-menu");
+    });
+  });
 
-    // ✅ UČITAJ TEK NAKON ODABIRA JEZIKA
-    tasksCtrl.load();
-    tasksCtrl.applyLangToTasksUI();
-
-    if (els.btnTasks) {
-      const menuText = els.btnTasks.querySelector(".menu-text");
-      if (menuText) menuText.textContent = T[lang]?.tasks || "Tasks";
-    }
-
-    document.body.className = "static";
-    showScreen("screen-menu");
-
-    setTimeout(() => {
-      langSelectHandled = false;
-    }, 1000);
-  }
-
-  // EVENT DELEGATION ZA JEZIK
-  document.addEventListener("touchstart", (e) => {
-    if (e.target.closest("[data-lang]")) {
-      onLangSelect(e);
-    }
-  }, { passive: true });
-
-  // GUMB "←" IZ IZBORNIKA
-  if (els.backMenu) {
-    const onBackMenu = () => {
-      if (document.getElementById("screen-lang").classList.contains("active")) return;
-      document.body.className = "home";
-      showScreen("screen-lang");
-    };
-    els.backMenu.addEventListener("touchstart", onBackMenu, { passive: true });
-    els.backMenu.addEventListener("click", onBackMenu);
-  }
-
-  // GUMB "Obveze"
+  // ===== MENU → TASKS =====
   if (els.btnTasks) {
-    const onBtnTasks = () => showScreen("screen-tasks");
-    els.btnTasks.addEventListener("touchstart", onBtnTasks, { passive: true });
-    els.btnTasks.addEventListener("click", onBtnTasks);
+    els.btnTasks.addEventListener("click", () => {
+      tasksCtrl.load();
+      tasksCtrl.enableRender();
+      if (els.taskList) els.taskList.style.display = "block";
+      showScreen("screen-tasks");
+    });
   }
 
-  // GUMB "←" IZ OBVEZA
+  // ===== TASKS ← MENU =====
   if (els.backTasks) {
-    const onBackTasks = () => showScreen("screen-menu");
-    els.backTasks.addEventListener("touchstart", onBackTasks, { passive: true });
-    els.backTasks.addEventListener("click", onBackTasks);
+    els.backTasks.addEventListener("click", () => {
+      if (els.taskList) els.taskList.style.display = "none";
+      showScreen("screen-menu");
+    });
   }
 
-  // SPREMI OBAVEZU
+  // ===== MENU ← LANGUAGE =====
+  if (els.backMenu) {
+    els.backMenu.addEventListener("click", () => {
+      if (document.getElementById("screen-menu").classList.contains("active")) {
+        document.body.className = "home";
+        showScreen("screen-lang");
+      }
+    });
+  }
+
+  // ===== SAVE TASK =====
   if (els.saveTask) {
-    const onSave = () => tasksCtrl.onSaveTask();
-    els.saveTask.addEventListener("touchstart", onSave, { passive: true });
-    els.saveTask.addEventListener("click", onSave);
+    els.saveTask.addEventListener("click", () => {
+      tasksCtrl.onSaveTask();
+    });
   }
 
-  // PREGLED PO DANIMA
+  // ===== BY DAY POPUP =====
   if (els.btnByDay) {
-    const onByDay = () => {
-      if (!els.dayPopup) return;
-      const today = new Date().toISOString().split('T')[0];
+    els.btnByDay.addEventListener("click", () => {
+      const today = new Date().toISOString().split("T")[0];
       els.popupDate.value = today;
       els.dayPopup.classList.add("active");
       tasksCtrl.renderPopup(today);
-    };
-    els.btnByDay.addEventListener("touchstart", onByDay, { passive: true });
-    els.btnByDay.addEventListener("click", onByDay);
+    });
   }
-
-  // ZATVORI POPUP
-  const closePopup = () => {
-    const popup = document.getElementById("dayPopup");
-    if (popup) popup.classList.remove("active");
-  };
 
   if (els.closeDayPopup) {
-    els.closeDayPopup.addEventListener("touchstart", closePopup, { passive: true });
-    els.closeDayPopup.addEventListener("click", closePopup);
+    els.closeDayPopup.addEventListener("click", () => {
+      els.dayPopup.classList.remove("active");
+    });
   }
 
-  // ZATVORI POPUP NA DODIR IZVAN NJEGA
-  document.addEventListener("touchstart", (e) => {
-    const popup = document.getElementById("dayPopup");
-    const btnByDay = document.getElementById("btnByDay");
-    if (!popup || !popup.classList.contains("active")) return;
-    if (!popup.contains(e.target) && e.target !== btnByDay) {
-      closePopup();
-    }
-  }, { passive: true });
-
-  // PROMJENA DATUMA U POPUPU
   if (els.popupDate) {
     els.popupDate.addEventListener("change", (e) => {
       tasksCtrl.renderPopup(e.target.value);

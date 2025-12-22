@@ -8,7 +8,7 @@ function createTasksController({ T, AppState, platform, els }) {
   let tasks = [];
   let editTaskId = null;
   let userTouchedReminder = false;
-  let isApplyingLang = false; // ✅ ZAŠTITA OD AUTOMATSKOG RENDERA
+  let allowRender = false; // ✅ KLJUČNA ZASTAVICA
 
   const SMART_REMINDERS = {
     health: 1440,
@@ -26,8 +26,7 @@ function createTasksController({ T, AppState, platform, els }) {
   }
 
   function render() {
-    // ✅ SPRIJEČI RENDER DOK SE POSTAVLJA JEZIK
-    if (isApplyingLang) return;
+    if (!allowRender) return; // ✅ ZAŠTITA
     renderTasks({ tasks, taskListEl: els.taskList });
   }
 
@@ -45,10 +44,12 @@ function createTasksController({ T, AppState, platform, els }) {
 
   function bindSmartReminder() {
     if (!els.taskReminder || !els.taskCategory) return;
+
     els.taskReminder.addEventListener("change", () => {
       userTouchedReminder = true;
       if (els.reminderHint) els.reminderHint.classList.add("hidden");
     });
+
     els.taskCategory.addEventListener("change", () => {
       const suggested = SMART_REMINDERS[els.taskCategory.value];
       if (!userTouchedReminder && suggested) {
@@ -164,9 +165,6 @@ function createTasksController({ T, AppState, platform, els }) {
   }
 
   function applyLangToTasksUI() {
-    // ✅ ULAZI U REŽIM POSTAVLJANJA JEZIKA
-    isApplyingLang = true;
-
     const lang = AppState.lang;
 
     if (els.btnTasks) {
@@ -187,7 +185,6 @@ function createTasksController({ T, AppState, platform, els }) {
     if (els.popupTitle) els.popupTitle.textContent = T[lang].popupTitle || "";
     if (els.popupDateLabel) els.popupDateLabel.textContent = T[lang].popupDate || "";
 
-    // ✅ AŽURIRAJ KATEGORIJE BEZ TRIGGERA
     if (els.taskCategory) {
       const oldValue = els.taskCategory.value;
       els.taskCategory.innerHTML = "";
@@ -205,12 +202,6 @@ function createTasksController({ T, AppState, platform, els }) {
     if (els.reminderHint) {
       els.reminderHint.classList.add("hidden");
     }
-
-    // ❌ NE RENDERIRAJ TIJEKOM POSTAVLJANJA JEZIKA
-    // renderPopupIfOpen();
-
-    // ✅ IZLAZI IZ REŽIMA
-    isApplyingLang = false;
   }
 
   function handleTaskAction({ id, action }) {
@@ -236,6 +227,11 @@ function createTasksController({ T, AppState, platform, els }) {
     }
   }
 
+  // ✅ OMOGUĆI RENDER TEK KAD SE UČITA IZ "OBVEZA"
+  function enableRender() {
+    allowRender = true;
+  }
+
   bindSmartReminder();
 
   return {
@@ -247,9 +243,9 @@ function createTasksController({ T, AppState, platform, els }) {
     editTask,
     deleteTask: popupDeleteTask,
     popupDeleteTask,
-    handleTaskAction
+    handleTaskAction,
+    enableRender // ✅ IZLOŽI FUNKCIJU
   };
 }
 
-// ✅ IZLOŽI GLOBALNO
 window.createTasksController = createTasksController;

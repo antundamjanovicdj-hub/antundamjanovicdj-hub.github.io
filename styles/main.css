@@ -258,3 +258,7 @@ label {
   font-size: .9rem;
   margin-top: 1rem;
 }
+/* ✅ Sakrij listu obveza dok nije u zaslonu obveza */
+#taskList {
+  display: none;
+}

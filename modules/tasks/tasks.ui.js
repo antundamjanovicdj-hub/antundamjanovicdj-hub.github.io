@@ -4,32 +4,41 @@ function renderTasks({ tasks, taskListEl }) {
 
   taskListEl.innerHTML = "";
 
-  const activeTasks = tasks.filter(t => t.status === "active").sort((a, b) => {
-    if (a.date !== b.date) return a.date.localeCompare(b.date);
-    return (a.time || "").localeCompare(b.time || "");
-  });
+  const activeTasks = tasks
+    .filter(t => t.status === "active")
+    .sort((a, b) => {
+      if (a.date !== b.date) return a.date.localeCompare(b.date);
+      return (a.time || "").localeCompare(b.time || "");
+    });
 
   if (activeTasks.length === 0) {
-    taskListEl.innerHTML = `<p>Nema aktivnih obveza.</p>`;
+    taskListEl.innerHTML = `<p class="empty-tasks">Nema aktivnih obveza.</p>`;
     return;
   }
 
   activeTasks.forEach(task => {
     const item = document.createElement("div");
-    item.className = "task-item";
+    item.className = "task-card";
     item.dataset.taskId = task.id;
 
-    const dateDisplay = task.date ? new Date(task.date).toLocaleDateString() : "—";
+    const dateText = task.date
+      ? new Date(task.date).toLocaleDateString()
+      : "—";
 
     item.innerHTML = `
-      <div class="task-info">
-        <strong>${task.title}</strong><br>
-        <small>${dateDisplay} ${task.time || ""}</small><br>
-        <small class="task-cat">${task.cat}</small>
-        ${task.note ? `<div class="task-note">${task.note}</div>` : ""}
+      <div class="task-header">
+        <div class="task-title">${task.title}</div>
+        <div class="task-date">${dateText} ${task.time || ""}</div>
       </div>
+
+      <div class="task-meta">
+        <span class="task-cat">${task.cat}</span>
+      </div>
+
+      ${task.note ? `<div class="task-note">${task.note}</div>` : ""}
+
       <div class="task-actions">
-        <button class="task-btn done" title="Potvrdi">✓</button>
+        <button class="task-btn done" title="Završeno">✓</button>
         <button class="task-btn edit" title="Uredi">✎</button>
         <button class="task-btn cancel" title="Otkaži">✗</button>
         <button class="task-btn delete" title="Izbriši">🗑</button>
@@ -41,9 +50,9 @@ function renderTasks({ tasks, taskListEl }) {
 
   taskListEl.querySelectorAll(".task-btn").forEach(btn => {
     btn.onclick = (e) => {
-      const taskItem = e.target.closest(".task-item");
-      const id = Number(taskItem.dataset.taskId);
-      const action = e.target.className.split(" ")[1];
+      const card = e.target.closest(".task-card");
+      const id = Number(card.dataset.taskId);
+      const action = e.target.classList[1];
 
       if (typeof window.handleTaskAction === "function") {
         window.handleTaskAction({ id, action });
@@ -52,5 +61,5 @@ function renderTasks({ tasks, taskListEl }) {
   });
 }
 
-// ✅ IZLOŽI GLOBALNO
+// ✅ GLOBAL
 window.renderTasks = renderTasks;

@@ -3,39 +3,30 @@
   padding: 0;
   box-sizing: border-box;
 }
+
 html, body {
   height: 100%;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-/* ===== PLAVA POZADINA ZA SVE EKRANE ===== */
+/* ===== TOPLINSKI GRADIJENT NA SVIM EKRANIMA ===== */
 body {
-  background-color: #87CEEB !important;
-}
-
-/* Ako želiš zadržati animiranu pozadinu SAMO za welcome screen (ako postoji), 
-   ostavi body.home ispod. Inače, ovo prekriva sve. */
-
-/* 
-body.home {
-  background: linear-gradient(120deg, #1f6b4a, #2e8b57, #3fa37a, #2e8b57);
+  background: linear-gradient(135deg, #ffcc80 0%, #d5a67b 45%, #8d6e63 100%);
   background-size: 400% 400%;
-  animation: bgMove 12s infinite;
+  animation: bgMove 15s ease infinite;
 }
-body.static {
-  background: linear-gradient(to top, #d0f0c0, #a8e6cf, #61c09a, #2e8b57);
-}
+
 @keyframes bgMove {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
-*/
 
 .app {
   position: relative;
   height: 100%;
 }
+
 .screen {
   position: fixed;
   inset: 0;
@@ -43,7 +34,7 @@ body.static {
   justify-content: center;
   align-items: center;
   z-index: 10;
-  background-color: #87CEEB;
+  /* ✅ UKLONJENO: background-color — sada nasljeđuje body */
 }
 
 .screen.active {

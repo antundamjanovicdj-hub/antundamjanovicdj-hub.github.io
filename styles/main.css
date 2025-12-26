@@ -639,10 +639,10 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   .lang-btn { width: 46px; height: 46px; font-size: 18px; }
   .app-title { font-size: 2rem; margin-bottom: 0.8rem; }
 }
-/* ===== LANGUAGE SCREEN — PERFECT CIRCLE OF FLAGS (NO TITLE) ===== */
+/* ===== LANGUAGE SCREEN — 8 FLAGA U SAVRŠENOM KRUGU ===== */
 
 #screen-lang {
-  background-color: #6BB4F1; /* Tamno plavo nebo */
+  background-color: #6BB4F1;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -670,27 +670,26 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
 .lang-btn {
   position: absolute;
-  width: 54px;
-  height: 54px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   border: none;
-  background: rgba(240, 248, 255, 0.92); /* Almost white, but not pure white */
+  background: rgba(230, 245, 255, 0.95); /* ne bijela — lagano plava */
   color: #0d3b25;
   font-size: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
   transition: all 0.25s ease;
   cursor: pointer;
-  font-weight: bold;
   z-index: 1;
 }
 
 .lang-btn:hover {
   transform: scale(1.12);
-  box-shadow: 0 6px 14px rgba(0,0,0,0.18);
-  background: rgba(230, 245, 255, 1);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+  background: rgba(220, 240, 255, 1);
 }
 
 .lang-btn:active {
@@ -698,13 +697,12 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   box-shadow: 0 3px 8px rgba(0,0,0,0.1);
 }
 
-/* ===== SAVRŠEN KRUŽNI RASPORED — 9 GUMBOVA ===== */
-.lang-btn:nth-child(1) { transform: translate(0, -110px); }
-.lang-btn:nth-child(2) { transform: translate(55px, -95px); }
-.lang-btn:nth-child(3) { transform: translate(95px, -55px); }
-.lang-btn:nth-child(4) { transform: translate(110px, 0); }
-.lang-btn:nth-child(5) { transform: translate(95px, 55px); }
-.lang-btn:nth-child(6) { transform: translate(55px, 95px); }
-.lang-btn:nth-child(7) { transform: translate(0, 110px); }
-.lang-btn:nth-child(8) { transform: translate(-55px, 95px); }
-.lang-btn:nth-child(9) { transform: translate(-95px, 55px); }
+/* ===== 8 GUMBOVA – SAVRŠEN KRUG (45° intervali) ===== */
+.lang-btn:nth-child(1) { transform: rotate(0deg) translate(110px) rotate(0deg); }
+.lang-btn:nth-child(2) { transform: rotate(45deg) translate(110px) rotate(-45deg); }
+.lang-btn:nth-child(3) { transform: rotate(90deg) translate(110px) rotate(-90deg); }
+.lang-btn:nth-child(4) { transform: rotate(135deg) translate(110px) rotate(-135deg); }
+.lang-btn:nth-child(5) { transform: rotate(180deg) translate(110px) rotate(-180deg); }
+.lang-btn:nth-child(6) { transform: rotate(225deg) translate(110px) rotate(-225deg); }
+.lang-btn:nth-child(7) { transform: rotate(270deg) translate(110px) rotate(-270deg); }
+.lang-btn:nth-child(8) { transform: rotate(315deg) translate(110px) rotate(-315deg); }

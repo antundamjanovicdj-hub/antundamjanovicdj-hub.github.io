@@ -706,7 +706,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .lang-btn:nth-child(6) { transform: rotate(225deg) translate(110px) rotate(-225deg); }
 .lang-btn:nth-child(7) { transform: rotate(270deg) translate(110px) rotate(-270deg); }
 .lang-btn:nth-child(8) { transform: rotate(315deg) translate(110px) rotate(-315deg); }
-/* ===== LANGUAGE SCREEN — SVG CIRCLE (ENLARGED + CENTERED) ===== */
+/* ===== LANGUAGE SCREEN — SVG + LIFE / KOMPAS ===== */
 
 #screen-lang {
   background-color: #6BB4F1;
@@ -718,8 +718,34 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
 .lang-splash {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
+  gap: 16px;
+}
+
+.lang-labels {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.lang-top,
+.lang-bottom {
+  font-size: 2.1rem;
+  font-weight: 800;
+  color: #0d3b25;
+  letter-spacing: -0.5px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  font-family: 'Segoe UI', sans-serif;
+  text-transform: uppercase;
+}
+
+.lang-top {
+  margin-bottom: 12px;
+}
+
+.lang-bottom {
+  margin-top: 12px;
 }
 
 .lang-circle-svg {
@@ -728,7 +754,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 .lang-dot {
-  fill: #e3f2fd; /* SVJETLO PLAVA – moderna, ne bijela, ne crna */
+  fill: #e3f2fd; /* ✅ SVJETLO PLAVA — ne bijela, ne crna */
   stroke: rgba(0,0,0,0.1);
   stroke-width: 1;
   cursor: pointer;
@@ -736,17 +762,16 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 .lang-dot:hover {
-  fill: #bbdefb; /* Malo tamnija na hover */
+  fill: #bbdefb;
   stroke-width: 2;
 }
 
 .lang-flag {
   font-size: 22px;
   text-anchor: middle;
-  dominant-baseline: central; /* ✅ CENTRIRA ZASTAVU VERTIKALNO I HORIZONTALNO */
+  dominant-baseline: central;
   pointer-events: none;
-  cursor: pointer;
-  fill: #0d3b25; /* Tamnozelena – kontrast */
+  fill: #0d3b25;
 }
 
 .lang-item {

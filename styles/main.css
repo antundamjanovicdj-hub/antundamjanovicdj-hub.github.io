@@ -470,10 +470,10 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   .lang-buttons { width: 190px; height: 190px; }
   .lang-btn { width: 46px; height: 46px; font-size: 18px; }
 }
-/* ===== LANGUAGE SCREEN — MODERN CENTERED + STYLIZED ===== */
+/* ===== LANGUAGE SCREEN — MODERN + DEEP BLUE + SHADOWS ===== */
 
 #screen-lang {
-  background-color: #87CEEB;
+  background-color: #6BB4F1; /* Tamno plavo nebo */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -491,12 +491,13 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
 .app-title {
   font-size: 2.4rem;
-  font-weight: 900;
+  font-weight: 600;
   color: #0d3b25;
   margin: 0 0 2.5rem 0;
   letter-spacing: -0.5px;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
   font-family: 'Segoe UI', sans-serif;
+  text-transform: uppercase;
 }
 
 .lang-grid {
@@ -507,7 +508,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
-  transform: rotate(-30deg); /* Za lepši kut */
+  transform: rotate(-30deg);
 }
 
 .lang-btn {
@@ -515,14 +516,14 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   height: 60px;
   border-radius: 50%;
   border: none;
-  background: rgba(255, 255, 255, 0.95);
+  background: #e0f0ff; /* Svjetlo plava pozadina unutar kruga */
   color: #0d3b25;
   font-size: 1.1rem;
   font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   transition: all 0.3s ease;
   cursor: pointer;
   font-family: 'Segoe UI', sans-serif;
@@ -532,7 +533,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .lang-btn:hover {
   transform: scale(1.1) rotate(5deg);
   box-shadow: 0 6px 16px rgba(0,0,0,0.2);
-  background: rgba(255, 255, 255, 1);
+  background: #ffffff;
 }
 
 .lang-btn:active {

@@ -18,19 +18,44 @@
 
 <body class="home" onclick="">
 
-  <!-- LANGUAGE SCREEN — 8 GUMBOVA U SAVRŠENOM KRUGU -->
+  <!-- LANGUAGE SCREEN — SVG CIRCLE LAYOUT -->
 <div id="screen-lang" class="screen active">
-  <div class="lang-circle-container">
-    <div class="lang-circle">
-      <button class="lang-btn" data-lang="hr">🇭🇷</button>
-      <button class="lang-btn" data-lang="en">🇺🇸</button>
-      <button class="lang-btn" data-lang="de">🇩🇪</button>
-      <button class="lang-btn" data-lang="ru">🇷🇺</button>
-      <button class="lang-btn" data-lang="pt">🇵🇹</button>
-      <button class="lang-btn" data-lang="tr">🇹🇷</button>
-      <button class="lang-btn" data-lang="zh">🇨🇳</button>
-      <button class="lang-btn" data-lang="ja">🇯🇵</button>
-    </div>
+  <div class="lang-splash">
+    <svg width="280" height="280" viewBox="0 0 280 280" class="lang-circle-svg">
+      <!-- Gumbovi kao krugovi s zastavama -->
+      <g class="lang-item" data-lang="hr">
+        <circle cx="140" cy="40" r="28" class="lang-dot"/>
+        <text x="140" y="48" class="lang-flag">🇭🇷</text>
+      </g>
+      <g class="lang-item" data-lang="en">
+        <circle cx="210" cy="70" r="28" class="lang-dot"/>
+        <text x="210" y="78" class="lang-flag">🇺🇸</text>
+      </g>
+      <g class="lang-item" data-lang="de">
+        <circle cx="240" cy="140" r="28" class="lang-dot"/>
+        <text x="240" y="148" class="lang-flag">🇩🇪</text>
+      </g>
+      <g class="lang-item" data-lang="ru">
+        <circle cx="210" cy="210" r="28" class="lang-dot"/>
+        <text x="210" y="218" class="lang-flag">🇷🇺</text>
+      </g>
+      <g class="lang-item" data-lang="pt">
+        <circle cx="140" cy="240" r="28" class="lang-dot"/>
+        <text x="140" y="248" class="lang-flag">🇵🇹</text>
+      </g>
+      <g class="lang-item" data-lang="tr">
+        <circle cx="70" cy="210" r="28" class="lang-dot"/>
+        <text x="70" y="218" class="lang-flag">🇹🇷</text>
+      </g>
+      <g class="lang-item" data-lang="zh">
+        <circle cx="40" cy="140" r="28" class="lang-dot"/>
+        <text x="40" y="148" class="lang-flag">🇨🇳</text>
+      </g>
+      <g class="lang-item" data-lang="ja">
+        <circle cx="70" cy="70" r="28" class="lang-dot"/>
+        <text x="70" y="78" class="lang-flag">🇯🇵</text>
+      </g>
+    </svg>
   </div>
 </div>
 
@@ -114,13 +139,37 @@
   <script src="modules/tasks/tasks.controller.js"></script>
   <script src="core/app.js"></script>
 
-  <!-- Service Worker -->
+ <!-- Service Worker -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/service-worker.js').catch(console.warn);
       });
     }
+  </script>
+
+  <!-- Language Switcher -->
+  <script>
+    // Funkcija za postavljanje jezika
+    function setLanguage(lang) {
+      localStorage.setItem('userLang', lang);
+      document.documentElement.setAttribute('lang', lang);
+      if (window.I18N && window.renderLanguage) {
+        window.renderLanguage(lang);
+      } else {
+        location.reload();
+      }
+    }
+
+    // Dodaj klik handler na SVG gumbove
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.lang-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const lang = item.getAttribute('data-lang');
+          setLanguage(lang);
+        });
+      });
+    });
   </script>
 </body>
 </html>

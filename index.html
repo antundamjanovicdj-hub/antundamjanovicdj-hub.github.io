@@ -125,9 +125,8 @@
   }
 </script>
 
-<!-- Language Switcher (SAMO JEDAN BLOK) -->
+<!-- Language Switcher — KONAČNA VERZIJA -->
 <script>
-  // ✅ SPRIJEČI AUTOMATSKO OTVARANJE OBVEZA
   window.languageSelected = false;
 
   function setLanguage(lang) {
@@ -137,9 +136,13 @@
 
     if (typeof window.renderLanguage === 'function') {
       window.renderLanguage(lang);
-      // ✅ SAKRIJ izbornik jezika
-      document.getElementById('screen-lang').classList.remove('active');
-      // ✅ PRIKAŽI menu
+      
+      // ✅ UKLONI .active SA SVIH EKRANA
+      document.querySelectorAll('.screen').forEach(el => {
+        el.classList.remove('active');
+      });
+      
+      // ✅ PRIKAŽI SAMO MENU
       document.getElementById('screen-menu').classList.add('active');
     }
   }

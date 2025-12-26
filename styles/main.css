@@ -706,7 +706,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .lang-btn:nth-child(6) { transform: rotate(225deg) translate(110px) rotate(-225deg); }
 .lang-btn:nth-child(7) { transform: rotate(270deg) translate(110px) rotate(-270deg); }
 .lang-btn:nth-child(8) { transform: rotate(315deg) translate(110px) rotate(-315deg); }
-/* ===== LANGUAGE SCREEN — SVG + LIFE / KOMPAS ===== */
+/* ===== LANGUAGE SCREEN — SVG + GRADIENT LIFE / KOMPAS ===== */
 
 #screen-lang {
   background-color: #6BB4F1;
@@ -731,21 +731,26 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
 .lang-top,
 .lang-bottom {
-  font-size: 2.1rem;
+  font-size: 2.2rem;
   font-weight: 800;
-  color: #0d3b25;
   letter-spacing: -0.5px;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-  font-family: 'Segoe UI', sans-serif;
   text-transform: uppercase;
+  /* Gradijent: crno → narančasto */
+  background: linear-gradient(180deg, #000 50%, #ff8c00 50%, #ff4500);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+  margin: 0;
+  padding: 0;
 }
 
 .lang-top {
-  margin-bottom: 12px;
+  margin-bottom: 18px;
 }
 
 .lang-bottom {
-  margin-top: 12px;
+  margin-top: 18px;
 }
 
 .lang-circle-svg {
@@ -754,7 +759,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 .lang-dot {
-  fill: #e3f2fd; /* ✅ SVJETLO PLAVA — ne bijela, ne crna */
+  fill: #e3f2fd !important; /* ✅ OSIGURAJ DA NIJE BIJELA */
   stroke: rgba(0,0,0,0.1);
   stroke-width: 1;
   cursor: pointer;
@@ -762,7 +767,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 .lang-dot:hover {
-  fill: #bbdefb;
+  fill: #bbdefb !important;
   stroke-width: 2;
 }
 

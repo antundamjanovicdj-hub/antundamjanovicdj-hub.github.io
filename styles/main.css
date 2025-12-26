@@ -1,188 +1,269 @@
-*{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-
-body.home{
-  background:linear-gradient(120deg,#1f6b4a,#2e8b57,#3fa37a,#2e8b57);
-  background-size:400% 400%;
-  animation:bgMove 12s infinite;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
-body.static{
-  background:linear-gradient(to top,#d0f0c0,#a8e6cf,#61c09a,#2e8b57);
-}
-@keyframes bgMove{
-  0%{background-position:0% 50%}
-  50%{background-position:100% 50%}
-  100%{background-position:0% 50%}
+html, body {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-.app{position:relative;height:100%}
-.screen{
-  position:fixed;
-  inset:0;
-  display:none;
-  justify-content:center;
-  align-items:center;
-  z-index:10;
+/* ===== PLAVA POZADINA ZA SVE EKRANE ===== */
+body {
+  background-color: #87CEEB !important;
 }
 
-.screen.active{
-  display:flex;
+/* Ako želiš zadržati animiranu pozadinu SAMO za welcome screen (ako postoji), 
+   ostavi body.home ispod. Inače, ovo prekriva sve. */
+
+/* 
+body.home {
+  background: linear-gradient(120deg, #1f6b4a, #2e8b57, #3fa37a, #2e8b57);
+  background-size: 400% 400%;
+  animation: bgMove 12s infinite;
+}
+body.static {
+  background: linear-gradient(to top, #d0f0c0, #a8e6cf, #61c09a, #2e8b57);
+}
+@keyframes bgMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+*/
+
+.app {
+  position: relative;
+  height: 100%;
+}
+.screen {
+  position: fixed;
+  inset: 0;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+  background-color: #87CEEB;
 }
 
-.content{width:100%;max-width:420px;padding:2rem 1.5rem;text-align:center}
-.scroll{max-height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch}
-
-.title{font-size:4rem;font-weight:900;line-height:1;margin-bottom:2rem}
-.title span{
- display:block;
- background:linear-gradient(180deg,#000 40%,#ff8c00 60%,#ff4500);
- -webkit-background-clip:text;
- -webkit-text-fill-color:transparent;
+.screen.active {
+  display: flex;
 }
 
-.buttons{display:flex;flex-direction:column;gap:1rem}
-.btn{
- width:100%;padding:.9rem;border:none;border-radius:50px;
- font-size:1.05rem;font-weight:600;background:rgba(255,255,255,.85)
+.content {
+  width: 100%;
+  max-width: 420px;
+  padding: 2rem 1.5rem;
+  text-align: center;
+}
+.scroll {
+  max-height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
-.back{
- position:fixed;top:1rem;right:1rem;z-index:9999;
- border:none;border-radius:20px;padding:.4rem .9rem;
- background:rgba(255,255,255,.9)
+.title {
+  font-size: 4rem;
+  font-weight: 900;
+  line-height: 1;
+  margin-bottom: 2rem;
+}
+.title span {
+  display: block;
+  background: linear-gradient(180deg, #000 40%, #ff8c00 60%, #ff4500);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-label{display:block;text-align:left;font-size:.9rem;margin-top:1rem}
-input,textarea,select{
- width:100%;padding:12px;border-radius:12px;border:none;font-size:16px
+.buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
-select{-webkit-appearance:none;appearance:none;background:white}
-
-.item{
- background:rgba(255,255,255,.9);
- border-radius:14px;padding:12px;margin-top:12px;text-align:left
+.btn {
+  width: 100%;
+  padding: .9rem;
+  border: none;
+  border-radius: 50px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, .85);
 }
-.actions{display:flex;justify-content:space-between;margin-top:8px}
-.actions button{background:none;border:none;font-size:1.2rem}
-.note{font-size:.8rem;opacity:.7;margin-top:.6rem}
 
-.calendar-box{width:100%;margin-top:1rem}
-.calendar-label{display:flex;align-items:center;gap:.6rem;font-size:.9rem}
-.calendar-label input{width:18px;height:18px;flex-shrink:0}
+.back {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 9999;
+  border: none;
+  border-radius: 20px;
+  padding: .4rem .9rem;
+  background: rgba(255, 255, 255, .9);
+}
+
+label {
+  display: block;
+  text-align: left;
+  font-size: .9rem;
+  margin-top: 1rem;
+}
+input, textarea, select {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  font-size: 16px;
+}
+select {
+  -webkit-appearance: none;
+  appearance: none;
+  background: white;
+}
+
+.item {
+  background: rgba(255, 255, 255, .9);
+  border-radius: 14px;
+  padding: 12px;
+  margin-top: 12px;
+  text-align: left;
+}
+.actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+.actions button {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+}
+.note {
+  font-size: .8rem;
+  opacity: .7;
+  margin-top: .6rem;
+}
+
+.calendar-box {
+  width: 100%;
+  margin-top: 1rem;
+}
+.calendar-label {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  font-size: .9rem;
+}
+.calendar-label input {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
 
 /* POPUP OVERLAY */
-.popup{
- position:fixed;
- inset:0;
- background:rgba(0,0,0,.35);
- display:none;
- justify-content:center;
- align-items:center;
- z-index:10000;
+.popup {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .35);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
 }
-.popup.active{display:flex}
-.popup-box{
- background:#fff;
- width:92%;
- max-width:420px;
- max-height:85%;
- border-radius:20px;
- padding:1rem;
- overflow-y:auto;
+.popup.active {
+  display: flex;
 }
-.popup-header{
- display:flex;
- justify-content:space-between;
- align-items:center;
- margin-bottom:1rem;
+.popup-box {
+  background: #fff;
+  width: 92%;
+  max-width: 420px;
+  max-height: 85%;
+  border-radius: 20px;
+  padding: 1rem;
+  overflow-y: auto;
 }
-.popup-header button{
- border:none;background:none;font-size:1.4rem
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
 }
-.popup-section{
- margin-top:1rem;
- font-weight:800;
- opacity:.75;
+.popup-header button {
+  border: none;
+  background: none;
+  font-size: 1.4rem;
 }
-.popup-empty{
- margin-top:1rem;
- opacity:.7;
- font-size:.9rem;
+.popup-section {
+  margin-top: 1rem;
+  font-weight: 800;
+  opacity: .75;
 }
-.reminder-hint{
-  margin-top:.4rem;
-  font-size:.8rem;
-  opacity:.85;
-  text-align:left;
+.popup-empty {
+  margin-top: 1rem;
+  opacity: .7;
+  font-size: .9rem;
+}
+.reminder-hint {
+  margin-top: .4rem;
+  font-size: .8rem;
+  opacity: .85;
+  text-align: left;
 }
 
-.reminder-hint.hidden{
-  display:none;
+.reminder-hint.hidden {
+  display: none;
 }
 button {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Apple Color Emoji, EmojiOne Color, sans-serif;
 }
-/* ===== POPUP TASK STATUS ===== */
 
-.popup .item{
+/* ===== POPUP TASK STATUS ===== */
+.popup .item {
   position: relative;
 }
-
-/* ACTIVE – default */
-.popup .task-active{
-  background: rgba(255,255,255,.95);
+.popup .task-active {
+  background: rgba(255, 255, 255, .95);
+}
+.popup .task-done {
+  background: rgba(120, 200, 120, .18);
+}
+.popup .task-done strong::before {
+  content: "✅ ";
+}
+.popup .task-cancelled {
+  background: rgba(180, 180, 180, .25);
+  opacity: .75;
+}
+.popup .task-cancelled strong::before {
+  content: "❌ ";
+}
+.popup-delete {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  opacity: .6;
+}
+.popup-delete:hover {
+  opacity: 1;
 }
 
-/* DONE */
-.popup .task-done{
-  background: rgba(120,200,120,.18);
+.menu-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .6rem;
 }
-.popup .task-done strong::before{
-  content:"✅ ";
+.menu-icon {
+  font-size: 1.3rem;
+  line-height: 1;
 }
-
-/* CANCELLED / DELETED */
-.popup .task-cancelled{
-  background: rgba(180,180,180,.25);
-  opacity:.75;
-}
-.popup .task-cancelled strong::before{
-  content:"❌ ";
-}
-
-/* DELETE BUTTON IN POPUP */
-.popup-delete{
-  position:absolute;
-  top:8px;
-  right:10px;
-  background:none;
-  border:none;
-  font-size:1rem;
-  opacity:.6;
-}
-.popup-delete:hover{
-  opacity:1;
-}
-
-.menu-btn{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:.6rem;
-}
-
-.menu-icon{
-  font-size:1.3rem;
-  line-height:1;
-}
-
-.menu-text{
-  font-weight:600;
+.menu-text {
+  font-weight: 600;
 }
 
 /* ===== HIT-TEST HARD RESET ===== */
-
-/* Sve osim aktivnog screena i aktivnog popupa je neklikljivo */
 .app,
 .content,
 .screen:not(.active),
@@ -191,8 +272,6 @@ button {
 .popup:not(.active) * {
   pointer-events: none !important;
 }
-
-/* Aktivni screen i aktivni popup su klikljivi */
 .screen.active,
 .screen.active *,
 .popup.active,
@@ -200,14 +279,12 @@ button {
   pointer-events: auto !important;
 }
 
-/* Spusti gumb "Pregled po danima" ispod "Spremi" */
 #btnByDay {
   margin-top: 16px;
   display: block;
   width: 100%;
 }
 
-/* ✅ MOBILNA PODRŠKA: osiguraj da su interaktivni elementi klikljivi */
 .btn, .back, .task-btn, .popup-delete, #screen-lang .btn {
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -216,23 +293,12 @@ button {
   user-select: none;
 }
 
-/* ✅ Osiguraj da je cijeli zaslon za jezik klikljiv */
-#screen-lang {
-  pointer-events: auto !important;
-}
-/* ✅ OSIGURAJ DA SU GUMBOVI ZA JEZIK KLIKLJIVI NA SVIM UREĐAJIMA */
+/* ✅ OSIGURAJ DA SU GUMBOVI ZA JEZIK KLIKLJIVI */
 #screen-lang {
   pointer-events: auto !important;
 }
 
-#screen-lang .btn {
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-  -webkit-user-select: none;
-  user-select: none;
-}
-/* ✅ PORAVNANJE DATUMA I VREMENA NA iOS-u */
+/* ===== INPUT STILIZACIJA ===== */
 input[type="date"],
 input[type="time"] {
   height: 52px;
@@ -244,490 +310,54 @@ input[type="time"] {
   -webkit-appearance: none;
   appearance: none;
   box-sizing: border-box;
-  margin-bottom: 1rem; /* ✅ Dodano ovdje */
+  margin-bottom: 1rem;
 }
-
 input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(1);
 }
 
-/* ✅ Osiguraj da su labeli i inputi u istom redku */
-label {
-  display: block;
-  text-align: left;
-  font-size: .9rem;
-  margin-top: 1rem;
-}
-/* ✅ Sakrij listu obveza dok nije u zaslonu obveza */
 #taskList {
   display: none;
 }
-/* ===== TASK CARD (NOVA, PREGLEDNA VERZIJA) ===== */
 
-.task-card {
-  background: rgba(255,255,255,0.96);
-  border-radius: 18px;
-  padding: 16px;
-  margin-top: 16px;
-  box-shadow: 0 8px 18px rgba(0,0,0,0.08);
-  text-align: left;
-  font-size: 15px;
-}
-
-.task-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 12px;
-}
-
-.task-title {
-  font-size: 1.05rem;
-  font-weight: 700;
-  line-height: 1.3;
-}
-
-.task-date {
-  font-size: 0.85rem;
-  opacity: 0.7;
-  white-space: nowrap;
-}
-
-.task-meta {
-  margin-top: 6px;
-  font-size: 0.8rem;
-  opacity: 0.7;
-}
-
-.task-note {
-  margin-top: 10px;
-  font-size: 0.9rem;
-  opacity: 0.85;
-}
-
-.task-actions {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 14px;
-}
-
-.task-btn {
-  flex: 1;
-  margin: 0 4px;
-  padding: 8px 0;
-  border: none;
-  border-radius: 12px;
-  font-size: 1.1rem;
-  background: rgba(0,0,0,0.04);
-}
-
-.task-btn:first-child { margin-left: 0; }
-.task-btn:last-child { margin-right: 0; }
-
-.task-btn.done { background: rgba(100,200,120,0.25); }
-.task-btn.edit { background: rgba(100,150,255,0.25); }
-.task-btn.cancel { background: rgba(220,180,80,0.25); }
-.task-btn.delete { background: rgba(220,80,80,0.25); }
-
-.empty-tasks {
-  margin-top: 20px;
-  opacity: 0.7;
-  text-align: center;
-}
-/* ===== TAMNIJE TASK KARTICE (BOLJA ČITLJIVOST) ===== */
-
-.task-card {
-  background: rgba(255,255,255,0.98);
-  box-shadow: 0 10px 22px rgba(0,0,0,0.15);
-  border: 1px solid rgba(0,0,0,0.08);
-}
-
-/* Naslov obveze */
-.task-title {
-  color: #1b1b1b;
-}
-
-/* Datum i meta */
-.task-date,
-.task-meta {
-  color: #333;
-  opacity: 0.85;
-}
-
-/* Bilješka */
-.task-note {
-  color: #222;
-  opacity: 0.95;
-}
-
-/* ===== TAMNIJI GUMBI ===== */
-
-.task-btn {
-  background: rgba(0,0,0,0.08);
-  color: #111;
-  font-weight: 600;
-}
-
-.task-btn.done {
-  background: rgba(60,160,90,0.45);
-  color: #0b2e14;
-}
-
-.task-btn.edit {
-  background: rgba(60,120,200,0.45);
-  color: #0a1f3d;
-}
-
-.task-btn.cancel {
-  background: rgba(200,150,40,0.45);
-  color: #3a2a00;
-}
-
-.task-btn.delete {
-  background: rgba(200,60,60,0.45);
-  color: #3a0000;
-}
-
-/* Hover / active (desktop + mobile tap feedback) */
-.task-btn:active {
-  transform: scale(0.96);
-  filter: brightness(0.9);
-}
-/* ===== JOŠ TAMNIJE TASK KARTICE (MAX ČITLJIVOST) ===== */
-
+/* ===== TASK CARD ===== */
 .task-card {
   background: #ffffff;
-  box-shadow: 0 12px 28px rgba(0,0,0,0.25);
-  border: 2px solid rgba(0,0,0,0.15);
-}
-
-/* Naslov – jači kontrast */
-.task-title {
-  color: #000;
-  font-size: 1.1rem;
-  font-weight: 800;
-}
-
-/* Datum / meta */
-.task-date,
-.task-meta {
-  color: #111;
-  opacity: 0.9;
-}
-
-/* Bilješka */
-.task-note {
-  color: #000;
-  font-size: 0.95rem;
-  opacity: 1;
-}
-
-/* ===== GUMBI – TAMNIJI I VEĆI ===== */
-
-.task-actions {
-  gap: 8px;
-}
-
-.task-btn {
-  background: rgba(0,0,0,0.15);
-  color: #000;
-  font-weight: 700;
-  font-size: 1.25rem;
-  padding: 10px 0;
-}
-
-/* DONE */
-.task-btn.done {
-  background: rgba(40,140,70,0.6);
-  color: #06230e;
-}
-
-/* ✏️ EDIT – VEĆA OLOVKA */
-.task-btn.edit {
-  background: rgba(40,90,180,0.65);
-  color: #031633;
-  font-size: 1.6rem;      /* ⬅️ VEĆA OLOVKA */
-  font-weight: 900;
-}
-
-/* CANCEL */
-.task-btn.cancel {
-  background: rgba(200,140,30,0.6);
-  color: #3a2500;
-}
-
-/* DELETE */
-.task-btn.delete {
-  background: rgba(200,40,40,0.65);
-  color: #3a0000;
-}
-
-/* Tap feedback (mobiteli) */
-.task-btn:active {
-  transform: scale(0.94);
-  filter: brightness(0.85);
-}
-/* ===== GUMBI S OPISOM ISPOD IKONE ===== */
-
-.task-actions.labeled {
-  display: flex;
-  gap: 10px;
-  margin-top: 16px;
-}
-
-.task-btn {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  border-radius: 14px;
-  padding: 10px 0;
-  border: none;
-}
-
-.task-btn .icon {
-  font-size: 1.6rem;
-  line-height: 1;
-}
-
-.task-btn .label {
-  margin-top: 4px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-/* ===== BOJE AKCIJA ===== */
-
-/* ✔ POTVRDI – ZELENA */
-.task-btn.done {
-  background: #2ecc71;
-  color: #0b3d1f;
-}
-
-/* ✏ UREDI – PLAVA */
-.task-btn.edit {
-  background: #4a90e2;
-  color: #0b1f3a;
-}
-
-/* ✖ OTKAŽI – TAMNO SIVA */
-.task-btn.cancel {
-  background: #9b9b9b;
-  color: #1f1f1f;
-}
-
-/* 🗑 IZBRIŠI – CRVENA */
-.task-btn.delete {
-  background: #e74c3c;
-  color: #3b0500;
-}
-
-/* Tap feedback */
-.task-btn:active {
-  transform: scale(0.94);
-  filter: brightness(0.9);
-}
-/* ===== ACTION GRID – SIGURNO ZA SVE JEZIKE ===== */
-
-.task-actions.grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  margin-top: 16px;
-}
-
-/* GUMB KAO KARTICA */
-.task-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  border-radius: 14px;
-  padding: 10px 6px;
-  border: none;
-  min-height: 72px;
-}
-
-/* IKONA */
-.task-btn .icon {
-  font-size: 1.5rem;
-  line-height: 1;
-}
-
-/* TEKST – SIGURNO ZA NJEMAČKI */
-.task-btn .label {
-  margin-top: 4px;
-  font-size: 0.7rem;
-  font-weight: 800;
-  text-align: center;
-  line-height: 1.1;
-  word-break: break-word;
-  max-width: 100%;
-}
-
-/* BOJE (OSTAJU JAKE I JASNE) */
-.task-btn.done {
-  background: #2ecc71;
-  color: #0b3d1f;
-}
-
-.task-btn.edit {
-  background: #4a90e2;
-  color: #0b1f3a;
-}
-
-.task-btn.cancel {
-  background: #9b9b9b;
-  color: #1f1f1f;
-}
-
-.task-btn.delete {
-  background: #e74c3c;
-  color: #3b0500;
-}
-
-/* TAP FEEDBACK */
-.task-btn:active {
-  transform: scale(0.94);
-  filter: brightness(0.9);
-}
-/* ===== CLEAN TASK CARD (APP STYLE) ===== */
-
-.task-card.clean {
-  background: #fff;
   border-radius: 18px;
   padding: 16px;
   margin-top: 16px;
-  box-shadow: 0 10px 24px rgba(0,0,0,0.18);
-  border: 1px solid rgba(0,0,0,0.12);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+  border: 2px solid rgba(0, 0, 0, 0.15);
   display: flex;
   flex-direction: column;
 }
-
-/* CONTENT */
-.task-content {
-  padding-bottom: 12px;
-}
-
-.task-title {
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: #000;
-}
-
-.task-date {
-  margin-top: 4px;
-  font-size: 0.85rem;
-  color: #222;
-  opacity: 0.8;
-}
-
-.task-note {
-  margin-top: 10px;
-  font-size: 0.95rem;
-  color: #000;
-  opacity: 0.9;
-}
-
-/* ===== ACTION BAR ===== */
-
-.task-actions-bar {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  border-top: 1px solid rgba(0,0,0,0.1);
-  padding-top: 12px;
-}
-
-.task-action {
-  flex: 1;
-  height: 44px;
-  border-radius: 50%;
-  border: none;
-  font-size: 1.4rem;
-  font-weight: 700;
-  background: rgba(0,0,0,0.08);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* COLORS */
-.task-action.done {
-  background: #2ecc71;
-  color: #0b3d1f;
-}
-
-.task-action.edit {
-  background: #4a90e2;
-  color: #0b1f3a;
-}
-
-.task-action.cancel {
-  background: #f39c12;
-  color: #4a2a00;
-}
-
-.task-action.delete {
-  background: #e74c3c;
-  color: #3b0500;
-}
-
-/* TAP FEEDBACK */
-.task-action:active {
-  transform: scale(0.92);
-  filter: brightness(0.9);
-}
-/* ===== CLEAN TASK CARD – 3 ACTIONS ===== */
-
-.task-card.clean {
-  background: #ffffff;
-  border-radius: 18px;
-  padding: 16px;
-  margin-top: 16px;
-  box-shadow: 0 12px 28px rgba(0,0,0,0.25);
-  border: 2px solid rgba(0,0,0,0.15);
-  display: flex;
-  flex-direction: column;
-}
-
-/* CONTENT */
 .task-content {
   padding-bottom: 14px;
 }
-
 .task-title {
   font-size: 1.1rem;
   font-weight: 800;
   color: #000;
 }
-
 .task-date {
   margin-top: 4px;
   font-size: 0.85rem;
   color: #222;
   opacity: 0.85;
 }
-
 .task-note {
   margin-top: 10px;
   font-size: 0.95rem;
   color: #000;
   opacity: 0.9;
 }
-
-/* ===== ACTION BAR (3 IKONE) ===== */
-
 .task-actions-bar {
   display: flex;
   justify-content: space-between;
   gap: 14px;
-  border-top: 1px solid rgba(0,0,0,0.15);
+  border-top: 1px solid rgba(0, 0, 0, 0.15);
   padding-top: 14px;
 }
-
 .task-action {
   flex: 1;
   height: 48px;
@@ -739,27 +369,104 @@ label {
   align-items: center;
   justify-content: center;
 }
-
-/* ✔ POTVRDI – ZELENA */
 .task-action.done {
   background: #2ecc71;
   color: #0b3d1f;
 }
-
-/* ✏ UREDI – PLAVA */
 .task-action.edit {
   background: #4a90e2;
   color: #0b1f3a;
 }
-
-/* ✖ UKLONI – CRVENA */
 .task-action.delete {
   background: #e74c3c;
   color: #3b0500;
 }
-
-/* TAP FEEDBACK */
 .task-action:active {
   transform: scale(0.92);
   filter: brightness(0.9);
+}
+
+.empty-tasks {
+  margin-top: 20px;
+  opacity: 0.7;
+  text-align: center;
+}
+
+/* ===== LANGUAGE SCREEN — MODERN CIRCULAR LAYOUT ===== */
+#screen-lang {
+  background-color: #87CEEB;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.lang-center {
+  text-align: center;
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+.app-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #0d3b25;
+  margin: 0 0 40px 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  letter-spacing: -0.5px;
+}
+
+.lang-buttons {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  margin: 0 auto;
+}
+
+.lang-btn {
+  position: absolute;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: none;
+  background: #ffffff;
+  color: #333;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.25s ease;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.lang-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.lang-btn:active {
+  transform: scale(0.95);
+}
+
+/* Pozicioniranje gumbi u krug */
+.lang-btn:nth-child(1) { top: 0%; left: 50%; transform: translate(-50%, -50%); }
+.lang-btn:nth-child(2) { top: 15%; right: 15%; transform: translate(50%, -50%); }
+.lang-btn:nth-child(3) { top: 50%; right: 0%; transform: translate(50%, -50%); }
+.lang-btn:nth-child(4) { bottom: 15%; right: 15%; transform: translate(50%, 50%); }
+.lang-btn:nth-child(5) { bottom: 0%; left: 50%; transform: translate(-50%, 50%); }
+.lang-btn:nth-child(6) { bottom: 15%; left: 15%; transform: translate(-50%, 50%); }
+.lang-btn:nth-child(7) { top: 50%; left: 0%; transform: translate(-50%, -50%); }
+.lang-btn:nth-child(8) { top: 25%; left: 25%; transform: translate(-50%, -50%); }
+.lang-btn:nth-child(9) { bottom: 25%; right: 25%; transform: translate(50%, 50%); }
+
+/* Mobilna prilagodba */
+@media (max-width: 400px) {
+  .app-title { font-size: 24px; margin-bottom: 30px; }
+  .lang-buttons { width: 190px; height: 190px; }
+  .lang-btn { width: 46px; height: 46px; font-size: 18px; }
 }

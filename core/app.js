@@ -14,15 +14,25 @@ window.AppState = AppState;
 
 let tasksCtrl = null;
 
+// ✅ SIGURNA showScreen FUNKCIJA — BEZ OVISNOSTI O UI.JS
+function showScreen(screenId) {
+  // Ukloni .active sa SVIH ekrana
+  document.querySelectorAll('.screen').forEach(el => {
+    el.classList.remove('active');
+  });
+  // Dodaj .active SAMO ciljanom
+  const target = document.getElementById(screenId);
+  if (target) {
+    target.classList.add('active');
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const T = window.I18N;
   if (!T) {
     console.error("I18N not loaded!");
     return;
   }
-
-  const showScreen = window.showScreen;
-  const createTasksController = window.createTasksController;
 
   const $ = (id) => document.getElementById(id);
 
@@ -67,6 +77,13 @@ document.addEventListener("DOMContentLoaded", () => {
     isAndroid: /Android/.test(navigator.userAgent)
   };
 
+  // Pretpostavljamo da createTasksController postoji u tasks.controller.js
+  const createTasksController = window.createTasksController;
+  if (!createTasksController) {
+    console.error("createTasksController not found!");
+    return;
+  }
+
   tasksCtrl = createTasksController({ T, AppState, platform, els });
 
   window.popupDeleteTask = tasksCtrl.deleteTask;
@@ -75,13 +92,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // ✅ PROVJERI: je li jezik već odabran?
   const savedLang = localStorage.getItem('userLang');
   if (savedLang) {
-    // Postavi jezik globalno
     AppState.lang = savedLang;
     document.documentElement.setAttribute('lang', savedLang);
-    // Prikaži MENU (ne lang screen)
     showScreen('screen-menu');
   } else {
-    // Prikaži izbornik jezika
     showScreen('screen-lang');
   }
 

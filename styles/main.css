@@ -34,11 +34,11 @@ body {
   justify-content: center;
   align-items: center;
   z-index: 10;
-  /* ✅ NEMA background-color — nasljeđuje body */
 }
 
 .screen.active {
   display: flex;
+  z-index: 20;
 }
 
 .content {
@@ -378,149 +378,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   text-align: center;
 }
 
-/* ===== LANGUAGE SCREEN — SVG + GRADIENT LIFE / KOMPAS ===== */
-#screen-lang {
-  /* ✅ UKLONJENA background-color — sada vidi gradijent iz body */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-}
-
-.lang-splash {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-}
-
-.lang-labels {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.lang-top,
-.lang-bottom {
-  font-size: 2.2rem;
-  font-weight: 800;
-  letter-spacing: -0.5px;
-  text-transform: uppercase;
-  /* Gradijent: crno → narančasto */
-  background: linear-gradient(180deg, #000 50%, #ff8c00 50%, #ff4500);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-fill-color: transparent;
-  margin: 0;
-  padding: 0;
-}
-
-.lang-dot {
-  fill: #e3f2fd !important;
-}
-
-.lang-bottom {
-  margin-top: 18px;
-}
-
-.lang-circle-svg {
-  max-width: 100%;
-  height: auto;
-}
-
-.lang-dot {
-  fill: #e3f2fd !important;
-  stroke: rgba(0,0,0,0.1);
-  stroke-width: 1;
-  cursor: pointer;
-  transition: all 0.25s ease;
-}
-
-.lang-dot:hover {
-  fill: #bbdefb !important;
-  stroke-width: 2;
-}
-
-.lang-flag {
-  font-size: 16px;
-  font-weight: bold;
-  text-anchor: middle;
-  dominant-baseline: central;
-  pointer-events: none;
-  fill: #0d3b25; /* tamnozelena */
-}
-
-.lang-item {
-  cursor: pointer;
-}
-/* ===== LANGUAGE SCREEN — FLEX CIRCLE ===== */
-#screen-lang {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  padding: 0;
-}
-
-.lang-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 24px;
-}
-
-.lang-labels {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 24px;
-}
-
-.lang-top,
-.lang-bottom {
-  font-size: 2.2rem;
-  font-weight: 800;
-  letter-spacing: -0.5px;
-  text-transform: uppercase;
-  background: linear-gradient(180deg, #000 50%, #ff8c00 50%, #ff4500);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  margin: 0;
-}
-
-.lang-circle {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-template-rows: repeat(2, 1fr);
-  gap: 16px;
-  width: 240px;
-  height: 120px;
-}
-
-.lang-btn {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  border: none;
-  background: #ffcc80; /* TOPLA NARANČASTA — NE BIJELA */
-  color: #0d3b25;
-  font-weight: 800;
-  font-size: 16px;
-  cursor: pointer;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-  transition: all 0.2s ease;
-}
-
-.lang-btn:hover {
-  transform: scale(1.1);
-  box-shadow: 0 6px 12px rgba(0,0,0,0.25);
-}
-
-.lang-btn:active {
-  transform: scale(0.95);
-}
-/* ===== STVARNO KRUŽNI IZBORNIK — SAMO STILOVI, BEZ DISPLAY ===== */
+/* ===== STVARNO KRUŽNI IZBORNIK — SAMO STILOVI ===== */
 .lang-circle-container {
   position: relative;
   width: 280px;
@@ -598,7 +456,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .lang-btn:nth-child(7) { transform: rotate(270deg) translate(110px) rotate(-270deg); }
 .lang-btn:nth-child(8) { transform: rotate(315deg) translate(110px) rotate(-315deg); }
 
-/* ✅ OVO VEĆ IMAŠ — OSTAVI NA KRAJU */
+/* ✅ ZAVRŠNA SIGURNOST — OSTAJE NA KRAJU */
 .screen {
   display: none;
 }

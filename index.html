@@ -24,7 +24,7 @@
     <div class="lang-labels">
       <h1 class="lang-top">LIFE</h1>
       <div class="lang-circle">
-        <button class="lang-btn" data-lang="hr">🇭🇷</button>
+        <button class="lang-btn" data-lang="hr">HR</button>
         <button class="lang-btn" data-lang="en">US</button>
         <button class="lang-btn" data-lang="de">DE</button>
         <button class="lang-btn" data-lang="ru">RU</button>
@@ -133,24 +133,24 @@
     localStorage.setItem('userLang', lang);
     document.documentElement.setAttribute('lang', lang);
     
-    // ✅ KORISTI NOVU FUNKCIJU IZ ui.js
     if (typeof window.renderLanguage === 'function') {
       window.renderLanguage(lang);
-      // Sakrij izbornik jezika nakon odabira
+      // ✅ TOČNO SKRIVANJE/POKAZIVANJE
       document.getElementById('screen-lang').classList.remove('active');
       document.getElementById('screen-menu').classList.add('active');
     }
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.lang-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+  document.addEventListener('DOMContentLoaded', function() {
+    var buttons = document.querySelectorAll('.lang-btn');
+    for (var i = 0; i < buttons.length; i++) {
+      buttons[i].addEventListener('click', function(e) {
         e.preventDefault();
-        e.stopPropagation(); // ✅ zaustavi širenje eventa
-        const lang = btn.getAttribute('data-lang');
+        e.stopPropagation();
+        var lang = this.getAttribute('data-lang');
         setLanguage(lang);
       });
-    });
+    }
   });
 </script>
 

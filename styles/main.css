@@ -454,3 +454,69 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .lang-item {
   cursor: pointer;
 }
+/* ===== LANGUAGE SCREEN — FLEX CIRCLE ===== */
+#screen-lang {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  padding: 0;
+}
+
+.lang-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.lang-labels {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.lang-top,
+.lang-bottom {
+  font-size: 2.2rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, #000 50%, #ff8c00 50%, #ff4500);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+}
+
+.lang-circle {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 16px;
+  width: 240px;
+  height: 120px;
+}
+
+.lang-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: #ffcc80; /* TOPLA NARANČASTA — NE BIJELA */
+  color: #0d3b25;
+  font-weight: 800;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  transition: all 0.2s ease;
+}
+
+.lang-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.25);
+}
+
+.lang-btn:active {
+  transform: scale(0.95);
+}

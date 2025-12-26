@@ -16,45 +16,50 @@ function showScreen(screenId) {
   }
 }
 
-// ✅ IZLOŽI GLOBALNO — NEMA export!
+// ✅ IZLOŽI GLOBALNO
 window.showScreen = showScreen;
 window.formatDate = formatDate;
-// ✅ DODAJ OVO — DINAMIČKA PROMJENA JEZIKA BEZ RELOADA
+
+// ✅ DINAMIČKA PROMJENA JEZIKA BEZ RELOADA — KOMPATIBILNO
 window.renderLanguage = function(lang) {
   // Spremi jezik
   window.currentLang = lang;
   
-  // Ažuriraj sve elemente s tekstom
-  document.querySelectorAll('[data-i18n]').?.forEach(el => {
-    const key = el.getAttribute('data-i18n');
-    if (window.I18N?.[lang]?.[key]) {
-      if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-        el.placeholder = window.I18N[lang][key];
-      } else {
-        el.textContent = window.I18N[lang][key];
+  // Ažuriraj elemente s [data-i18n]
+  const i18nElements = document.querySelectorAll('[data-i18n]');
+  if (i18nElements.length > 0) {
+    i18nElements.forEach(function(el) {
+      const key = el.getAttribute('data-i18n');
+      if (window.I18N && window.I18N[lang] && window.I18N[lang][key]) {
+        if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+          el.placeholder = window.I18N[lang][key];
+        } else {
+          el.textContent = window.I18N[lang][key];
+        }
       }
-    }
-  });
+    });
+  }
 
-  // Ako koristiš label-e s ID-ovima (kao u tasks), ažuriraj ih
+  // Ažuriraj label-e po ID-u
   const labels = ['tTitleL', 'tNoteL', 'tCatL', 'tDateL', 'tTimeL', 'tRemL', 'calendarLabel', 'popupTitle', 'popupDateLabel'];
-  labels.forEach(id => {
-    const el = document.getElementById(id);
-    if (el && window.I18N?.[lang]) {
-      // Mapiraj ID u ključ (npr. "tTitleL" → "tTitle")
-      const key = id.endsWith('L') ? id.slice(0, -1) : id;
+  for (var i = 0; i < labels.length; i++) {
+    var id = labels[i];
+    var el = document.getElementById(id);
+    if (el && window.I18N && window.I18N[lang]) {
+      var key = id.endsWith('L') ? id.slice(0, -1) : id;
       if (window.I18N[lang][key]) {
         el.textContent = window.I18N[lang][key];
       }
     }
-  });
+  }
 
   // Ažuriraj gumbove
   const btns = ['saveTask', 'btnByDay'];
-  btns.forEach(id => {
-    const btn = document.getElementById(id);
-    if (btn && window.I18N?.[lang]?.[id]) {
-      btn.textContent = window.I18N[lang][id];
+  for (var j = 0; j < btns.length; j++) {
+    var btnId = btns[j];
+    var btn = document.getElementById(btnId);
+    if (btn && window.I18N && window.I18N[lang] && window.I18N[lang][btnId]) {
+      btn.textContent = window.I18N[lang][btnId];
     }
-  });
+  }
 };

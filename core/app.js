@@ -72,27 +72,26 @@ document.addEventListener("DOMContentLoaded", () => {
   window.popupDeleteTask = tasksCtrl.deleteTask;
   window.handleTaskAction = tasksCtrl.handleTaskAction;
 
-  // ===== START: UVIJEK JEZIK =====
-  document.body.className = "home";
-  showScreen("screen-lang");
+  // ✅ PROVJERI: je li jezik već odabran?
+  const savedLang = localStorage.getItem('userLang');
+  if (savedLang) {
+    // Postavi jezik globalno
+    AppState.lang = savedLang;
+    document.documentElement.setAttribute('lang', savedLang);
+    // Prikaži MENU (ne lang screen)
+    showScreen('screen-menu');
+  } else {
+    // Prikaži izbornik jezika
+    showScreen('screen-lang');
+  }
 
-  // ===== ODABIR JEZIKA =====
-  document.querySelectorAll("[data-lang]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      AppState.lang = btn.dataset.lang;
-      tasksCtrl.applyLangToTasksUI();
-      document.body.className = "static";
-      showScreen("screen-menu");
-    });
-  });
-
-  // ===== MENU → TASKS (FIX) =====
+  // ===== MENU → TASKS =====
   if (els.btnTasks) {
     els.btnTasks.addEventListener("click", () => {
-      tasksCtrl.enableRender(); // ✅ PRVO omogući render
-      tasksCtrl.load();         // ✅ ONDA učitaj → render radi
+      tasksCtrl.enableRender();
+      tasksCtrl.load();
       if (els.taskList) els.taskList.style.display = "block";
-      showScreen("screen-tasks");
+      showScreen('screen-tasks');
     });
   }
 
@@ -107,7 +106,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // ===== MENU ← JEZIK =====
   if (els.backMenu) {
     els.backMenu.addEventListener("click", () => {
-      document.body.className = "home";
       showScreen("screen-lang");
     });
   }

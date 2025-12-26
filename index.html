@@ -18,25 +18,25 @@
 
 <body>
 
-<!-- LANGUAGE SCREEN — STVARNO KRUŽNI IZBORNIK -->
-<div id="screen-lang" class="screen active">
-  <div class="lang-circle-container">
-    <h1 class="lang-title-top">LIFE</h1>
-    <div class="lang-circle">
-      <button class="lang-btn" data-lang="hr">HR</button>
-      <button class="lang-btn" data-lang="en">US</button>
-      <button class="lang-btn" data-lang="de">DE</button>
-      <button class="lang-btn" data-lang="ru">RU</button>
-      <button class="lang-btn" data-lang="pt">PT</button>
-      <button class="lang-btn" data-lang="tr">TR</button>
-      <button class="lang-btn" data-lang="zh">CN</button>
-      <button class="lang-btn" data-lang="ja">JP</button>
-    </div>
-    <h1 class="lang-title-bottom">KOMPAS</h1>
-  </div>
-</div>
-
 <div class="app">
+
+  <!-- LANGUAGE SCREEN — STVARNO KRUŽNI IZBORNIK -->
+  <div id="screen-lang" class="screen active">
+    <div class="lang-circle-container">
+      <h1 class="lang-title-top">LIFE</h1>
+      <div class="lang-circle">
+        <button class="lang-btn" data-lang="hr">🇭🇷</button>
+        <button class="lang-btn" data-lang="en">🇺🇸</button>
+        <button class="lang-btn" data-lang="de">🇩🇪</button>
+        <button class="lang-btn" data-lang="ru">🇷🇺</button>
+        <button class="lang-btn" data-lang="pt">🇵🇹</button>
+        <button class="lang-btn" data-lang="tr">🇹🇷</button>
+        <button class="lang-btn" data-lang="zh">🇨🇳</button>
+        <button class="lang-btn" data-lang="ja">🇯🇵</button>
+      </div>
+      <h1 class="lang-title-bottom">KOMPAS</h1>
+    </div>
+  </div>
 
   <!-- MENU -->
   <div id="screen-menu" class="screen">
@@ -91,7 +91,7 @@
     </div>
   </div>
 
-</div>
+</div> <!-- .app -->
 
 <!-- POPUP -->
 <div id="dayPopup" class="popup">
@@ -127,17 +127,20 @@
 
 <!-- Language Switcher (SAMO JEDAN BLOK) -->
 <script>
+  // ✅ SPRIJEČI AUTOMATSKO OTVARANJE OBVEZA
+  window.languageSelected = false;
+
   function setLanguage(lang) {
     localStorage.setItem('userLang', lang);
     document.documentElement.setAttribute('lang', lang);
-    
+    window.languageSelected = true;
+
     if (typeof window.renderLanguage === 'function') {
       window.renderLanguage(lang);
-      // ✅ SKRIVAJ IZBORNIK NAKON MALOG ODLAGANJA
-      setTimeout(() => {
-        document.getElementById('screen-lang').classList.remove('active');
-        document.getElementById('screen-menu').classList.add('active');
-      }, 100);
+      // ✅ SAKRIJ izbornik jezika
+      document.getElementById('screen-lang').classList.remove('active');
+      // ✅ PRIKAŽI menu
+      document.getElementById('screen-menu').classList.add('active');
     }
   }
 

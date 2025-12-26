@@ -174,5 +174,28 @@
       });
     });
   </script>
+<script>
+  function setLanguage(lang) {
+    localStorage.setItem('userLang', lang);
+    document.documentElement.setAttribute('lang', lang);
+    // Ako imaš render funkciju, koristi je — inače reload
+    if (typeof renderLanguage === 'function') {
+      renderLanguage(lang);
+    } else {
+      location.reload();
+    }
+  }
+
+  // Pokreni nakon učitavanja
+  document.addEventListener('DOMContentLoaded', () => {
+    // Ako koristiš SVG gumbove
+    document.querySelectorAll('.lang-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const lang = item.getAttribute('data-lang');
+        setLanguage(lang);
+      });
+    });
+  });
+</script>
 </body>
 </html>

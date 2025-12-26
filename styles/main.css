@@ -706,3 +706,49 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .lang-btn:nth-child(6) { transform: rotate(225deg) translate(110px) rotate(-225deg); }
 .lang-btn:nth-child(7) { transform: rotate(270deg) translate(110px) rotate(-270deg); }
 .lang-btn:nth-child(8) { transform: rotate(315deg) translate(110px) rotate(-315deg); }
+/* ===== LANGUAGE SCREEN — SVG CIRCLE (ENLARGED + CENTERED) ===== */
+
+#screen-lang {
+  background-color: #6BB4F1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.lang-splash {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.lang-circle-svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.lang-dot {
+  fill: #e3f2fd; /* SVJETLO PLAVA – moderna, ne bijela, ne crna */
+  stroke: rgba(0,0,0,0.1);
+  stroke-width: 1;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.lang-dot:hover {
+  fill: #bbdefb; /* Malo tamnija na hover */
+  stroke-width: 2;
+}
+
+.lang-flag {
+  font-size: 22px;
+  text-anchor: middle;
+  dominant-baseline: central; /* ✅ CENTRIRA ZASTAVU VERTIKALNO I HORIZONTALNO */
+  pointer-events: none;
+  cursor: pointer;
+  fill: #0d3b25; /* Tamnozelena – kontrast */
+}
+
+.lang-item {
+  cursor: pointer;
+}

@@ -470,3 +470,79 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   .lang-buttons { width: 190px; height: 190px; }
   .lang-btn { width: 46px; height: 46px; font-size: 18px; }
 }
+/* ===== LANGUAGE SCREEN — MODERN CENTERED + STYLIZED ===== */
+
+#screen-lang {
+  background-color: #87CEEB;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.lang-container {
+  text-align: center;
+  position: relative;
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto;
+}
+
+.app-title {
+  font-size: 2.4rem;
+  font-weight: 900;
+  color: #0d3b25;
+  margin: 0 0 2.5rem 0;
+  letter-spacing: -0.5px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.lang-grid {
+  position: relative;
+  width: 240px;
+  height: 240px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  transform: rotate(-30deg); /* Za lepši kut */
+}
+
+.lang-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.95);
+  color: #0d3b25;
+  font-size: 1.1rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  font-family: 'Segoe UI', sans-serif;
+  text-transform: uppercase;
+}
+
+.lang-btn:hover {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+  background: rgba(255, 255, 255, 1);
+}
+
+.lang-btn:active {
+  transform: scale(0.95) rotate(-2deg);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Mobilna prilagodba */
+@media (max-width: 400px) {
+  .app-title { font-size: 2rem; margin-bottom: 2rem; }
+  .lang-grid { width: 200px; height: 200px; gap: 12px; }
+  .lang-btn { width: 52px; height: 52px; font-size: 0.95rem; }
+}

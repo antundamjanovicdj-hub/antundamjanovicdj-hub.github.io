@@ -547,3 +547,95 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   .lang-grid { width: 200px; height: 200px; gap: 12px; }
   .lang-btn { width: 52px; height: 52px; font-size: 0.95rem; }
 }
+/* ===== LANGUAGE SCREEN — CIRCULAR LAYOUT WITH TITLE IN CENTER ===== */
+
+#screen-lang {
+  background-color: #6BB4F1; /* Tamno plavo nebo */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.lang-circle-container {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #0d3b25;
+  margin: 0 0 1rem 0;
+  letter-spacing: -0.5px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  font-family: 'Segoe UI', sans-serif;
+  text-transform: uppercase;
+  z-index: 2;
+}
+
+.lang-circle {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.lang-btn {
+  position: absolute;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.9); /* Svjetla pozadina */
+  color: #0d3b25;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  font-weight: bold;
+  font-family: 'Segoe UI', sans-serif;
+  z-index: 1;
+}
+
+.lang-btn:hover {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+  background: rgba(255, 255, 255, 1);
+}
+
+.lang-btn:active {
+  transform: scale(0.95) rotate(-2deg);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Pozicioniranje gumbi u krug oko naslova */
+.lang-btn:nth-child(1) { top: 0%; left: 50%; transform: translate(-50%, -50%); }
+.lang-btn:nth-child(2) { top: 15%; right: 15%; transform: translate(50%, -50%); }
+.lang-btn:nth-child(3) { top: 50%; right: 0%; transform: translate(50%, -50%); }
+.lang-btn:nth-child(4) { bottom: 15%; right: 15%; transform: translate(50%, 50%); }
+.lang-btn:nth-child(5) { bottom: 0%; left: 50%; transform: translate(-50%, 50%); }
+.lang-btn:nth-child(6) { bottom: 15%; left: 15%; transform: translate(-50%, 50%); }
+.lang-btn:nth-child(7) { top: 50%; left: 0%; transform: translate(-50%, -50%); }
+.lang-btn:nth-child(8) { top: 25%; left: 25%; transform: translate(-50%, -50%); }
+.lang-btn:nth-child(9) { bottom: 25%; right: 25%; transform: translate(50%, 50%); }
+
+/* Mobilna prilagodba */
+@media (max-width: 400px) {
+  .lang-circle-container { width: 240px; height: 240px; }
+  .lang-circle { width: 190px; height: 190px; }
+  .lang-btn { width: 46px; height: 46px; font-size: 18px; }
+  .app-title { font-size: 2rem; margin-bottom: 0.8rem; }
+}

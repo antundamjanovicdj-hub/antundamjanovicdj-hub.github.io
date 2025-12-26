@@ -416,8 +416,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   padding: 0;
 }
 
-.lang-top {
-  margin-bottom: 18px;
+.lang-dot {
+  fill: #e3f2fd !important;
 }
 
 .lang-bottom {
@@ -443,11 +443,12 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 .lang-flag {
-  font-size: 22px;
+  font-size: 16px;
+  font-weight: bold;
   text-anchor: middle;
   dominant-baseline: central;
   pointer-events: none;
-  fill: #0d3b25;
+  fill: #0d3b25; /* tamnozelena */
 }
 
 .lang-item {

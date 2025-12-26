@@ -18,23 +18,21 @@
 
 <body>
 
-<!-- LANGUAGE SCREEN — FLEX CIRCLE (UVIJEK RADI) -->
+<!-- LANGUAGE SCREEN — STVARNO KRUŽNI IZBORNIK -->
 <div id="screen-lang" class="screen active">
-  <div class="lang-container">
-    <div class="lang-labels">
-      <h1 class="lang-top">LIFE</h1>
-      <div class="lang-circle">
-        <button class="lang-btn" data-lang="hr">HR</button>
-        <button class="lang-btn" data-lang="en">US</button>
-        <button class="lang-btn" data-lang="de">DE</button>
-        <button class="lang-btn" data-lang="ru">RU</button>
-        <button class="lang-btn" data-lang="pt">PT</button>
-        <button class="lang-btn" data-lang="tr">TR</button>
-        <button class="lang-btn" data-lang="zh">CN</button>
-        <button class="lang-btn" data-lang="ja">JP</button>
-      </div>
-      <h1 class="lang-bottom">KOMPAS</h1>
+  <div class="lang-circle-container">
+    <h1 class="lang-title-top">LIFE</h1>
+    <div class="lang-circle">
+      <button class="lang-btn" data-lang="hr">HR</button>
+      <button class="lang-btn" data-lang="en">US</button>
+      <button class="lang-btn" data-lang="de">DE</button>
+      <button class="lang-btn" data-lang="ru">RU</button>
+      <button class="lang-btn" data-lang="pt">PT</button>
+      <button class="lang-btn" data-lang="tr">TR</button>
+      <button class="lang-btn" data-lang="zh">CN</button>
+      <button class="lang-btn" data-lang="ja">JP</button>
     </div>
+    <h1 class="lang-title-bottom">KOMPAS</h1>
   </div>
 </div>
 
@@ -135,9 +133,11 @@
     
     if (typeof window.renderLanguage === 'function') {
       window.renderLanguage(lang);
-      // ✅ TOČNO SKRIVANJE/POKAZIVANJE
-      document.getElementById('screen-lang').classList.remove('active');
-      document.getElementById('screen-menu').classList.add('active');
+      // ✅ SKRIVAJ IZBORNIK NAKON MALOG ODLAGANJA
+      setTimeout(() => {
+        document.getElementById('screen-lang').classList.remove('active');
+        document.getElementById('screen-menu').classList.add('active');
+      }, 100);
     }
   }
 

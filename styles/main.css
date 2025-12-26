@@ -520,3 +520,88 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .lang-btn:active {
   transform: scale(0.95);
 }
+/* ===== STVARNO KRUŽNI IZBORNIK ===== */
+#screen-lang {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  padding: 0;
+}
+
+.lang-circle-container {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.lang-title-top,
+.lang-title-bottom {
+  position: absolute;
+  font-size: 2.2rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, #000 50%, #ff8c00 50%, #ff4500);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+}
+
+.lang-title-top {
+  top: -80px;
+}
+
+.lang-title-bottom {
+  bottom: -80px;
+}
+
+.lang-circle {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.lang-btn {
+  position: absolute;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: #ffcc80;
+  color: #0d3b25;
+  font-weight: 800;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lang-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.25);
+}
+
+.lang-btn:active {
+  transform: scale(0.95);
+}
+
+/* 8 GUMBOVA U KRUGU — SVAKI 45° */
+.lang-btn:nth-child(1) { transform: rotate(0deg) translate(110px) rotate(0deg); }
+.lang-btn:nth-child(2) { transform: rotate(45deg) translate(110px) rotate(-45deg); }
+.lang-btn:nth-child(3) { transform: rotate(90deg) translate(110px) rotate(-90deg); }
+.lang-btn:nth-child(4) { transform: rotate(135deg) translate(110px) rotate(-135deg); }
+.lang-btn:nth-child(5) { transform: rotate(180deg) translate(110px) rotate(-180deg); }
+.lang-btn:nth-child(6) { transform: rotate(225deg) translate(110px) rotate(-225deg); }
+.lang-btn:nth-child(7) { transform: rotate(270deg) translate(110px) rotate(-270deg); }
+.lang-btn:nth-child(8) { transform: rotate(315deg) translate(110px) rotate(-315deg); }

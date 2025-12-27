@@ -258,16 +258,3 @@ html, body {
 .balloon-btn:hover {
   background: #0a2e1d;
 }
-
-/* REP — VRLO UOČLJIV I POKAZUJE NA GUMB "OBVEZE" */
-.balloon-tail {
-  position: absolute;
-  top: -12px;
-  left: 50%;
-  transform: translateX(-50%) rotate(45deg);
-  width: 20px;
-  height: 20px;
-  background: #c62828;       /* TAMNOCRVENA — VRLO UOČLJIVA */
-  box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
-  z-index: -1;
-}

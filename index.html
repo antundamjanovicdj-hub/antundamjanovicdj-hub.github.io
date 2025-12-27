@@ -24,38 +24,36 @@
 <div class="app">
 
   <!-- LANGUAGE SCREEN — ZAKRIVLJENI CAVEAT NASLOVI -->
-<div id="screen-lang" class="screen active">
-  <div class="lang-circle-container">
-    <!-- ===== ZAKRIVLJENI TEKST S HTML + CSS ===== -->
-    <div class="lang-title-top">LIFE</div>
-    <div class="lang-title-bottom">KOMPAS</div>
+  <div id="screen-lang" class="screen active">
+    <div class="lang-circle-container">
+      <!-- ===== ZAKRIVLJENI TEKST S HTML + CSS ===== -->
+      <div class="lang-title-top">LIFE</div>
+      <div class="lang-title-bottom">KOMPAS</div>
 
-    <!-- SAMO JEDAN .lang-circle -->
-    <div class="lang-circle">
-      <button class="lang-btn" data-lang="hr">🇭🇷</button>
-      <button class="lang-btn" data-lang="en">🇺🇸</button>
-      <button class="lang-btn" data-lang="de">🇩🇪</button>
-      <button class="lang-btn" data-lang="ru">🇷🇺</button>
-      <button class="lang-btn" data-lang="pt">🇵🇹</button>
-      <button class="lang-btn" data-lang="tr">🇹🇷</button>
-      <button class="lang-btn" data-lang="zh">🇨🇳</button>
-      <button class="lang-btn" data-lang="ja">🇯🇵</button>
-    </div>
-  </div>
-</div>
-
-  <!-- MENU -->
-  <div id="screen-menu" class="screen">
-    <button class="back" id="backMenu">←</button>
-    <div class="content">
-      <div class="buttons">
-        <button class="btn menu-btn" id="btnTasks" tabindex="-1">
-          <span class="menu-icon">🧭</span>
-          <span class="menu-text"></span>
-        </button>
+      <!-- SAMO JEDAN .lang-circle -->
+      <div class="lang-circle">
+        <button class="lang-btn" data-lang="hr">🇭🇷</button>
+        <button class="lang-btn" data-lang="en">🇺🇸</button>
+        <button class="lang-btn" data-lang="de">🇩🇪</button>
+        <button class="lang-btn" data-lang="ru">🇷🇺</button>
+        <button class="lang-btn" data-lang="pt">🇵🇹</button>
+        <button class="lang-btn" data-lang="tr">🇹🇷</button>
+        <button class="lang-btn" data-lang="zh">🇨🇳</button>
+        <button class="lang-btn" data-lang="ja">🇯🇵</button>
       </div>
     </div>
   </div>
+
+  <!-- MENU -->
+<div id="screen-menu" class="screen">
+  <button class="back" id="backMenu">←</button>
+  <div class="main-menu-buttons">
+    <button class="menu-item" id="btnObligations">🧭 Obveze</button>
+    <button class="menu-item" id="btnContacts">👥 Kontakti</button>
+    <button class="menu-item" id="btnFinances">💰 Financije</button>
+    <button class="menu-item" id="btnDiary">📓 Dnevnik</button>
+  </div>
+</div>
 
   <!-- TASKS -->
   <div id="screen-tasks" class="screen">
@@ -112,6 +110,16 @@
   </div>
 </div>
 
+<!-- BALONIĆ POPUP ZA OBVEZE -->
+<div id="obligationsPopup" class="popup-balloon">
+  <div class="balloon-content">
+    <button class="balloon-btn" id="btnAddObligation">➕ Nova obveza</button>
+    <button class="balloon-btn" id="btnEditObligation">✏️ Uredi obvezu</button>
+    <button class="balloon-btn" id="btnViewByDay">📅 Pregled po danima</button>
+  </div>
+  <div class="balloon-tail"></div>
+</div>
+
 <!-- SKRIPTOVE U REDOSLIJEDU -->
 <script src="core/i18n.js"></script>
 <script src="core/ui.js"></script>
@@ -131,7 +139,7 @@
   }
 </script>
 
-<!-- Language Switcher — KONAČNA VERZIJA -->
+<!-- Language Switcher -->
 <script>
   window.languageSelected = false;
 
@@ -140,17 +148,34 @@
     document.documentElement.setAttribute('lang', lang);
     window.languageSelected = true;
 
-    if (typeof window.renderLanguage === 'function') {
-      window.renderLanguage(lang);
-      
-      // ✅ UKLONI .active SA SVIH EKRANA
-      document.querySelectorAll('.screen').forEach(el => {
-        el.classList.remove('active');
+    // ✅ PRIKAŽI IZBORNIK I POKRENI ANIMACIJU
+    const menuScreen = document.getElementById('screen-menu');
+
+    // 1. Sakrij gumbove (reset prije nove animacije)
+    menuScreen.querySelectorAll('.menu-item').forEach(item => {
+      item.classList.remove('animate');
+      void item.offsetWidth; // force reflow
+    });
+
+    // 2. Ažuriraj tekstove
+    document.getElementById('btnObligations').textContent = I18N[lang].menu.obligations;
+    document.getElementById('btnContacts').textContent = I18N[lang].menu.contacts;
+    document.getElementById('btnFinances').textContent = I18N[lang].menu.finances;
+    document.getElementById('btnDiary').textContent = I18N[lang].menu.diary;
+
+    // 3. Sakrij izbornik jezika, prikaži glavni izbornik
+    document.getElementById('screen-lang').classList.remove('active');
+    menuScreen.classList.add('active');
+
+    // 4. Pokreni animaciju NAKON kratkog delaya
+    setTimeout(() => {
+      const items = menuScreen.querySelectorAll('.menu-item');
+      items.forEach((item, i) => {
+        setTimeout(() => {
+          item.classList.add('animate');
+        }, 200 * i); // 0ms, 200ms, 400ms, 600ms
       });
-      
-      // ✅ PRIKAŽI SAMO MENU
-      document.getElementById('screen-menu').classList.add('active');
-    }
+    }, 50);
   }
 
   document.addEventListener('DOMContentLoaded', function() {
@@ -164,6 +189,34 @@
       });
     }
   });
+</script>
+
+<!-- BALONIĆ LOGIKA -->
+<script>
+// AŽURIRAJ TEKST BALONIĆA NA TEMELJU IZABRANOG JEZIKA
+function updateObligationsPopupText() {
+  const lang = localStorage.getItem('userLang') || 'hr';
+  document.getElementById('btnAddObligation').textContent = I18N[lang].menu.addObligation;
+  document.getElementById('btnEditObligation').textContent = I18N[lang].menu.editObligation;
+  document.getElementById('btnViewByDay').textContent = I18N[lang].menu.viewByDay;
+}
+
+// OTVARANJE BALONIĆA ZA OBVEZE
+document.getElementById('btnObligations').addEventListener('click', function(e) {
+  e.stopPropagation();
+  updateObligationsPopupText();
+  const popup = document.getElementById('obligationsPopup');
+  popup.style.display = popup.style.display === 'block' ? 'none' : 'block';
+});
+
+// ZATVARANJE BALONIĆA KADA SE KLIKNNE IZVAN NJEGA
+document.addEventListener('click', function(e) {
+  const popup = document.getElementById('obligationsPopup');
+  const btn = document.getElementById('btnObligations');
+  if (popup.style.display === 'block' && !popup.contains(e.target) && e.target !== btn) {
+    popup.style.display = 'none';
+  }
+});
 </script>
 
 </body>

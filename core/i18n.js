@@ -1,6 +1,15 @@
 // core/i18n.js
 const I18N = {
   hr: {
+    menu: {
+  obligations: "🧭 Obveze",
+  contacts: "👥 Kontakti",
+  finances: "💰 Financije",
+  diary: "📓 Dnevnik",
+  addObligation: "➕ Nova obveza",
+  editObligation: "✏️ Uredi obvezu",
+  viewByDay: "📅 Pregled po danima"
+},
     tasks: "Obveze",
     tTitle: "Naslov",
     tNote: "Bilješka",
@@ -42,6 +51,15 @@ const I18N = {
   },
 
   en: {
+    menu: {
+  obligations: "🧭 Obligations",
+  contacts: "👥 Contacts",
+  finances: "💰 Finances",
+  diary: "📓 Diary",
+  addObligation: "➕ New obligation",
+  editObligation: "✏️ Edit obligation",
+  viewByDay: "📅 View by day"
+},
     tasks: "Tasks",
     tTitle: "Title",
     tNote: "Note",
@@ -83,6 +101,15 @@ const I18N = {
   },
 
   de: {
+    menu: {
+  obligations: "🧭 Verpflichtungen",
+  contacts: "👥 Kontakte",
+  finances: "💰 Finanzen",
+  diary: "📓 Tagebuch",
+  addObligation: "➕ Neue Verpflichtung",
+  editObligation: "✏️ Verpflichtung bearbeiten",
+  viewByDay: "📅 Tägliche Ansicht"
+},
     tasks: "Aufgaben",
     tTitle: "Titel",
     tNote: "Notiz",
@@ -123,9 +150,16 @@ const I18N = {
     }
   },
 
-  // ➕ DODANI JEZICI
-
   ru: {
+    menu: {
+      obligations: "🧭 Обязанности",
+      contacts: "👥 Контакты",
+      finances: "💰 Финансы",
+      diary: "📓 Дневник",
+      addObligation: "➕ Новая обязанность",
+      editObligation: "✏️ Редактировать обязанность",
+      viewByDay: "📅 Просмотр по дням"
+    },
     tasks: "Обязанности",
     tTitle: "Название",
     tNote: "Заметка",
@@ -167,6 +201,15 @@ const I18N = {
   },
 
   pt: {
+    menu: {
+  obligations: "🧭 Obrigações",
+  contacts: "👥 Contatos",
+  finances: "💰 Finanças",
+  diary: "📓 Diário",
+      addObligation: "➕ Nova obrigação",
+      editObligation: "✏️ Editar obrigação",
+      viewByDay: "📅 Visualização diária"
+    },
     tasks: "Tarefas",
     tTitle: "Título",
     tNote: "Nota",
@@ -208,6 +251,15 @@ const I18N = {
   },
 
   tr: {
+    menu: {
+  obligations: "🧭 Yükümlülükler",
+  contacts: "👥 Kişiler",
+  finances: "💰 Finanslar",
+  diary: "📓 Günlük",
+      addObligation: "➕ Yeni yükümlülük",
+      editObligation: "✏️ Yükümlülüğü düzenle",
+      viewByDay: "📅 Günlük görünüm"
+    },
     tasks: "Görevler",
     tTitle: "Başlık",
     tNote: "Not",
@@ -249,6 +301,15 @@ const I18N = {
   },
 
   zh: {
+    menu: {
+  obligations: "🧭 义务",
+  contacts: "👥 联系人",
+  finances: "💰 财务",
+  diary: "📓 日记",
+      addObligation: "➕ 新义务",
+      editObligation: "✏️ 编辑义务",
+      viewByDay: "📅 按日查看"
+    },
     tasks: "任务",
     tTitle: "标题",
     tNote: "备注",
@@ -289,48 +350,16 @@ const I18N = {
     }
   },
 
-  ar: {
-    tasks: "المهام",
-    tTitle: "العنوان",
-    tNote: "ملاحظة",
-    tCat: "الفئة",
-    tDate: "التاريخ",
-    tTime: "الوقت",
-    tRem: "تذكير",
-    tSave: "💾 حفظ",
-    byDay: "📅 عرض حسب اليوم",
-    smartHint: "تذكير مقترح لهذه الفئة — يمكنك تغييره",
-    calendarToggle: "إضافة إلى التقويم",
-    calendarAdded: "تمت الإضافة إلى التقويم",
-    calendarNote: "مهمة من LifeKompas",
-    calendarRemoveConfirm: "هل تريد إزالة هذه المهمة من التقويم؟",
-    popupTitle: "المهام حسب اليوم",
-    popupDate: "اختر التاريخ",
-    popupDeleteConfirm: "حذف هذه المهمة؟",
-    emptyDay: "لا توجد مهام لهذا اليوم",
-
-    status: {
-      active: "نشط",
-      done: "منجز",
-      cancelled: "ملغى"
-    },
-
-    cats: {
-      health: "الصحة",
-      finance: "المالية",
-      family: "العائلة",
-      personal: "شخصي"
-    },
-
-    actions: {
-      done: "تم",
-      edit: "تعديل",
-      cancel: "إلغاء",
-      delete: "حذف"
-    }
-  },
-
   ja: {
+    menu: {
+  obligations: "🧭 義務",
+  contacts: "👥 連絡先",
+  finances: "💰 財務",
+  diary: "📓 日記",
+      addObligation: "➕ 新しい義務",
+      editObligation: "✏️ 義務を編集",
+      viewByDay: "📅 日別表示"
+    },
     tasks: "タスク",
     tTitle: "タイトル",
     tNote: "メモ",

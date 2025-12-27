@@ -89,15 +89,15 @@ document.addEventListener("DOMContentLoaded", () => {
   window.popupDeleteTask = tasksCtrl.deleteTask;
   window.handleTaskAction = tasksCtrl.handleTaskAction;
 
-  // ✅ PROVJERI: je li jezik već odabran?
-  const savedLang = localStorage.getItem('userLang');
-  if (savedLang) {
-    AppState.lang = savedLang;
-    document.documentElement.setAttribute('lang', savedLang);
-    showScreen('screen-menu');
-  } else {
-    showScreen('screen-lang');
-  }
+  // ✅ PRIVREMENO: UVIJEK PRIKAŽI IZBORNIK JEZIKA (ZA TESTIRANJE)
+// const savedLang = localStorage.getItem('userLang');
+// if (savedLang) {
+//   AppState.lang = savedLang;
+//   document.documentElement.setAttribute('lang', savedLang);
+//   showScreen('screen-menu');
+// } else {
+  showScreen('screen-lang');
+// }
 
   // ===== MENU → TASKS =====
   if (els.btnTasks) {

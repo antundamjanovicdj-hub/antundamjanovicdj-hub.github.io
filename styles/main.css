@@ -428,7 +428,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   background: #ffcc80;
   color: #0d3b25;
   font-weight: 800;
-  font-size: 20px; /* ✅ VEĆI EMOJI — PROBAJ 20px, 22px ILI 24px */
+  font-size: 22px; /* ✅ VEĆI EMOJI — PROBAJ 20px, 22px ILI 24px */
   cursor: pointer;
   box-shadow: 0 4px 8px rgba(0,0,0,0.15);
   transition: all 0.2s ease;

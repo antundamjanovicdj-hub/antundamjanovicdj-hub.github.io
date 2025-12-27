@@ -201,12 +201,22 @@ function updateObligationsPopupText() {
   document.getElementById('btnViewByDay').textContent = I18N[lang].menu.viewByDay;
 }
 
-// OTVARANJE BALONIĆA ZA OBVEZE
+// OTVARANJE BALONIĆA ZA OBVEZE — S ANIMACIJOM
 document.getElementById('btnObligations').addEventListener('click', function(e) {
   e.stopPropagation();
   updateObligationsPopupText();
+
   const popup = document.getElementById('obligationsPopup');
-  popup.style.display = popup.style.display === 'block' ? 'none' : 'block';
+  if (popup.style.display === 'block') {
+    popup.style.display = 'none';
+    popup.classList.remove('animate');
+  } else {
+    popup.style.display = 'block';
+    // malo delaya da se DOM osvježi
+    setTimeout(() => {
+      popup.classList.add('animate');
+    }, 10);
+  }
 });
 
 // ZATVARANJE BALONIĆA KADA SE KLIKNNE IZVAN NJEGA
@@ -215,6 +225,7 @@ document.addEventListener('click', function(e) {
   const btn = document.getElementById('btnObligations');
   if (popup.style.display === 'block' && !popup.contains(e.target) && e.target !== btn) {
     popup.style.display = 'none';
+    popup.classList.remove('animate');
   }
 });
 </script>

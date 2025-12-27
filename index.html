@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>LifeKompas</title>
 
+  <!-- ✅ ISPRAVLJEN LINK ZA CAVEAT FONT -->
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&display=swap" rel="stylesheet">
+
   <link rel="manifest" href="manifest-v2.json?v=2" />
   <link rel="icon" href="icon-192.png">
   <link rel="apple-touch-icon" href="icon-192.png">
@@ -23,21 +26,11 @@
   <!-- LANGUAGE SCREEN — ZAKRIVLJENI CAVEAT NASLOVI -->
 <div id="screen-lang" class="screen active">
   <div class="lang-circle-container">
-    <svg width="280" height="280" viewBox="0 0 280 280" class="lang-svg">
-      <defs>
-        <path id="topArc" d="M 40,80 A 120,120 0 0 1 240,80" fill="none" />
-        <path id="bottomArc" d="M 240,200 A 120,120 0 0 1 40,200" fill="none" />
-        <style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@700');</style>
-      </defs>
-      <text font-family="'Caveat', cursive" font-weight="700" font-size="36" fill="#0d3b25">
-        <textPath href="#topArc" startOffset="50%" text-anchor="middle">LIFE</textPath>
-      </text>
-      <text font-family="'Caveat', cursive" font-weight="700" font-size="36" fill="#0d3b25">
-        <textPath href="#bottomArc" startOffset="50%" text-anchor="middle">KOMPAS</textPath>
-      </text>
-    </svg>
+    <!-- ===== ZAKRIVLJENI TEKST S HTML + CSS ===== -->
+    <div class="lang-title-top">LIFE</div>
+    <div class="lang-title-bottom">KOMPAS</div>
 
-    <!-- GUMBOVI I DALJE VAN SVG-A (da bi JS radio!) -->
+    <!-- SAMO JEDAN .lang-circle -->
     <div class="lang-circle">
       <button class="lang-btn" data-lang="hr">🇭🇷</button>
       <button class="lang-btn" data-lang="en">🇺🇸</button>

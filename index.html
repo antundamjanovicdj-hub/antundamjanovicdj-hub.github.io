@@ -20,23 +20,36 @@
 
 <div class="app">
 
-  <!-- LANGUAGE SCREEN — STVARNO KRUŽNI IZBORNIK -->
-  <div id="screen-lang" class="screen active">
-    <div class="lang-circle-container">
-      <h1 class="lang-title-top">LIFE</h1>
-      <div class="lang-circle">
-        <button class="lang-btn" data-lang="hr">🇭🇷</button>
-        <button class="lang-btn" data-lang="en">🇺🇸</button>
-        <button class="lang-btn" data-lang="de">🇩🇪</button>
-        <button class="lang-btn" data-lang="ru">🇷🇺</button>
-        <button class="lang-btn" data-lang="pt">🇵🇹</button>
-        <button class="lang-btn" data-lang="tr">🇹🇷</button>
-        <button class="lang-btn" data-lang="zh">🇨🇳</button>
-        <button class="lang-btn" data-lang="ja">🇯🇵</button>
-      </div>
-      <h1 class="lang-title-bottom">KOMPAS</h1>
+  <!-- LANGUAGE SCREEN — ZAKRIVLJENI CAVEAT NASLOVI -->
+<div id="screen-lang" class="screen active">
+  <div class="lang-circle-container">
+    <svg width="280" height="280" viewBox="0 0 280 280" class="lang-svg">
+      <defs>
+        <path id="topArc" d="M 40,80 A 120,120 0 0 1 240,80" fill="none" />
+        <path id="bottomArc" d="M 240,200 A 120,120 0 0 1 40,200" fill="none" />
+        <style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@700');</style>
+      </defs>
+      <text font-family="'Caveat', cursive" font-weight="700" font-size="36" fill="#0d3b25">
+        <textPath href="#topArc" startOffset="50%" text-anchor="middle">LIFE</textPath>
+      </text>
+      <text font-family="'Caveat', cursive" font-weight="700" font-size="36" fill="#0d3b25">
+        <textPath href="#bottomArc" startOffset="50%" text-anchor="middle">KOMPAS</textPath>
+      </text>
+    </svg>
+
+    <!-- GUMBOVI I DALJE VAN SVG-A (da bi JS radio!) -->
+    <div class="lang-circle">
+      <button class="lang-btn" data-lang="hr">🇭🇷</button>
+      <button class="lang-btn" data-lang="en">🇺🇸</button>
+      <button class="lang-btn" data-lang="de">🇩🇪</button>
+      <button class="lang-btn" data-lang="ru">🇷🇺</button>
+      <button class="lang-btn" data-lang="pt">🇵🇹</button>
+      <button class="lang-btn" data-lang="tr">🇹🇷</button>
+      <button class="lang-btn" data-lang="zh">🇨🇳</button>
+      <button class="lang-btn" data-lang="ja">🇯🇵</button>
     </div>
   </div>
+</div>
 
   <!-- MENU -->
   <div id="screen-menu" class="screen">

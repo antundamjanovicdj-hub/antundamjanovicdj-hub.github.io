@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>LifeKompas</title>
 
-  <!-- ✅ ISPRAVLJEN LINK ZA CAVEAT FONT -->
+  <!-- ✅ CAVEAT FONT -->
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&display=swap" rel="stylesheet">
 
   <link rel="manifest" href="manifest-v2.json?v=2" />
@@ -23,210 +23,128 @@
 
 <div class="app">
 
-  <!-- LANGUAGE SCREEN — ZAKRIVLJENI CAVEAT NASLOVI -->
+  <!-- LANGUAGE SCREEN -->
   <div id="screen-lang" class="screen active">
-    <div class="lang-circle-container">
-      <!-- ===== ZAKRIVLJENI TEKST S HTML + CSS ===== -->
-      <div class="lang-title-top">LIFE</div>
-      <div class="lang-title-bottom">KOMPAS</div>
-
-      <!-- SAMO JEDAN .lang-circle -->
-      <div class="lang-circle">
-        <button class="lang-btn" data-lang="hr">🇭🇷</button>
-        <button class="lang-btn" data-lang="en">🇺🇸</button>
-        <button class="lang-btn" data-lang="de">🇩🇪</button>
-        <button class="lang-btn" data-lang="ru">🇷🇺</button>
-        <button class="lang-btn" data-lang="pt">🇵🇹</button>
-        <button class="lang-btn" data-lang="tr">🇹🇷</button>
-        <button class="lang-btn" data-lang="zh">🇨🇳</button>
-        <button class="lang-btn" data-lang="ja">🇯🇵</button>
+    <div class="lang-title-top">LIFE</div>
+    <div class="lang-grid-container">
+      <div class="lang-row">
+        <button class="lang-btn" data-lang="hr">🇭🇷 Hrvatski</button>
+        <button class="lang-btn" data-lang="en">🇺🇸 English</button>
       </div>
+      <div class="lang-row">
+        <button class="lang-btn" data-lang="de">🇩🇪 Deutsch</button>
+        <button class="lang-btn" data-lang="ru">🇷🇺 Русский</button>
+      </div>
+      <div class="lang-row">
+        <button class="lang-btn" data-lang="pt">🇵🇹 Português</button>
+        <button class="lang-btn" data-lang="tr">🇹🇷 Türkçe</button>
+      </div>
+      <div class="lang-row">
+        <button class="lang-btn" data-lang="zh">🇨🇳 中文</button>
+        <button class="lang-btn" data-lang="ja">🇯🇵 日本語</button>
+      </div>
+    </div>
+    <div class="lang-title-bottom">KOMPAS</div>
+  </div>
+
+  <!-- MAIN MENU -->
+  <div id="screen-menu" class="screen">
+    <button class="back" id="backMenu">←</button>
+    <div class="main-menu-buttons">
+      <button class="menu-item" id="btnObligations">🧭 Obveze</button>
+      <button class="menu-item" id="btnContacts">👥 Kontakti</button>
+      <button class="menu-item" id="btnFinances">💰 Financije</button>
+      <button class="menu-item" id="btnHealth">❤️ Zdravlje</button>
+      <button class="menu-item" id="btnDiary">📓 Dnevnik</button>
     </div>
   </div>
 
-  <!-- MENU -->
-<div id="screen-menu" class="screen">
-  <button class="back" id="backMenu">←</button>
-  <div class="main-menu-buttons">
-    <button class="menu-item" id="btnObligations">🧭 Obveze</button>
-    <button class="menu-item" id="btnContacts">👥 Kontakti</button>
-    <button class="menu-item" id="btnFinances">💰 Financije</button>
-    <button class="menu-item" id="btnDiary">📓 Dnevnik</button>
-  </div>
-</div>
-
-  <!-- TASKS -->
-  <div id="screen-tasks" class="screen">
-    <button class="back" id="backTasks">←</button>
-    <div class="content scroll">
-      <label id="tTitleL"></label>
-      <input id="taskTitle">
-      <label id="tNoteL"></label>
-      <textarea id="taskNote"></textarea>
-      <label id="tCatL"></label>
-      <select id="taskCategory"></select>
-      <label id="tDateL"></label>
-      <input type="date" id="taskDate">
-      <label id="tTimeL"></label>
-      <input type="time" id="taskTime">
-      <label id="tRemL"></label>
-      <select id="taskReminder">
-        <option value="0">—</option>
-        <option value="30">30 min</option>
-        <option value="60">1 h</option>
-        <option value="120">2 h</option>
-        <option value="1440">1 dan</option>
-      </select>
-
-      <div id="reminderHint" class="reminder-hint hidden"></div>
-
-      <div class="calendar-box">
-        <label class="calendar-label">
-          <input type="checkbox" id="addToCalendar" checked>
-          <span id="calendarLabel"></span>
-        </label>
-      </div>
-
-      <button class="btn" id="saveTask"></button>
-      <button class="btn" id="btnByDay"></button>
-
-      <div id="taskList"></div>
-      <div id="calendarInfo" class="note"></div>
+  <!-- POPUP ZA OBVEZE -->
+  <div id="obligationsPopup" class="popup-balloon">
+    <div class="balloon-content">
+      <button class="balloon-btn" id="btnAddObligation">➕ Dodaj obvezu</button>
+      <button class="balloon-btn" id="btnShopping">🛒 Kupovina</button>
+      <button class="balloon-btn" id="btnViewObligations">📅 Pregled obveza</button>
     </div>
   </div>
 
 </div> <!-- .app -->
 
-<!-- POPUP -->
-<div id="dayPopup" class="popup">
-  <div class="popup-box">
-    <div class="popup-header">
-      <strong id="popupTitle"></strong>
-      <button id="closeDayPopup">✕</button>
-    </div>
-    <label id="popupDateLabel"></label>
-    <input type="date" id="popupDate">
-    <div id="popupTasks"></div>
-  </div>
-</div>
-
-<!-- BALONIĆ POPUP ZA OBVEZE -->
-<div id="obligationsPopup" class="popup-balloon">
-  <div class="balloon-content">
-    <button class="balloon-btn" id="btnAddObligation">➕ Nova obveza</button>
-    <button class="balloon-btn" id="btnEditObligation">✏️ Uredi obvezu</button>
-    <button class="balloon-btn" id="btnViewByDay">📅 Pregled po danima</button>
-  </div>
-</div>
-
-<!-- SKRIPTOVE U REDOSLIJEDU -->
+<!-- SKRIPTOVE -->
 <script src="core/i18n.js"></script>
-<script src="core/ui.js"></script>
-<script src="modules/tasks/tasks.state.js"></script>
-<script src="modules/tasks/tasks.ui.js"></script>
-<script src="modules/tasks/tasks.popup.js"></script>
-<script src="modules/tasks/tasks.calendar.js"></script>
-<script src="modules/tasks/tasks.controller.js"></script>
-<script src="core/app.js"></script>
 
-<!-- Service Worker -->
 <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/service-worker.js').catch(console.warn);
-    });
-  }
-</script>
-
-<!-- Language Switcher -->
-<script>
-  window.languageSelected = false;
-
+  // SET LANGUAGE + SHOW MENU
   function setLanguage(lang) {
     localStorage.setItem('userLang', lang);
     document.documentElement.setAttribute('lang', lang);
-    window.languageSelected = true;
 
-    // ✅ PRIKAŽI IZBORNIK I POKRENI ANIMACIJU
-    const menuScreen = document.getElementById('screen-menu');
-
-    // 1. Sakrij gumbove (reset prije nove animacije)
-    menuScreen.querySelectorAll('.menu-item').forEach(item => {
-      item.classList.remove('animate');
-      void item.offsetWidth; // force reflow
-    });
-
-    // 2. Ažuriraj tekstove
+    // Update menu button texts
     document.getElementById('btnObligations').textContent = I18N[lang].menu.obligations;
     document.getElementById('btnContacts').textContent = I18N[lang].menu.contacts;
     document.getElementById('btnFinances').textContent = I18N[lang].menu.finances;
+    document.getElementById('btnHealth').textContent = I18N[lang].menu.health;
     document.getElementById('btnDiary').textContent = I18N[lang].menu.diary;
 
-    // 3. Sakrij izbornik jezika, prikaži glavni izbornik
+    // Switch screen
     document.getElementById('screen-lang').classList.remove('active');
-    menuScreen.classList.add('active');
+    document.getElementById('screen-menu').classList.add('active');
 
-    // 4. Pokreni animaciju NAKON kratkog delaya
+    // Animate buttons
     setTimeout(() => {
-      const items = menuScreen.querySelectorAll('.menu-item');
-      items.forEach((item, i) => {
+      document.querySelectorAll('.menu-item').forEach((item, i) => {
         setTimeout(() => {
           item.classList.add('animate');
-        }, 200 * i); // 0ms, 200ms, 400ms, 600ms
+        }, 150 * i);
       });
     }, 50);
   }
 
-  document.addEventListener('DOMContentLoaded', function() {
-    var buttons = document.querySelectorAll('.lang-btn');
-    for (var i = 0; i < buttons.length; i++) {
-      buttons[i].addEventListener('click', function(e) {
+  // EVENT LISTENERS
+  document.addEventListener('DOMContentLoaded', () => {
+    // Language buttons
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.addEventListener('click', e => {
         e.preventDefault();
-        e.stopPropagation();
-        var lang = this.getAttribute('data-lang');
-        setLanguage(lang);
+        setLanguage(btn.dataset.lang);
       });
-    }
+    });
+
+    // Back button
+    document.getElementById('backMenu').addEventListener('click', () => {
+      document.getElementById('screen-menu').classList.remove('active');
+      document.getElementById('screen-lang').classList.add('active');
+      // Reset animation
+      document.querySelectorAll('.menu-item').forEach(item => {
+        item.classList.remove('animate');
+      });
+    });
+
+    // Otvori popup za obveze
+    document.getElementById('btnObligations').addEventListener('click', () => {
+      const popup = document.getElementById('obligationsPopup');
+      
+      // Ažuriraj tekst na trenutni jezik
+      const lang = localStorage.getItem('userLang') || 'hr';
+      document.getElementById('btnAddObligation').textContent = I18N[lang].menu.addObligation;
+      document.getElementById('btnShopping').textContent = I18N[lang].menu.shopping;
+      document.getElementById('btnViewObligations').textContent = I18N[lang].menu.viewObligations;
+
+      // Prikaži s animacijom
+      popup.style.display = 'block';
+      setTimeout(() => popup.classList.add('animate'), 10);
+    });
+
+    // Zatvori popup klikom izvan njega
+    document.addEventListener('click', (e) => {
+      const popup = document.getElementById('obligationsPopup');
+      const btn = document.getElementById('btnObligations');
+      if (popup.style.display === 'block' && !popup.contains(e.target) && e.target !== btn) {
+        popup.classList.remove('animate');
+        setTimeout(() => popup.style.display = 'none', 300);
+      }
+    });
   });
-</script>
-
-<!-- BALONIĆ LOGIKA -->
-<script>
-// AŽURIRAJ TEKST BALONIĆA NA TEMELJU IZABRANOG JEZIKA
-function updateObligationsPopupText() {
-  const lang = localStorage.getItem('userLang') || 'hr';
-  document.getElementById('btnAddObligation').textContent = I18N[lang].menu.addObligation;
-  document.getElementById('btnEditObligation').textContent = I18N[lang].menu.editObligation;
-  document.getElementById('btnViewByDay').textContent = I18N[lang].menu.viewByDay;
-}
-
-// OTVARANJE BALONIĆA ZA OBVEZE — S ANIMACIJOM
-document.getElementById('btnObligations').addEventListener('click', function(e) {
-  e.stopPropagation();
-  updateObligationsPopupText();
-
-  const popup = document.getElementById('obligationsPopup');
-  if (popup.style.display === 'block') {
-    popup.style.display = 'none';
-    popup.classList.remove('animate');
-  } else {
-    popup.style.display = 'block';
-    // malo delaya da se DOM osvježi
-    setTimeout(() => {
-      popup.classList.add('animate');
-    }, 10);
-  }
-});
-
-// ZATVARANJE BALONIĆA KADA SE KLIKNNE IZVAN NJEGA
-document.addEventListener('click', function(e) {
-  const popup = document.getElementById('obligationsPopup');
-  const btn = document.getElementById('btnObligations');
-  if (popup.style.display === 'block' && !popup.contains(e.target) && e.target !== btn) {
-    popup.style.display = 'none';
-    popup.classList.remove('animate');
-  }
-});
 </script>
 
 </body>

@@ -33,15 +33,15 @@
       </div>
       <div class="lang-row">
         <button class="lang-btn" data-lang="de">🇩🇪 Deutsch</button>
-        <button class="lang-btn" data-lang="ru">🇷🇺 Русский</button>
+        <button class="lang-btn" data-lang="ru">🇷🇷 Русский</button>
       </div>
       <div class="lang-row">
         <button class="lang-btn" data-lang="pt">🇵🇹 Português</button>
-        <button class="lang-btn" data-lang="tr">🇹🇷 Türkçe</button>
+        <button class="lang-btn" data-lang="tr">🇹🇹 Türkçe</button>
       </div>
       <div class="lang-row">
-        <button class="lang-btn" data-lang="zh">🇨🇳 中文</button>
-        <button class="lang-btn" data-lang="ja">🇯🇵 日本語</button>
+        <button class="lang-btn" data-lang="zh">🇨🇨 中文</button>
+        <button class="lang-btn" data-lang="ja">🇯🇯 日本語</button>
       </div>
     </div>
     <div class="lang-title-bottom">KOMPAS</div>
@@ -68,10 +68,54 @@
     </div>
   </div>
 
+  <!-- EKRAN: DODAVANJE OBVEZE -->
+  <div id="screen-add-obligation" class="screen">
+    <button class="back" id="backToAddObligation">←</button>
+    <div class="obligation-form">
+      <input type="text" id="obligationTitle" placeholder="Naslov obveze" maxlength="100">
+      <textarea id="obligationNote" placeholder="Napomena" rows="3"></textarea>
+      
+      <label class="datetime-label">
+        <span id="obligationDateTimeLabel">Datum i vrijeme</span>
+        <input type="datetime-local" id="obligationDateTime">
+      </label>
+
+      <label class="reminder-checkbox">
+        <input type="checkbox" id="enableReminder">
+        <span id="reminderLabel">Podsjetnik</span>
+      </label>
+
+      <div id="reminderOptions" class="hidden">
+        <select id="reminderTime">
+          <option value="30">30 minuta prije</option>
+          <option value="60">1 sat prije</option>
+          <option value="120">2 sata prije</option>
+          <option value="1440">1 dan prije</option>
+        </select>
+      </div>
+
+      <button id="saveObligation" class="btn-save">💾 Spremi</button>
+      <button id="cancelObligation" class="btn-cancel"></button> <!-- ✅ BEZ TEKSTA -->
+    </div>
+  </div>
+
+  <!-- EKRAN: PREGLED OBVEZA -->
+  <div id="screen-obligations-list" class="screen">
+    <button class="back" id="backToObligationsList">←</button>
+    <div class="obligations-header">
+      <h2 id="obligationsTitle">Moje obveze</h2>
+      <p id="obligationsCount">Ukupno: 0</p>
+    </div>
+    <div id="obligationsContainer" class="obligations-list">
+      <!-- Obveze će se pojaviti ovdje -->
+    </div>
+  </div>
+
 </div> <!-- .app -->
 
 <!-- SKRIPTOVE -->
 <script src="core/i18n.js"></script>
+<script src="core/db.js"></script>
 
 <script>
   // SET LANGUAGE + SHOW MENU
@@ -79,18 +123,15 @@
     localStorage.setItem('userLang', lang);
     document.documentElement.setAttribute('lang', lang);
 
-    // Update menu button texts
     document.getElementById('btnObligations').textContent = I18N[lang].menu.obligations;
     document.getElementById('btnContacts').textContent = I18N[lang].menu.contacts;
     document.getElementById('btnFinances').textContent = I18N[lang].menu.finances;
     document.getElementById('btnHealth').textContent = I18N[lang].menu.health;
     document.getElementById('btnDiary').textContent = I18N[lang].menu.diary;
 
-    // Switch screen
     document.getElementById('screen-lang').classList.remove('active');
     document.getElementById('screen-menu').classList.add('active');
 
-    // Animate buttons
     setTimeout(() => {
       document.querySelectorAll('.menu-item').forEach((item, i) => {
         setTimeout(() => {
@@ -100,9 +141,112 @@
     }, 50);
   }
 
+  // PRIKAZI LISTU OBVEZA S STATUSOM
+  function renderObligationsList() {
+    const container = document.getElementById('obligationsContainer');
+    const lang = localStorage.getItem('userLang') || 'hr';
+    
+    obligationDB.getAll().then(obligations => {
+      obligations.sort((a, b) => {
+        if (a.status !== b.status) {
+          return a.status === 'active' ? -1 : 1;
+        }
+        if (!a.dateTime) return 1;
+        if (!b.dateTime) return -1;
+        return new Date(b.dateTime) - new Date(a.dateTime);
+      });
+
+      document.getElementById('obligationsTitle').textContent = I18N[lang].obligationsList.title;
+      document.getElementById('obligationsCount').textContent = 
+        `${I18N[lang].obligationsList.total}: ${obligations.length}`;
+
+      if (obligations.length === 0) {
+        container.innerHTML = `<div class="empty-list">${I18N[lang].obligationsList.noObligations}</div>`;
+        return;
+      }
+
+      container.innerHTML = obligations.map(ob => {
+        const dt = ob.dateTime ? new Date(ob.dateTime) : null;
+        const dateStr = dt ? dt.toLocaleDateString(I18N[lang].lang || 'hr-HR') : '—';
+        const timeStr = dt ? dt.toLocaleTimeString(I18N[lang].lang || 'hr-HR', { hour: '2-digit', minute: '2-digit' }) : '—';
+        
+        // 🔔 LOKALIZIRANI PODSJETNIK
+        let reminderStr = '';
+        if (ob.reminder) {
+          const key = `reminder${ob.reminder}`;
+          reminderStr = I18N[lang].obligationsList[key] || `${ob.reminder} min`;
+        }
+
+        // ⏳ LOKALIZIRANI STATUS
+        const statusText = ob.status === 'done' 
+          ? `✅ ${I18N[lang].obligationsList.statusDone}`
+          : `⏳ ${I18N[lang].obligationsList.statusActive}`;
+
+        const bgColor = ob.status === 'done' ? '#e8f5e9' : '#e3f2fd';
+        const borderColor = ob.status === 'done' ? '#4caf50' : '#2196f3';
+
+        const toggleBtnText = ob.status === 'done' 
+          ? I18N[lang].obligationsList.markActive 
+          : I18N[lang].obligationsList.markDone;
+
+        return `
+          <div class="obligation-card" data-id="${ob.id}" style="background:${bgColor}; border-left:4px solid ${borderColor};">
+            <div class="obligation-title">${ob.title}</div>
+            ${ob.note ? `<div class="obligation-note">${ob.note}</div>` : ''}
+            <div class="obligation-meta">
+              <div class="obligation-date">📅 ${dateStr}</div>
+              <div class="obligation-time">⏰ ${timeStr}</div>
+              ${reminderStr ? `<div class="obligation-reminder">🔔 ${reminderStr}</div>` : ''}
+              <div class="obligation-status">${statusText}</div>
+            </div>
+            <button class="obligation-toggle-status" data-id="${ob.id}" data-status="${ob.status}">
+              ${toggleBtnText}
+            </button>
+            <button class="obligation-delete" data-id="${ob.id}">✕</button>
+          </div>
+        `;
+      }).join('');
+
+      // PROMJENA STATUSA
+      container.querySelectorAll('.obligation-toggle-status').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const id = parseInt(btn.dataset.id);
+          const currentStatus = btn.dataset.status;
+          const newStatus = currentStatus === 'done' ? 'active' : 'done';
+
+          try {
+            const obligations = await obligationDB.getAll();
+            const obligation = obligations.find(o => o.id === id);
+            if (obligation) {
+              obligation.status = newStatus;
+              await obligationDB.add(obligation);
+              renderObligationsList();
+            }
+          } catch (err) {
+            console.error('Greška pri ažuriranju statusa:', err);
+          }
+        });
+      });
+
+      // BRISANJE
+      container.querySelectorAll('.obligation-delete').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const id = parseInt(btn.dataset.id);
+          if (confirm(I18N[lang].obligationsList.deleteConfirm || 'Obrisati obvezu?')) {
+            obligationDB.delete(id).then(() => {
+              renderObligationsList();
+            });
+          }
+        });
+      });
+    });
+  }
+
   // EVENT LISTENERS
   document.addEventListener('DOMContentLoaded', () => {
-    // Language buttons
+    // JEZICI
     document.querySelectorAll('.lang-btn').forEach(btn => {
       btn.addEventListener('click', e => {
         e.preventDefault();
@@ -110,32 +254,27 @@
       });
     });
 
-    // Back button
+    // BACK - MENU
     document.getElementById('backMenu').addEventListener('click', () => {
       document.getElementById('screen-menu').classList.remove('active');
       document.getElementById('screen-lang').classList.add('active');
-      // Reset animation
       document.querySelectorAll('.menu-item').forEach(item => {
         item.classList.remove('animate');
       });
     });
 
-    // Otvori popup za obveze
+    // POPUP OBVEZE
     document.getElementById('btnObligations').addEventListener('click', () => {
       const popup = document.getElementById('obligationsPopup');
-      
-      // Ažuriraj tekst na trenutni jezik
       const lang = localStorage.getItem('userLang') || 'hr';
       document.getElementById('btnAddObligation').textContent = I18N[lang].menu.addObligation;
       document.getElementById('btnShopping').textContent = I18N[lang].menu.shopping;
       document.getElementById('btnViewObligations').textContent = I18N[lang].menu.viewObligations;
-
-      // Prikaži s animacijom
       popup.style.display = 'block';
       setTimeout(() => popup.classList.add('animate'), 10);
     });
 
-    // Zatvori popup klikom izvan njega
+    // ZATVORI POPUP
     document.addEventListener('click', (e) => {
       const popup = document.getElementById('obligationsPopup');
       const btn = document.getElementById('btnObligations');
@@ -143,6 +282,99 @@
         popup.classList.remove('animate');
         setTimeout(() => popup.style.display = 'none', 300);
       }
+    });
+
+    // FORMA ZA DODAVANJE
+    document.getElementById('btnAddObligation').addEventListener('click', () => {
+      const popup = document.getElementById('obligationsPopup');
+      popup.classList.remove('animate');
+      setTimeout(() => popup.style.display = 'none', 300);
+
+      document.getElementById('screen-menu').classList.remove('active');
+      document.getElementById('screen-add-obligation').classList.add('active');
+
+      const lang = localStorage.getItem('userLang') || 'hr';
+      document.getElementById('obligationTitle').placeholder = I18N[lang].obligation.title;
+      document.getElementById('obligationNote').placeholder = I18N[lang].obligation.note;
+      document.getElementById('obligationDateTimeLabel').textContent = I18N[lang].obligation.dateTime;
+      document.getElementById('reminderLabel').textContent = I18N[lang].obligation.reminder;
+      document.getElementById('saveObligation').textContent = I18N[lang].obligation.save;
+      document.getElementById('cancelObligation').textContent = `✖️ ${I18N[lang].obligation.cancel}`; // ✅ LOKALIZIRANO
+    });
+
+    // BACK IZ FORME
+    document.getElementById('backToAddObligation').addEventListener('click', () => {
+      document.getElementById('screen-add-obligation').classList.remove('active');
+      document.getElementById('screen-menu').classList.add('active');
+    });
+
+    // PODSJETNIK
+    document.getElementById('enableReminder').addEventListener('change', (e) => {
+      const options = document.getElementById('reminderOptions');
+      options.classList.toggle('hidden', !e.target.checked);
+    });
+
+    // SPREMI
+    document.getElementById('saveObligation').addEventListener('click', async () => {
+      const title = document.getElementById('obligationTitle').value.trim();
+      if (!title) {
+        alert('Unesi naslov obveze!');
+        return;
+      }
+
+      const obligation = {
+        id: Date.now(),
+        title: title,
+        note: document.getElementById('obligationNote').value,
+        dateTime: document.getElementById('obligationDateTime').value,
+        reminder: document.getElementById('enableReminder').checked
+          ? document.getElementById('reminderTime').value
+          : null,
+        status: 'active',
+        createdAt: new Date().toISOString(),
+        lang: localStorage.getItem('userLang') || 'hr'
+      };
+
+      try {
+        await obligationDB.add(obligation);
+        alert('Obveza spremljena!');
+        document.getElementById('obligationTitle').value = '';
+        document.getElementById('obligationNote').value = '';
+        document.getElementById('obligationDateTime').value = '';
+        document.getElementById('enableReminder').checked = false;
+        document.getElementById('reminderOptions').classList.add('hidden');
+        document.getElementById('screen-add-obligation').classList.remove('active');
+        document.getElementById('screen-menu').classList.add('active');
+      } catch (err) {
+        alert('Greška pri spremanju obveze!');
+      }
+    });
+
+    // ODUSTANI
+    document.getElementById('cancelObligation').addEventListener('click', () => {
+      document.getElementById('screen-add-obligation').classList.remove('active');
+      document.getElementById('screen-menu').classList.add('active');
+    });
+
+    // PREGLED OBVEZA
+    document.getElementById('btnViewObligations').addEventListener('click', () => {
+      const popup = document.getElementById('obligationsPopup');
+      popup.classList.remove('animate');
+      setTimeout(() => popup.style.display = 'none', 300);
+      document.getElementById('screen-menu').classList.remove('active');
+      document.getElementById('screen-obligations-list').classList.add('active');
+      renderObligationsList();
+    });
+
+    // BACK IZ LISTE
+    document.getElementById('backToObligationsList').addEventListener('click', () => {
+      document.getElementById('screen-obligations-list').classList.remove('active');
+      document.getElementById('screen-menu').classList.add('active');
+    });
+
+    // PROVJERA
+    obligationDB.getAll().then(obligations => {
+      console.log('Učitane obveze iz IndexedDB:', obligations);
     });
   });
 </script>

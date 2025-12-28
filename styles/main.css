@@ -18,7 +18,7 @@ html, body {
   align-items: center;
 }
 
-/* ===== EKRANI — SAMO POZICIJA ===== */
+/* ===== EKRANI ===== */
 .screen {
   display: none;
   width: 100%;
@@ -30,13 +30,14 @@ html, body {
   display: flex;
 }
 
-/* ===== POZADINA — SLIKA NA OBA EKRANA ===== */
+/* ===== POZADINA — SLIKA NA SVIM EKRANIMA ===== */
 #screen-lang,
-#screen-menu {
+#screen-menu,
+#screen-add-obligation {
   background: url('../images/welcome-bg.png') center/cover no-repeat;
 }
 
-/* ===== WELCOME EKRAN TEKST ===== */
+/* ===== WELCOME EKRAN ===== */
 .lang-title-top,
 .lang-title-bottom {
   position: absolute;
@@ -58,7 +59,6 @@ html, body {
   bottom: 80px;
 }
 
-/* ===== MREŽA JEZIKA ===== */
 .lang-grid-container {
   position: absolute;
   top: 50%;
@@ -205,4 +205,240 @@ html, body {
 
 .balloon-btn:hover {
   background: #ffd9a6;
+}
+
+/* ===== FULL-SCREEN FORM ZA OBVEZU ===== */
+#screen-add-obligation {
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.obligation-form {
+  width: 100%;
+  max-width: 400px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 24px;
+  border-radius: 20px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+}
+
+.obligation-form input,
+.obligation-form textarea,
+.datetime-label,
+.reminder-checkbox {
+  width: 100%;
+  margin: 12px 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+#obligationTitle {
+  font-size: 1.4rem;
+  font-weight: bold;
+  border: none;
+  border-bottom: 2px solid #0d5e32;
+  padding: 8px 0;
+  outline: none;
+}
+
+#obligationNote {
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 10px;
+  resize: none;
+}
+
+.datetime-label {
+  display: block;
+  margin-top: 16px;
+}
+
+.datetime-label span {
+  display: block;
+  margin-bottom: 6px;
+  color: #0d3b25;
+  font-weight: 600;
+}
+
+#obligationDateTime {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.reminder-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.reminder-checkbox input {
+  width: auto;
+  transform: scale(1.3);
+}
+
+#reminderOptions {
+  margin-top: 12px;
+}
+
+#reminderOptions select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: white;
+}
+
+.btn-save {
+  width: 100%;
+  padding: 14px;
+  margin-top: 20px;
+  background: #0d5e32;
+  color: white;
+  border: none;
+  border-radius: 16px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.btn-cancel {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  background: #f44336;
+  color: white;
+  border: none;
+  border-radius: 16px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.btn-cancel:hover {
+  background: #d0d0d0;
+}
+
+.hidden {
+  display: none;
+}
+/* ===== PREGLED OBVEZA ===== */
+#screen-obligations-list {
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.obligations-header {
+  text-align: center;
+  margin-bottom: 20px;
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+.obligations-header h2 {
+  font-family: 'Caveat', cursive;
+  font-size: 2rem;
+  margin-bottom: 8px;
+}
+
+.obligations-header p {
+  font-size: 1.1rem;
+}
+
+.obligations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.obligation-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  position: relative;
+}
+
+.obligation-title {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #0d3b25;
+  margin-bottom: 6px;
+}
+
+.obligation-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 8px 0;
+  font-size: 0.95rem;
+}
+
+.obligation-date,
+.obligation-time,
+.obligation-reminder {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #555;
+}
+
+.obligation-note {
+  margin-top: 10px;
+  font-style: italic;
+  color: #666;
+  white-space: pre-wrap;
+}
+
+.obligation-delete {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: #ff6b6b;
+  color: white;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.obligation-delete:hover {
+  background: #ff5252;
+}
+
+.empty-list {
+  text-align: center;
+  color: white;
+  font-size: 1.2rem;
+  padding: 40px;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+.obligation-status {
+  font-weight: bold;
+  color: #0d3b25;
+  margin-top: 6px;
+  font-size: 0.95rem;
+}
+
+.obligation-toggle-status {
+  margin-top: 10px;
+  padding: 6px 12px;
+  background: #0d5e32;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  width: 100%;
+}
+
+.obligation-toggle-status:hover {
+  background: #0a4a27;
 }

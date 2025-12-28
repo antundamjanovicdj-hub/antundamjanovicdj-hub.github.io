@@ -17,6 +17,7 @@ const I18N = {
       dateTime: "Datum i vrijeme",
       reminder: "Podsjetnik",
       save: "💾 Spremi",
+      update: "Ažuriraj",
       cancel: "Odustani"
     },
     obligationsList: {
@@ -25,6 +26,7 @@ const I18N = {
       noObligations: "Nema obveza",
       delete: "Izbriši",
       deleteConfirm: "Obrisati obvezu?",
+      edit: "Uredi",
       markDone: "✅ Obavljeno",
       markActive: "⏳ Ponovo aktivno",
       statusActive: "Aktivno",
@@ -52,6 +54,7 @@ const I18N = {
       dateTime: "Date & time",
       reminder: "Reminder",
       save: "💾 Save",
+      update: "Update",
       cancel: "Cancel"
     },
     obligationsList: {
@@ -60,6 +63,7 @@ const I18N = {
       noObligations: "No obligations",
       delete: "Delete",
       deleteConfirm: "Delete this obligation?",
+      edit: "Edit",
       markDone: "✅ Mark done",
       markActive: "⏳ Mark active",
       statusActive: "Active",
@@ -87,6 +91,7 @@ const I18N = {
       dateTime: "Datum & Uhrzeit",
       reminder: "Erinnerung",
       save: "💾 Speichern",
+      update: "Aktualisieren",
       cancel: "Abbrechen"
     },
     obligationsList: {
@@ -95,6 +100,7 @@ const I18N = {
       noObligations: "Keine Verpflichtungen",
       delete: "Löschen",
       deleteConfirm: "Diese Verpflichtung löschen?",
+      edit: "Bearbeiten",
       markDone: "✅ Erledigt",
       markActive: "⏳ Wieder aktiv",
       statusActive: "Aktiv",
@@ -122,6 +128,7 @@ const I18N = {
       dateTime: "Дата и время",
       reminder: "Напоминание",
       save: "💾 Сохранить",
+      update: "Обновить",
       cancel: "Отмена"
     },
     obligationsList: {
@@ -130,6 +137,7 @@ const I18N = {
       noObligations: "Нет обязанностей",
       delete: "Удалить",
       deleteConfirm: "Удалить эту обязанность?",
+      edit: "Редактировать",
       markDone: "✅ Выполнено",
       markActive: "⏳ Снова активно",
       statusActive: "Активно",
@@ -157,6 +165,7 @@ const I18N = {
       dateTime: "Data e hora",
       reminder: "Lembrete",
       save: "💾 Salvar",
+      update: "Atualizar",
       cancel: "Cancelar"
     },
     obligationsList: {
@@ -165,6 +174,7 @@ const I18N = {
       noObligations: "Sem obrigações",
       delete: "Excluir",
       deleteConfirm: "Excluir esta obrigação?",
+      edit: "Editar",
       markDone: "✅ Concluído",
       markActive: "⏳ Tornar ativo",
       statusActive: "Ativo",
@@ -192,6 +202,7 @@ const I18N = {
       dateTime: "Tarih ve saat",
       reminder: "Hatırlatma",
       save: "💾 Kaydet",
+      update: "Güncelle",
       cancel: "İptal"
     },
     obligationsList: {
@@ -200,6 +211,7 @@ const I18N = {
       noObligations: "Yükümlülük yok",
       delete: "Sil",
       deleteConfirm: "Bu yükümlülüğü sil?",
+      edit: "Düzenle",
       markDone: "✅ Tamamlandı",
       markActive: "⏳ Tekrar aktif",
       statusActive: "Aktif",
@@ -227,6 +239,7 @@ const I18N = {
       dateTime: "日期和时间",
       reminder: "提醒",
       save: "💾 保存",
+      update: "更新",
       cancel: "取消"
     },
     obligationsList: {
@@ -235,6 +248,7 @@ const I18N = {
       noObligations: "没有义务",
       delete: "删除",
       deleteConfirm: "删除此义务？",
+      edit: "编辑",
       markDone: "✅ 已完成",
       markActive: "⏳ 重新激活",
       statusActive: "活跃",
@@ -262,6 +276,7 @@ const I18N = {
       dateTime: "日付と時刻",
       reminder: "リマインダー",
       save: "💾 保存",
+      update: "更新",
       cancel: "キャンセル"
     },
     obligationsList: {
@@ -270,6 +285,7 @@ const I18N = {
       noObligations: "義務はありません",
       delete: "削除",
       deleteConfirm: "この義務を削除しますか？",
+      edit: "編集",
       markDone: "✅ 完了",
       markActive: "⏳ 再アクティブ",
       statusActive: "アクティブ",

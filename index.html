@@ -74,7 +74,7 @@
     <div class="obligation-form">
       <input type="text" id="obligationTitle" placeholder="Naslov obveze" maxlength="100">
       <textarea id="obligationNote" placeholder="Napomena" rows="3"></textarea>
-      
+
       <label class="datetime-label">
         <span id="obligationDateTimeLabel">Datum i vrijeme</span>
         <input type="datetime-local" id="obligationDateTime">
@@ -103,15 +103,31 @@
 <div id="screen-obligations-list" class="screen">
   <button class="back" id="backToObligationsList">←</button>
 
-  <!-- GUMB: PREGLED PO DANIMA -->
+  <!-- TOOLBAR -->
   <div class="obligations-toolbar">
     <button id="btnViewByDays" class="toolbar-btn">
       📆 Pregled po danima
     </button>
   </div>
 
+  <!-- DATE PICKER – samo za daily view -->
+  <div id="dailyDateBar" class="hidden" style="padding: 8px 12px;">
+    <input
+      type="date"
+      id="dailyDatePicker"
+      style="width:100%; padding:10px; border-radius:10px; border:1px solid rgba(0,0,0,0.15);"
+    >
+  </div>
+
+  <!-- LIST VIEW -->
   <div id="obligationsContainer" class="obligations-list">
     <!-- Obveze će se pojaviti ovdje -->
+  </div>
+
+  <!-- DAILY VIEW -->
+  <div id="dailyView" class="hidden" style="padding: 0 12px 16px;">
+    <div id="dailyOpenWrap"></div>
+    <div id="dailyDoneWrap"></div>
   </div>
 </div>
 
@@ -122,10 +138,42 @@
 <script src="core/db.js"></script>
 
 <script>
-  // SET LANGUAGE + SHOW MENU
+  /* ===== HELPERS ===== */
+  function getLang() {
+    return localStorage.getItem('userLang') || 'hr';
+  }
+
+  function getISODateFromDateTime(dateTimeStr) {
+    if (!dateTimeStr) return null; // nema datuma
+    // očekujemo "YYYY-MM-DDTHH:mm" iz datetime-local
+    return String(dateTimeStr).split('T')[0] || null;
+  }
+
+  function todayISO() {
+    return new Date().toISOString().split('T')[0];
+  }
+
+  function showScreen(screenId) {
+    const screens = document.querySelectorAll('.screen');
+    const next = document.getElementById(screenId);
+
+    screens.forEach(screen => screen.classList.remove('active'));
+
+    requestAnimationFrame(() => {
+      next?.classList.add('active');
+    });
+  }
+
+  /* ===== SET LANGUAGE + SHOW MENU ===== */
   function setLanguage(lang) {
     localStorage.setItem('userLang', lang);
     document.documentElement.setAttribute('lang', lang);
+
+    // ako i18n nije spreman (ne bi se smjelo dogoditi), samo pređi na menu
+    if (typeof I18N === 'undefined' || !I18N[lang]) {
+      showScreen('screen-menu');
+      return;
+    }
 
     document.getElementById('btnObligations').textContent = I18N[lang].menu.obligations;
     document.getElementById('btnContacts').textContent = I18N[lang].menu.contacts;
@@ -133,163 +181,258 @@
     document.getElementById('btnHealth').textContent = I18N[lang].menu.health;
     document.getElementById('btnDiary').textContent = I18N[lang].menu.diary;
 
-    document.getElementById('screen-lang').classList.remove('active');
-    document.getElementById('screen-menu').classList.add('active');
+    showScreen('screen-menu');
 
     setTimeout(() => {
       document.querySelectorAll('.menu-item').forEach((item, i) => {
-        setTimeout(() => {
-          item.classList.add('animate');
-        }, 150 * i);
+        setTimeout(() => item.classList.add('animate'), 150 * i);
       });
     }, 50);
   }
 
-  // OTVORI FORMU ZA UREĐIVANJE
+  /* ===== OTVORI FORMU ZA UREĐIVANJE ===== */
   function openEditForm(ob) {
-    document.getElementById('screen-obligations-list').classList.remove('active');
-    document.getElementById('screen-add-obligation').classList.add('active');
+    showScreen('screen-add-obligation');
 
-    const lang = localStorage.getItem('userLang') || 'hr';
+    const lang = getLang();
 
     document.getElementById('obligationTitle').value = ob.title;
     document.getElementById('obligationNote').value = ob.note || '';
     document.getElementById('obligationDateTime').value = ob.dateTime || '';
     document.getElementById('enableReminder').checked = !!ob.reminder;
     document.getElementById('reminderOptions').classList.toggle('hidden', !ob.reminder);
-    if (ob.reminder) {
-      document.getElementById('reminderTime').value = ob.reminder;
-    }
+    if (ob.reminder) document.getElementById('reminderTime').value = ob.reminder;
 
     document.getElementById('saveObligation').textContent = I18N[lang].obligation.update;
     document.getElementById('saveObligation').dataset.editId = ob.id;
     document.getElementById('cancelObligation').textContent = `✖️ ${I18N[lang].obligation.cancel}`;
   }
 
-  // PRIKAZI LISTU OBVEZA
-  function renderObligationsList() {
-    const container = document.getElementById('obligationsContainer');
-    const lang = localStorage.getItem('userLang') || 'hr';
-    
-    obligationDB.getAll().then(obligations => {
-      obligations.sort((a, b) => {
-        if (a.status !== b.status) return a.status === 'active' ? -1 : 1;
-        if (!a.dateTime) return 1;
-        if (!b.dateTime) return -1;
-        return new Date(b.dateTime) - new Date(a.dateTime);
-      });
+  /* ===== RENDER CARD (reused) ===== */
+  function buildObligationCard(ob, lang) {
+    const dt = ob.dateTime ? new Date(ob.dateTime) : null;
+    const dateStr = dt ? dt.toLocaleDateString(I18N[lang].lang || 'hr-HR') : '—';
+    const timeStr = dt ? dt.toLocaleTimeString(I18N[lang].lang || 'hr-HR', { hour: '2-digit', minute: '2-digit' }) : '—';
 
-      
+    let reminderStr = '';
+    if (ob.reminder) {
+      const key = `reminder${ob.reminder}`;
+      reminderStr = I18N[lang].obligationsList[key] || `${ob.reminder} min`;
+    }
 
-      if (obligations.length === 0) {
-        container.innerHTML = `<div class="empty-list">${I18N[lang].obligationsList.noObligations}</div>`;
-        return;
-      }
+    const statusText = ob.status === 'done'
+      ? `✅ ${I18N[lang].obligationsList.statusDone}`
+      : `⏳ ${I18N[lang].obligationsList.statusActive}`;
 
-      container.innerHTML = obligations.map(ob => {
-        const dt = ob.dateTime ? new Date(ob.dateTime) : null;
-        const dateStr = dt ? dt.toLocaleDateString(I18N[lang].lang || 'hr-HR') : '—';
-        const timeStr = dt ? dt.toLocaleTimeString(I18N[lang].lang || 'hr-HR', { hour: '2-digit', minute: '2-digit' }) : '—';
-        
-        let reminderStr = '';
-        if (ob.reminder) {
-          const key = `reminder${ob.reminder}`;
-          reminderStr = I18N[lang].obligationsList[key] || `${ob.reminder} min`;
+    const bgColor = ob.status === 'done' ? '#e8f5e9' : '#e3f2fd';
+    const borderColor = ob.status === 'done' ? '#4caf50' : '#2196f3';
+
+    const toggleBtnText = ob.status === 'done'
+      ? I18N[lang].obligationsList.markActive
+      : I18N[lang].obligationsList.markDone;
+
+    return `
+      <div class="obligation-card" data-id="${ob.id}" style="background:${bgColor}; border-left:4px solid ${borderColor};">
+        <div class="obligation-title">${ob.title}</div>
+        ${ob.note ? `<div class="obligation-note">${ob.note}</div>` : ''}
+        <div class="obligation-meta">
+          <div class="obligation-date">📅 ${dateStr}</div>
+          <div class="obligation-time">⏰ ${timeStr}</div>
+          ${reminderStr ? `<div class="obligation-reminder">🔔 ${reminderStr}</div>` : ''}
+          <div class="obligation-status">${statusText}</div>
+        </div>
+        <button class="obligation-toggle-status" data-id="${ob.id}" data-status="${ob.status}">
+          ${toggleBtnText}
+        </button>
+        <button class="obligation-edit" data-id="${ob.id}">✏️ ${I18N[lang].obligationsList.edit}</button>
+        <button
+          class="obligation-delete"
+          data-id="${ob.id}"
+          title="${I18N[lang].obligationsList.delete || 'Obriši'}"
+          aria-label="${I18N[lang].obligationsList.delete || 'Obriši'}"
+        >
+          🗑️
+        </button>
+      </div>
+    `;
+  }
+
+  function attachObligationHandlers(container) {
+    const lang = getLang();
+
+    // PROMJENA STATUSA
+    container.querySelectorAll('.obligation-toggle-status').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const id = parseInt(btn.dataset.id, 10);
+        const currentStatus = btn.dataset.status;
+        const newStatus = currentStatus === 'done' ? 'active' : 'done';
+
+        try {
+          const obligations = await obligationDB.getAll();
+          const obligation = obligations.find(o => o.id === id);
+          if (obligation) {
+            obligation.status = newStatus;
+            await obligationDB.add(obligation);
+            refreshCurrentObligationsView();
+          }
+        } catch (err) {
+          console.error('Greška pri ažuriranju statusa:', err);
         }
-
-        const statusText = ob.status === 'done' 
-          ? `✅ ${I18N[lang].obligationsList.statusDone}`
-          : `⏳ ${I18N[lang].obligationsList.statusActive}`;
-
-        const bgColor = ob.status === 'done' ? '#e8f5e9' : '#e3f2fd';
-        const borderColor = ob.status === 'done' ? '#4caf50' : '#2196f3';
-
-        const toggleBtnText = ob.status === 'done' 
-          ? I18N[lang].obligationsList.markActive 
-          : I18N[lang].obligationsList.markDone;
-
-        return `
-          <div class="obligation-card" data-id="${ob.id}" style="background:${bgColor}; border-left:4px solid ${borderColor};">
-            <div class="obligation-title">${ob.title}</div>
-            ${ob.note ? `<div class="obligation-note">${ob.note}</div>` : ''}
-            <div class="obligation-meta">
-              <div class="obligation-date">📅 ${dateStr}</div>
-              <div class="obligation-time">⏰ ${timeStr}</div>
-              ${reminderStr ? `<div class="obligation-reminder">🔔 ${reminderStr}</div>` : ''}
-              <div class="obligation-status">${statusText}</div>
-            </div>
-            <button class="obligation-toggle-status" data-id="${ob.id}" data-status="${ob.status}">
-              ${toggleBtnText}
-            </button>
-            <button class="obligation-edit" data-id="${ob.id}">✏️ ${I18N[lang].obligationsList.edit}</button>
-            <button class="obligation-delete" data-id="${ob.id}">✕</button>
-          </div>
-        `;
-      }).join('');
-
-      // PROMJENA STATUSA
-      container.querySelectorAll('.obligation-toggle-status').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-          e.stopPropagation();
-          const id = parseInt(btn.dataset.id);
-          const currentStatus = btn.dataset.status;
-          const newStatus = currentStatus === 'done' ? 'active' : 'done';
-
-          try {
-            const obligations = await obligationDB.getAll();
-            const obligation = obligations.find(o => o.id === id);
-            if (obligation) {
-              obligation.status = newStatus;
-              await obligationDB.add(obligation);
-              renderObligationsList();
-            }
-          } catch (err) {
-            console.error('Greška pri ažuriranju statusa:', err);
-          }
-        });
       });
+    });
 
-      // UREĐIVANJE
-      container.querySelectorAll('.obligation-edit').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const id = parseInt(btn.dataset.id);
-          obligationDB.getAll().then(obligations => {
-            const ob = obligations.find(o => o.id === id);
-            if (ob) openEditForm(ob);
-          });
-        });
+    // UREĐIVANJE
+    container.querySelectorAll('.obligation-edit').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const id = parseInt(btn.dataset.id, 10);
+        const obligations = await obligationDB.getAll();
+        const ob = obligations.find(o => o.id === id);
+        if (ob) openEditForm(ob);
       });
+    });
 
-      // BRISANJE
-      container.querySelectorAll('.obligation-delete').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const id = parseInt(btn.dataset.id);
-          if (confirm(I18N[lang].obligationsList.deleteConfirm || 'Obrisati obvezu?')) {
-            obligationDB.delete(id).then(() => {
-              renderObligationsList();
-            });
-          }
-        });
+    // BRISANJE
+    container.querySelectorAll('.obligation-delete').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const id = parseInt(btn.dataset.id, 10);
+        const langNow = getLang();
+        if (confirm(I18N[langNow].obligationsList.deleteConfirm || 'Obrisati obvezu?')) {
+          await obligationDB.delete(id);
+          refreshCurrentObligationsView();
+        }
       });
     });
   }
 
-  // EVENT LISTENERS
-function showScreen(screenId) {
-  const screens = document.querySelectorAll('.screen');
-  const next = document.getElementById(screenId);
+  /* ===== LIST VIEW RENDER ===== */
+async function renderObligationsList() {
+  // ⛔ Ako smo u daily viewu, ne renderaj listu
+  if (viewMode === 'days') return;
 
-  screens.forEach(screen => {
-    screen.classList.remove('active');
+  const container = document.getElementById('obligationsContainer');
+  const lang = getLang();
+
+  const obligations = await obligationDB.getAll();
+
+  obligations.sort((a, b) => {
+    if (a.status !== b.status) return a.status === 'active' ? -1 : 1;
+    if (!a.dateTime) return 1;
+    if (!b.dateTime) return -1;
+    return new Date(b.dateTime) - new Date(a.dateTime);
   });
 
-  // mali timeout da browser uhvati transition
-  requestAnimationFrame(() => {
-    next.classList.add('active');
-  });
+  if (obligations.length === 0) {
+    container.innerHTML = `<div class="empty-list">${I18N[lang].obligationsList.noObligations}</div>`;
+    return;
+  }
+
+  container.innerHTML = obligations.map(ob => buildObligationCard(ob, lang)).join('');
+  attachObligationHandlers(container);
 }
+
+ /* ===== DAILY VIEW LOGIC ===== */
+let viewMode = 'list'; // 'list' | 'days'
+let currentDailyDate = todayISO();
+
+function showListMode() {
+  viewMode = 'list';
+
+  const dailyView = document.getElementById('dailyView');
+  const dailyDateBar = document.getElementById('dailyDateBar');
+  const list = document.getElementById('obligationsContainer');
+  const btn = document.getElementById('btnViewByDays');
+
+  if (dailyView) dailyView.classList.add('hidden');
+  if (dailyDateBar) dailyDateBar.classList.add('hidden');
+  if (list) list.classList.remove('hidden');
+
+  const lang = getLang();
+  if (btn) btn.textContent = I18N[lang].obligationsView.byDay;
+}
+
+function showDailyMode() {
+  viewMode = 'days';
+
+  const dailyView = document.getElementById('dailyView');
+  const dailyDateBar = document.getElementById('dailyDateBar');
+  const list = document.getElementById('obligationsContainer');
+  const btn = document.getElementById('btnViewByDays');
+
+  // KLJUČNO: lista mora biti skrivena
+  if (list) list.classList.add('hidden');
+  if (dailyView) dailyView.classList.remove('hidden');
+  if (dailyDateBar) dailyDateBar.classList.remove('hidden');
+
+  const lang = getLang();
+  if (btn) btn.textContent = I18N[lang].obligationsView.asList;
+}
+
+function groupObligationsByStatus(items) {
+  return {
+    open: items.filter(i => i.status !== 'done'),
+    done: items.filter(i => i.status === 'done')
+  };
+}
+
+  async function loadDailyForDate(isoDate) {
+    currentDailyDate = isoDate;
+
+    const picker = document.getElementById('dailyDatePicker');
+    if (picker && picker.value !== isoDate) picker.value = isoDate;
+
+    const lang = getLang();
+    const all = await obligationDB.getAll();
+
+    const filtered = all.filter(o => getISODateFromDateTime(o.dateTime) === isoDate);
+
+    const groups = groupObligationsByStatus(filtered);
+
+    const openWrap = document.getElementById('dailyOpenWrap');
+    const doneWrap = document.getElementById('dailyDoneWrap');
+
+    const emptyHtml = `<div class="empty-list">${I18N[lang].obligationsList.noObligations}</div>`;
+
+    // OPEN
+    if (groups.open.length === 0) {
+      openWrap.innerHTML = `<div class="empty-list">—</div>`;
+    } else {
+      openWrap.innerHTML = `
+        <div style="font-weight:800; margin:8px 0;">Aktivne (${groups.open.length})</div>
+        ${groups.open.map(ob => buildObligationCard(ob, lang)).join('')}
+      `;
+      attachObligationHandlers(openWrap);
+    }
+
+    // DONE
+    if (groups.done.length === 0) {
+      doneWrap.innerHTML = `<div class="empty-list">—</div>`;
+    } else {
+      doneWrap.innerHTML = `
+        <div style="font-weight:800; margin:8px 0;">Završene (${groups.done.length})</div>
+        ${groups.done.map(ob => buildObligationCard(ob, lang)).join('')}
+      `;
+      attachObligationHandlers(doneWrap);
+    }
+
+    // Ako baš ništa nema za taj dan
+    if (groups.open.length === 0 && groups.done.length === 0) {
+      openWrap.innerHTML = emptyHtml;
+      doneWrap.innerHTML = '';
+    }
+  }
+
+  function refreshCurrentObligationsView() {
+    if (viewMode === 'days') {
+      loadDailyForDate(currentDailyDate);
+    } else {
+      renderObligationsList();
+    }
+  }
+
+  /* ===== INIT ===== */
   document.addEventListener('DOMContentLoaded', () => {
     // JEZICI
     document.querySelectorAll('.lang-btn').forEach(btn => {
@@ -301,17 +444,15 @@ function showScreen(screenId) {
 
     // BACK - MENU
     document.getElementById('backMenu').addEventListener('click', () => {
-      document.getElementById('screen-menu').classList.remove('active');
-      document.getElementById('screen-lang').classList.add('active');
-      document.querySelectorAll('.menu-item').forEach(item => {
-        item.classList.remove('animate');
-      });
+      showScreen('screen-lang');
+      document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('animate'));
     });
 
     // POPUP OBVEZE
     document.getElementById('btnObligations').addEventListener('click', () => {
       const popup = document.getElementById('obligationsPopup');
-      const lang = localStorage.getItem('userLang') || 'hr';
+      const lang = getLang();
+      document.getElementById('btnViewByDays').textContent = I18N[lang].obligationsView.byDay;
       document.getElementById('btnAddObligation').textContent = I18N[lang].menu.addObligation;
       document.getElementById('btnShopping').textContent = I18N[lang].menu.shopping;
       document.getElementById('btnViewObligations').textContent = I18N[lang].menu.viewObligations;
@@ -335,10 +476,9 @@ function showScreen(screenId) {
       popup.classList.remove('animate');
       setTimeout(() => popup.style.display = 'none', 300);
 
-      document.getElementById('screen-menu').classList.remove('active');
-      document.getElementById('screen-add-obligation').classList.add('active');
+      showScreen('screen-add-obligation');
 
-      const lang = localStorage.getItem('userLang') || 'hr';
+      const lang = getLang();
       document.getElementById('obligationTitle').placeholder = I18N[lang].obligation.title;
       document.getElementById('obligationNote').placeholder = I18N[lang].obligation.note;
       document.getElementById('obligationDateTimeLabel').textContent = I18N[lang].obligation.dateTime;
@@ -350,17 +490,15 @@ function showScreen(screenId) {
 
     // BACK IZ FORME
     document.getElementById('backToAddObligation').addEventListener('click', () => {
-      document.getElementById('screen-add-obligation').classList.remove('active');
-      document.getElementById('screen-menu').classList.add('active');
+      showScreen('screen-menu');
     });
 
     // PODSJETNIK
     document.getElementById('enableReminder').addEventListener('change', (e) => {
-      const options = document.getElementById('reminderOptions');
-      options.classList.toggle('hidden', !e.target.checked);
+      document.getElementById('reminderOptions').classList.toggle('hidden', !e.target.checked);
     });
 
-    // SPREMI ILI AŽURIRAJ
+    // SPREMI ILI AŽURIRAJ (FIX: edit čuva status/createdAt)
     document.getElementById('saveObligation').addEventListener('click', async () => {
       const title = document.getElementById('obligationTitle').value.trim();
       if (!title) {
@@ -368,24 +506,38 @@ function showScreen(screenId) {
         return;
       }
 
-      const isEdit = document.getElementById('saveObligation').dataset.editId;
-      const obligation = {
-        id: isEdit ? parseInt(isEdit) : Date.now(),
-        title: title,
-        note: document.getElementById('obligationNote').value,
-        dateTime: document.getElementById('obligationDateTime').value,
-        reminder: document.getElementById('enableReminder').checked
-          ? document.getElementById('reminderTime').value
-          : null,
-        status: isEdit ? null : 'active',
-        createdAt: isEdit ? null : new Date().toISOString(),
-        lang: localStorage.getItem('userLang') || 'hr'
-      };
+      const editIdStr = document.getElementById('saveObligation').dataset.editId;
+      const isEdit = !!editIdStr;
+      const editId = isEdit ? parseInt(editIdStr, 10) : null;
+
+      const lang = getLang();
 
       try {
+        let existing = null;
+        if (isEdit) {
+          const all = await obligationDB.getAll();
+          existing = all.find(o => o.id === editId) || null;
+        }
+
+        const obligation = {
+          id: isEdit ? editId : Date.now(),
+          title: title,
+          note: document.getElementById('obligationNote').value,
+          dateTime: document.getElementById('obligationDateTime').value,
+          reminder: document.getElementById('enableReminder').checked
+            ? document.getElementById('reminderTime').value
+            : null,
+
+          // FIX: kod edit-a zadrži status/createdAt
+          status: isEdit ? (existing?.status || 'active') : 'active',
+          createdAt: isEdit ? (existing?.createdAt || new Date().toISOString()) : new Date().toISOString(),
+          lang: lang
+        };
+
         await obligationDB.add(obligation);
+
         alert(isEdit ? 'Obveza ažurirana!' : 'Obveza spremljena!');
-        
+
         // Reset forma
         document.getElementById('obligationTitle').value = '';
         document.getElementById('obligationNote').value = '';
@@ -395,26 +547,29 @@ function showScreen(screenId) {
         document.getElementById('saveObligation').removeAttribute('data-edit-id');
 
         // Povratak
-        document.getElementById('screen-add-obligation').classList.remove('active');
         if (isEdit) {
-          document.getElementById('screen-obligations-list').classList.add('active');
-          renderObligationsList();
+          showScreen('screen-obligations-list');
+          refreshCurrentObligationsView();
         } else {
-          document.getElementById('screen-menu').classList.add('active');
+          showScreen('screen-menu');
         }
       } catch (err) {
+        console.error(err);
         alert('Greška pri spremanju!');
       }
     });
 
     // ODUSTANI
     document.getElementById('cancelObligation').addEventListener('click', () => {
-      document.getElementById('screen-add-obligation').classList.remove('active');
-      if (document.getElementById('saveObligation').dataset.editId) {
-        document.getElementById('screen-obligations-list').classList.add('active');
-        document.getElementById('saveObligation').removeAttribute('data-edit-id');
+      const isEdit = !!document.getElementById('saveObligation').dataset.editId;
+
+      document.getElementById('saveObligation').removeAttribute('data-edit-id');
+
+      if (isEdit) {
+        showScreen('screen-obligations-list');
+        refreshCurrentObligationsView();
       } else {
-        document.getElementById('screen-menu').classList.add('active');
+        showScreen('screen-menu');
       }
     });
 
@@ -423,34 +578,52 @@ function showScreen(screenId) {
       const popup = document.getElementById('obligationsPopup');
       popup.classList.remove('animate');
       setTimeout(() => popup.style.display = 'none', 300);
-      document.getElementById('screen-menu').classList.remove('active');
-      document.getElementById('screen-obligations-list').classList.add('active');
+
+      showScreen('screen-obligations-list');
+
+      // reset na list mode kad uđeš
+      showListMode();
       renderObligationsList();
     });
 
     // BACK IZ LISTE
     document.getElementById('backToObligationsList').addEventListener('click', () => {
-      document.getElementById('screen-obligations-list').classList.remove('active');
-      document.getElementById('screen-menu').classList.add('active');
+      showScreen('screen-menu');
     });
-// ===== PREGLED PO DANIMA =====
-let viewMode = 'list';
 
-const btnViewByDays = document.getElementById('btnViewByDays');
+    // ===== PREGLED PO DANIMA (toggle) =====
+    const btnViewByDays = document.getElementById('btnViewByDays');
+    const dailyBackBtn = document.getElementById('dailyBackBtn');
+    const dailyDatePicker = document.getElementById('dailyDatePicker');
 
-if (btnViewByDays) {
-  btnViewByDays.addEventListener('click', () => {
-    if (viewMode === 'list') {
-      viewMode = 'days';
-      btnViewByDays.textContent = '📋 Pregled kao lista';
-      alert('Pregled po danima – uskoro 😉');
-    } else {
-      viewMode = 'list';
-      btnViewByDays.textContent = '📆 Pregled po danima';
-      renderObligationsList();
+    if (dailyDatePicker) {
+      dailyDatePicker.value = todayISO();
+      currentDailyDate = dailyDatePicker.value;
+
+      dailyDatePicker.addEventListener('change', () => {
+  if (viewMode !== 'days') return;
+  loadDailyForDate(dailyDatePicker.value);
+});
     }
-  });
-}
+
+    if (dailyBackBtn) {
+      dailyBackBtn.addEventListener('click', () => {
+        showListMode();
+      });
+    }
+
+    if (btnViewByDays) {
+      btnViewByDays.addEventListener('click', async () => {
+        if (viewMode === 'list') {
+          showDailyMode();
+          await loadDailyForDate(currentDailyDate || todayISO());
+        } else {
+          showListMode();
+          await renderObligationsList();
+        }
+      });
+    }
+
     // PROVJERA
     obligationDB.getAll().then(obligations => {
       console.log('Učitane obveze iz IndexedDB:', obligations);

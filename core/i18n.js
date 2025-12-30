@@ -35,7 +35,12 @@ const I18N = {
       reminder60: "1 sat prije",
       reminder120: "2 sata prije",
       reminder1440: "1 dan prije"
-    }
+    },
+    obligationsView: {
+      byDay: "📆 Pregled po danima",
+      asList: "📋 Pregled kao lista",
+      selectDate: "Odaberi datum"
+}
   },
   en: {
     menu: {
@@ -72,7 +77,12 @@ const I18N = {
       reminder60: "1 hour before",
       reminder120: "2 hours before",
       reminder1440: "1 day before"
-    }
+    },
+    obligationsView: {
+      byDay: "📆 View by day",
+      asList: "📋 View as list",
+      selectDate: "Select date"
+}
   },
   de: {
     menu: {
@@ -109,7 +119,12 @@ const I18N = {
       reminder60: "1 Std. vorher",
       reminder120: "2 Std. vorher",
       reminder1440: "1 Tag vorher"
-    }
+    },
+    obligationsView: {
+      byDay: "📆 Nach Tagen",
+      asList: "📋 Als Liste anzeigen",
+      selectDate: "Datum auswählen"
+}
   },
   ru: {
     menu: {
@@ -146,7 +161,12 @@ const I18N = {
       reminder60: "За 1 час",
       reminder120: "За 2 часа",
       reminder1440: "За 1 день"
-    }
+    },
+    obligationsView: {
+      byDay: "📆 По дням",
+      asList: "📋 Список",
+      selectDate: "Выберите дату"
+}
   },
   pt: {
     menu: {
@@ -183,7 +203,12 @@ const I18N = {
       reminder60: "1 hora antes",
       reminder120: "2 horas antes",
       reminder1440: "1 dia antes"
-    }
+    },
+    obligationsView: {
+    byDay: "📆 Ver por dia",
+    asList: "📋 Ver como lista",
+    selectDate: "Selecionar data"
+}
   },
   tr: {
     menu: {
@@ -220,7 +245,12 @@ const I18N = {
       reminder60: "1 saat önce",
       reminder120: "2 saat önce",
       reminder1440: "1 gün önce"
-    }
+    },
+    obligationsView: {
+    byDay: "📆 Güne göre",
+    asList: "📋 Liste olarak",
+    selectDate: "Tarih seç"
+}
   },
   zh: {
     menu: {
@@ -257,7 +287,12 @@ const I18N = {
       reminder60: "提前1小时",
       reminder120: "提前2小时",
       reminder1440: "提前1天"
-    }
+    },
+    obligationsView: {
+      byDay: "📆 按日期查看",
+      asList: "📋 列表视图",
+      selectDate: "选择日期"
+}
   },
   ja: {
     menu: {
@@ -294,7 +329,12 @@ const I18N = {
       reminder60: "1時間前",
       reminder120: "2時間前",
       reminder1440: "1日前"
-    }
+    },
+    obligationsView: {
+      byDay: "📆 日別表示",
+      asList: "📋 リスト表示",
+      selectDate: "日付を選択"
+   }
   }
 };
 

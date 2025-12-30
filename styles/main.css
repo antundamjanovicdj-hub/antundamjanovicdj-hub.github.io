@@ -323,7 +323,7 @@ html, body {
 }
 
 .hidden {
-  display: none;
+  display: none !important;
 }
 /* ===== PREGLED OBVEZA ===== */
 #screen-obligations-list {
@@ -483,4 +483,16 @@ html, body {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
+}
+#dateFilter {
+  margin: 10px 0 16px;
+  display: flex;
+  justify-content: center;
+}
+
+#dateFilter input {
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
 }

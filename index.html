@@ -100,16 +100,20 @@
   </div>
 
   <!-- EKRAN: PREGLED OBVEZA -->
-  <div id="screen-obligations-list" class="screen">
-    <button class="back" id="backToObligationsList">←</button>
-    <div class="obligations-header">
-      <h2 id="obligationsTitle">Moje obveze</h2>
-      <p id="obligationsCount">Ukupno: 0</p>
-    </div>
-    <div id="obligationsContainer" class="obligations-list">
-      <!-- Obveze će se pojaviti ovdje -->
-    </div>
+<div id="screen-obligations-list" class="screen">
+  <button class="back" id="backToObligationsList">←</button>
+
+  <!-- GUMB: PREGLED PO DANIMA -->
+  <div class="obligations-toolbar">
+    <button id="btnViewByDays" class="toolbar-btn">
+      📆 Pregled po danima
+    </button>
   </div>
+
+  <div id="obligationsContainer" class="obligations-list">
+    <!-- Obveze će se pojaviti ovdje -->
+  </div>
+</div>
 
 </div> <!-- .app -->
 
@@ -175,9 +179,7 @@
         return new Date(b.dateTime) - new Date(a.dateTime);
       });
 
-      document.getElementById('obligationsTitle').textContent = I18N[lang].obligationsList.title;
-      document.getElementById('obligationsCount').textContent = 
-        `${I18N[lang].obligationsList.total}: ${obligations.length}`;
+      
 
       if (obligations.length === 0) {
         container.innerHTML = `<div class="empty-list">${I18N[lang].obligationsList.noObligations}</div>`;
@@ -275,6 +277,19 @@
   }
 
   // EVENT LISTENERS
+function showScreen(screenId) {
+  const screens = document.querySelectorAll('.screen');
+  const next = document.getElementById(screenId);
+
+  screens.forEach(screen => {
+    screen.classList.remove('active');
+  });
+
+  // mali timeout da browser uhvati transition
+  requestAnimationFrame(() => {
+    next.classList.add('active');
+  });
+}
   document.addEventListener('DOMContentLoaded', () => {
     // JEZICI
     document.querySelectorAll('.lang-btn').forEach(btn => {
@@ -418,7 +433,24 @@
       document.getElementById('screen-obligations-list').classList.remove('active');
       document.getElementById('screen-menu').classList.add('active');
     });
+// ===== PREGLED PO DANIMA =====
+let viewMode = 'list';
 
+const btnViewByDays = document.getElementById('btnViewByDays');
+
+if (btnViewByDays) {
+  btnViewByDays.addEventListener('click', () => {
+    if (viewMode === 'list') {
+      viewMode = 'days';
+      btnViewByDays.textContent = '📋 Pregled kao lista';
+      alert('Pregled po danima – uskoro 😉');
+    } else {
+      viewMode = 'list';
+      btnViewByDays.textContent = '📆 Pregled po danima';
+      renderObligationsList();
+    }
+  });
+}
     // PROVJERA
     obligationDB.getAll().then(obligations => {
       console.log('Učitane obveze iz IndexedDB:', obligations);

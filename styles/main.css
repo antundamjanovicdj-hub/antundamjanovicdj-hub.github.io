@@ -13,9 +13,7 @@ html, body {
 .app {
   width: 100%;
   height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  position: relative;
 }
 
 /* ===== EKRANI ===== */
@@ -141,7 +139,7 @@ html, body {
   font-family: 'Caveat', cursive;
   font-size: 1.4rem;
   font-weight: 700;
-  background: white;
+  background: #ffcc80; /* ISTA BOJA KAO POPUP */
   color: #0d3b25;
   cursor: pointer;
   text-align: center;
@@ -153,6 +151,10 @@ html, body {
   gap: 10px;
   transform: translateX(100%);
   opacity: 0;
+}
+.menu-item:hover {
+  background: #ffd9a6;
+  transform: scale(1.04);
 }
 
 .menu-item.animate {
@@ -327,6 +329,8 @@ html, body {
 #screen-obligations-list {
   padding: 20px;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .obligations-header {
@@ -441,4 +445,42 @@ html, body {
 
 .obligation-toggle-status:hover {
   background: #0a4a27;
+}
+/* ===== TOOLBAR IZNAD OBVEZA ===== */
+.obligations-toolbar {
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.toolbar-btn {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 16px;
+  background: #ffcc80; /* ista boja kao ostali akcijski gumbi */
+  color: #0d3b25;
+  font-family: 'Caveat', cursive;
+  font-size: 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  transition: all 0.2s ease;
+}
+
+.toolbar-btn:hover {
+  background: #ffd9a6;
+  transform: scale(1.04);
+}
+/* ===== STACK NAVIGATION ANIMATION ===== */
+.screen {
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 180ms ease-out, transform 180ms ease-out;
+  pointer-events: none;
+}
+
+.screen.active {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
 }

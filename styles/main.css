@@ -499,6 +499,9 @@ html, body {
 /* Shopping screen */
 #screen-shopping {
   padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
 }
 
 #screen-shopping .screen-title {
@@ -511,6 +514,7 @@ html, body {
   background: inherit;
   padding: 8px 0 12px;
   z-index: 2;
+  width: 100%;
 }
 
 #shoppingInput {
@@ -525,6 +529,10 @@ html, body {
   list-style: none;
   padding: 0;
   margin: 0;
+}
+.shopping-list {
+  width: 100%;
+  flex-grow: 1;
 }
 
 .empty-state {
@@ -549,4 +557,48 @@ html, body {
 .empty-sub {
   opacity: 0.85;
   font-size: 14px;
+}
+/* Shopping item checked state */
+.shopping-item {
+  padding: 12px 8px;
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+  cursor: pointer;
+}
+
+.shopping-item.checked {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+/* Ensure empty state never blocks clicks */
+#shoppingEmpty {
+  pointer-events: none;
+}
+/* Hint that long-press / right-click deletes */
+.shopping-item {
+  user-select: none;
+}
+
+.shopping-item.checked::after {
+  content: ' ✕';
+  opacity: 0.4;
+}
+/* Archive toggle */
+.archive-toggle {
+  margin: 8px 0 12px;
+  background: none;
+  border: none;
+  color: inherit;
+  opacity: 0.7;
+  font-size: 14px;
+  cursor: pointer;
+  align-self: center;
+}
+.archive-toggle {
+  margin: 8px 0 12px;
+  background: none;
+  border: none;
+  color: inherit;
+  opacity: 0.7;
+  font-size: 14px;
+  cursor: pointer;
 }

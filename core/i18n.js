@@ -11,6 +11,14 @@ const I18N = {
       addObligation: "➕ Dodaj obvezu",
       viewObligations: "📅 Pregled obveza"
     },
+shopping: {
+  title: "🛒 Kupovina",
+  placeholder: "Dodaj stavku i stisni Enter",
+  emptyTitle: "Nema stavki",
+  emptySub: "Dodaj prvu stavku gore.",
+  showArchive: "Prikaži arhivu",
+  hideArchive: "Sakrij arhivu"
+},
     obligation: {
       title: "Naslov obveze",
       note: "Napomena",
@@ -53,6 +61,14 @@ const I18N = {
       addObligation: "➕ Add obligation",
       viewObligations: "📅 View obligations"
     },
+shopping: {
+  title: "🛒 Shopping",
+  placeholder: "Add item and press Enter",
+  emptyTitle: "No items",
+  emptySub: "Add your first item above.",
+  showArchive: "Show archive",
+  hideArchive: "Hide archive"
+},
     obligation: {
       title: "Title",
       note: "Note",
@@ -95,6 +111,14 @@ const I18N = {
       addObligation: "➕ Verpflichtung hinzufügen",
       viewObligations: "📅 Verpflichtungen anzeigen"
     },
+shopping: {
+  title: "🛒 Einkaufen",
+  placeholder: "Artikel eingeben und Enter drücken",
+  emptyTitle: "Keine Einträge",
+  emptySub: "Füge oben einen Eintrag hinzu.",
+  showArchive: "Archiv anzeigen",
+  hideArchive: "Archiv ausblenden"
+},
     obligation: {
       title: "Titel",
       note: "Notiz",
@@ -137,6 +161,14 @@ const I18N = {
       addObligation: "➕ Добавить обязанность",
       viewObligations: "📅 Просмотр обязанностей"
     },
+shopping: {
+  title: "🛒 Покупки",
+  placeholder: "Добавьте товар и нажмите Enter",
+  emptyTitle: "Нет товаров",
+  emptySub: "Добавьте первый товар выше.",
+  showArchive: "Показать архив",
+  hideArchive: "Скрыть архив"
+},
     obligation: {
       title: "Название",
       note: "Заметка",
@@ -179,6 +211,14 @@ const I18N = {
       addObligation: "➕ Adicionar obrigação",
       viewObligations: "📅 Ver obrigações"
     },
+shopping: {
+  title: "🛒 Compras",
+  placeholder: "Adicione item e pressione Enter",
+  emptyTitle: "Sem itens",
+  emptySub: "Adicione o primeiro item acima.",
+  showArchive: "Mostrar arquivo",
+  hideArchive: "Ocultar arquivo"
+},
     obligation: {
       title: "Título",
       note: "Nota",
@@ -221,6 +261,14 @@ const I18N = {
       addObligation: "➕ Yükümlülük ekle",
       viewObligations: "📅 Yükümlülükleri görüntüle"
     },
+shopping: {
+  title: "🛒 Alışveriş",
+  placeholder: "Öğe ekle ve Enter'a bas",
+  emptyTitle: "Öğe yok",
+  emptySub: "Yukarıdan ilk öğeyi ekle.",
+  showArchive: "Arşivi göster",
+  hideArchive: "Arşivi gizle"
+},
     obligation: {
       title: "Başlık",
       note: "Not",
@@ -263,6 +311,14 @@ const I18N = {
       addObligation: "➕ 添加义务",
       viewObligations: "📅 查看义务"
     },
+shopping: {
+  title: "🛒 购物",
+  placeholder: "添加项目并按 Enter",
+  emptyTitle: "没有项目",
+  emptySub: "在上方添加第一个项目。",
+  showArchive: "显示存档",
+  hideArchive: "隐藏存档"
+},
     obligation: {
       title: "标题",
       note: "备注",
@@ -305,6 +361,14 @@ const I18N = {
       addObligation: "➕ 義務を追加",
       viewObligations: "📅 義務を表示"
     },
+shopping: {
+  title: "🛒 買い物",
+  placeholder: "項目を追加してEnter",
+  emptyTitle: "項目なし",
+  emptySub: "上で最初の項目を追加。",
+  showArchive: "アーカイブ表示",
+  hideArchive: "アーカイブ非表示"
+},
     obligation: {
       title: "タイトル",
       note: "メモ",

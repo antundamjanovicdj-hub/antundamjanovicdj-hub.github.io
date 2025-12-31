@@ -66,3 +66,22 @@ class ObligationDB {
 }
 
 const obligationDB = new ObligationDB();
+// ===== SHOPPING (IndexedDB) =====
+
+function addShoppingItem(item) {
+  item.type = 'shopping';
+  return obligationDB.add(item);
+}
+
+function getShoppingItems() {
+  return obligationDB.getAll().then(items =>
+    items.filter(item => item.type === 'shopping')
+  );
+}
+
+function updateShoppingItem(item) {
+  return obligationDB.put(item);
+}
+function deleteShoppingItem(id) {
+  return obligationDB.delete(id);
+}

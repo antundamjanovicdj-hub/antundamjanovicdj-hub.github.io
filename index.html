@@ -66,24 +66,27 @@
   <h2 class="screen-title" id="shoppingTitle">🛒 Kupovina</h2>
 
   <div class="shopping-addbar">
-    <input
-      id="shoppingInput"
-      type="text"
-      autocomplete="off"
-      inputmode="text"
-      placeholder="Dodaj stavku i stisni Enter"
-    />
-  </div>
+  <input
+    id="shoppingInput"
+    type="text"
+    autocomplete="off"
+    inputmode="text"
+    placeholder="Dodaj stavku i stisni Enter"
+  />
+</div>
 
-  <div id="shoppingEmpty" class="empty-state">
-    <div class="empty-emoji">🛒</div>
-    <div class="empty-title" id="shoppingEmptyTitle">Nema stavki</div>
-    <div class="empty-sub" id="shoppingEmptySub">
-      Dodaj prvu stavku gore.
-    </div>
-  </div>
+<ul id="shoppingList" class="shopping-list"></ul>
 
-  <ul id="shoppingList" class="shopping-list"></ul>
+<button id="toggleArchive" class="archive-toggle">
+  Prikaži arhivu
+</button>
+
+<div id="shoppingEmpty" class="empty-state">
+  <div class="empty-emoji">🛒</div>
+  <div class="empty-title" id="shoppingEmptyTitle">Nema stavki</div>
+  <div class="empty-sub" id="shoppingEmptySub">
+    Dodaj prvu stavku gore.
+  </div>
 </div>
 
   <!-- POPUP ZA OBVEZE -->
@@ -359,6 +362,55 @@ async function renderObligationsList() {
   container.innerHTML = obligations.map(ob => buildObligationCard(ob, lang)).join('');
   attachObligationHandlers(container);
 }
+/* ===== SHOPPING (IndexedDB + Archive) ===== */
+
+let shoppingItems = [];
+let showArchivedShopping = false;
+
+function renderShoppingList() {
+  const list = document.getElementById('shoppingList');
+  const empty = document.getElementById('shoppingEmpty');
+
+  if (!list || !empty) return;
+
+  list.innerHTML = '';
+
+  const visibleItems = showArchivedShopping
+    ? shoppingItems
+    : shoppingItems.filter(item => !item.checked);
+
+  if (visibleItems.length === 0) {
+    empty.style.display = 'block';
+    return;
+  }
+
+  empty.style.display = 'none';
+
+  visibleItems.forEach(item => {
+    const li = document.createElement('li');
+    li.textContent = item.title;
+    li.className = 'shopping-item';
+
+    if (item.checked) {
+      li.classList.add('checked');
+    }
+
+    li.addEventListener('click', () => {
+      item.checked = !item.checked;
+      renderShoppingList();
+      updateShoppingItem(item);
+    });
+
+    li.addEventListener('contextmenu', e => {
+      e.preventDefault();
+      shoppingItems = shoppingItems.filter(i => i.id !== item.id);
+      renderShoppingList();
+      deleteShoppingItem(item.id);
+    });
+
+    list.appendChild(li);
+  });
+}
 
  /* ===== DAILY VIEW LOGIC ===== */
 let viewMode = 'list'; // 'list' | 'days'
@@ -482,18 +534,72 @@ document.addEventListener('DOMContentLoaded', () => {
     showScreen('screen-menu');
   });
 
-  // SHOPPING BUTTON
-document.getElementById('btnShopping').addEventListener('click', () => {
+  // SHOPPING BUTTON (open + load + focus)
+document.getElementById('btnShopping').addEventListener('click', async () => {
+  const lang = getLang();
+
   showScreen('screen-shopping');
 
-  // auto-focus na input (ultra-brzi add)
-  const input = document.getElementById('shoppingInput');
-  if (input) {
-    setTimeout(() => {
-      input.focus();
-    }, 0);
-  }
+  document.getElementById('shoppingTitle').textContent = I18N[lang].shopping.title;
+  document.getElementById('shoppingInput').placeholder = I18N[lang].shopping.placeholder;
+  document.getElementById('shoppingEmptyTitle').textContent = I18N[lang].shopping.emptyTitle;
+  document.getElementById('shoppingEmptySub').textContent = I18N[lang].shopping.emptySub;
+
+  const toggleBtn = document.getElementById('toggleArchive');
+  toggleBtn.textContent = showArchivedShopping
+    ? I18N[lang].shopping.hideArchive
+    : I18N[lang].shopping.showArchive;
+
+  shoppingItems = await getShoppingItems();
+  renderShoppingList();
+
+  setTimeout(() => document.getElementById('shoppingInput').focus(), 0);
 });
+// SHOPPING INPUT - Enter to add item
+const shoppingInput = document.getElementById('shoppingInput');
+const shoppingList = document.getElementById('shoppingList');
+const shoppingEmpty = document.getElementById('shoppingEmpty');
+
+if (shoppingInput) {
+  shoppingInput.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+
+    const title = shoppingInput.value.trim();
+    if (!title) return;
+
+    const item = {
+  id: crypto.randomUUID(),
+  title,
+  checked: false,
+  createdAt: Date.now(),
+};
+
+shoppingItems.push(item);
+renderShoppingList();
+
+// save to DB
+addShoppingItem(item);
+
+    shoppingInput.value = '';
+    shoppingInput.focus();
+    });
+  }
+
+ // ARCHIVE TOGGLE (show / hide checked items)
+  const toggleArchiveBtn = document.getElementById('toggleArchive');
+
+  if (toggleArchiveBtn) {
+    toggleArchiveBtn.addEventListener('click', () => {
+      showArchivedShopping = !showArchivedShopping;
+
+     const lang = getLang();
+toggleArchiveBtn.textContent = showArchivedShopping
+  ? I18N[lang].shopping.hideArchive
+  : I18N[lang].shopping.showArchive;
+
+      renderShoppingList();
+    });
+  }
 
   // POPUP OBVEZE
   document.getElementById('btnObligations').addEventListener('click', () => {

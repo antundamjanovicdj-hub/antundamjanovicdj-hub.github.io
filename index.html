@@ -387,31 +387,51 @@ function renderShoppingList() {
   empty.style.display = 'none';
 
   visibleItems.forEach(item => {
-    const li = document.createElement('li');
-    li.textContent = item.title;
-    li.className = 'shopping-item';
+  const li = document.createElement('li');
+  li.textContent = item.title;
+  li.className = 'shopping-item';
 
-    if (item.checked) {
-      li.classList.add('checked');
-    }
+  if (item.checked) {
+    li.classList.add('checked');
+  }
 
-    li.addEventListener('click', () => {
-      item.checked = !item.checked;
-      renderShoppingList();
-      updateShoppingItem(item);
-    });
+  // tap / click = check
+  li.addEventListener('click', () => {
+    item.checked = !item.checked;
+    renderShoppingList();
+    updateShoppingItem(item);
+  });
 
-    li.addEventListener('contextmenu', e => {
-      e.preventDefault();
+  // ===== MOBILE: long-press delete =====
+  let pressTimer = null;
+
+  li.addEventListener('touchstart', () => {
+    pressTimer = setTimeout(() => {
       shoppingItems = shoppingItems.filter(i => i.id !== item.id);
       renderShoppingList();
       deleteShoppingItem(item.id);
-    });
-
-    list.appendChild(li);
+    }, 600);
   });
-}
 
+  li.addEventListener('touchend', () => {
+    clearTimeout(pressTimer);
+  });
+
+  li.addEventListener('touchmove', () => {
+    clearTimeout(pressTimer);
+  });
+
+  // ===== DESKTOP: right-click delete =====
+  li.addEventListener('contextmenu', e => {
+    e.preventDefault();
+    shoppingItems = shoppingItems.filter(i => i.id !== item.id);
+    renderShoppingList();
+    deleteShoppingItem(item.id);
+  });
+
+  list.appendChild(li);
+});
+}
  /* ===== DAILY VIEW LOGIC ===== */
 let viewMode = 'list'; // 'list' | 'days'
 let currentDailyDate = todayISO();

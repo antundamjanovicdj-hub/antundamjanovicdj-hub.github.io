@@ -523,6 +523,7 @@ html, body {
   padding: 12px 12px;
   border-radius: 12px;
   border: 1px solid rgba(0,0,0,0.15);
+  text-align: center;
 }
 
 .shopping-list {

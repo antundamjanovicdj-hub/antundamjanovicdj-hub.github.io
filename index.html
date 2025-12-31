@@ -459,22 +459,48 @@ function groupObligationsByStatus(items) {
     }
   }
 
-  /* ===== INIT ===== */
-  document.addEventListener('DOMContentLoaded', () => {
-    // JEZICI
-    document.querySelectorAll('.lang-btn').forEach(btn => {
-      btn.addEventListener('click', e => {
-        e.preventDefault();
-        setLanguage(btn.dataset.lang);
-      });
-    });
+ /* ===== INIT ===== */
+document.addEventListener('DOMContentLoaded', () => {
 
-    // BACK - MENU
-    document.getElementById('backMenu').addEventListener('click', () => {
-      showScreen('screen-lang');
-      document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('animate'));
+  // JEZICI
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      setLanguage(btn.dataset.lang);
     });
-    document.getElementById('backShopping').addEventListener('click', goBack);
+  });
+
+  // BACK - MENU
+  document.getElementById('backMenu').addEventListener('click', () => {
+    showScreen('screen-lang');
+    document.querySelectorAll('.menu-item')
+      .forEach(item => item.classList.remove('animate'));
+  });
+
+  // BACK - SHOPPING
+  document.getElementById('backShopping').addEventListener('click', () => {
+    showScreen('screen-menu');
+  });
+
+  // SHOPPING BUTTON
+document.getElementById('btnShopping').addEventListener('click', () => {
+  showScreen('screen-shopping');
+
+  // auto-focus na input (ultra-brzi add)
+  const input = document.getElementById('shoppingInput');
+  if (input) {
+    setTimeout(() => {
+      input.focus();
+    }, 0);
+  }
+});
+
+  // POPUP OBVEZE
+  document.getElementById('btnObligations').addEventListener('click', () => {
+    // postojeći kod
+  });
+
+});
     // POPUP OBVEZE
     document.getElementById('btnObligations').addEventListener('click', () => {
       const popup = document.getElementById('obligationsPopup');
@@ -654,7 +680,6 @@ function groupObligationsByStatus(items) {
     obligationDB.getAll().then(obligations => {
       console.log('Učitane obveze iz IndexedDB:', obligations);
     });
-  });
 </script>
 
 </body>

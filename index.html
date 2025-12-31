@@ -52,18 +52,44 @@
     <button class="back" id="backMenu">←</button>
     <div class="main-menu-buttons">
       <button class="menu-item" id="btnObligations">🧭 Obveze</button>
+      <button class="menu-item" id="btnShopping">🛒 Kupovina</button>
       <button class="menu-item" id="btnContacts">👥 Kontakti</button>
       <button class="menu-item" id="btnFinances">💰 Financije</button>
       <button class="menu-item" id="btnHealth">❤️ Zdravlje</button>
       <button class="menu-item" id="btnDiary">📓 Dnevnik</button>
     </div>
   </div>
+<!-- SHOPPING SCREEN -->
+<div id="screen-shopping" class="screen">
+  <button class="back" id="backShopping">←</button>
+
+  <h2 class="screen-title" id="shoppingTitle">🛒 Kupovina</h2>
+
+  <div class="shopping-addbar">
+    <input
+      id="shoppingInput"
+      type="text"
+      autocomplete="off"
+      inputmode="text"
+      placeholder="Dodaj stavku i stisni Enter"
+    />
+  </div>
+
+  <div id="shoppingEmpty" class="empty-state">
+    <div class="empty-emoji">🛒</div>
+    <div class="empty-title" id="shoppingEmptyTitle">Nema stavki</div>
+    <div class="empty-sub" id="shoppingEmptySub">
+      Dodaj prvu stavku gore.
+    </div>
+  </div>
+
+  <ul id="shoppingList" class="shopping-list"></ul>
+</div>
 
   <!-- POPUP ZA OBVEZE -->
   <div id="obligationsPopup" class="popup-balloon">
     <div class="balloon-content">
       <button class="balloon-btn" id="btnAddObligation">➕ Dodaj obvezu</button>
-      <button class="balloon-btn" id="btnShopping">🛒 Kupovina</button>
       <button class="balloon-btn" id="btnViewObligations">📅 Pregled obveza</button>
     </div>
   </div>
@@ -176,6 +202,7 @@
     }
 
     document.getElementById('btnObligations').textContent = I18N[lang].menu.obligations;
+    document.getElementById('btnShopping').textContent = I18N[lang].menu.shopping;
     document.getElementById('btnContacts').textContent = I18N[lang].menu.contacts;
     document.getElementById('btnFinances').textContent = I18N[lang].menu.finances;
     document.getElementById('btnHealth').textContent = I18N[lang].menu.health;
@@ -447,14 +474,13 @@ function groupObligationsByStatus(items) {
       showScreen('screen-lang');
       document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('animate'));
     });
-
+    document.getElementById('backShopping').addEventListener('click', goBack);
     // POPUP OBVEZE
     document.getElementById('btnObligations').addEventListener('click', () => {
       const popup = document.getElementById('obligationsPopup');
       const lang = getLang();
       document.getElementById('btnViewByDays').textContent = I18N[lang].obligationsView.byDay;
       document.getElementById('btnAddObligation').textContent = I18N[lang].menu.addObligation;
-      document.getElementById('btnShopping').textContent = I18N[lang].menu.shopping;
       document.getElementById('btnViewObligations').textContent = I18N[lang].menu.viewObligations;
       popup.style.display = 'block';
       setTimeout(() => popup.classList.add('animate'), 10);

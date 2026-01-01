@@ -499,18 +499,22 @@ content.addEventListener('touchstart', e => {
   swiping = true;
 });
 
-content.addEventListener('touchmove', e => {
-  if (!swiping) return;
+content.addEventListener(
+  'touchmove',
+  e => {
+    if (!swiping) return;
 
-  e.preventDefault(); // ⬅️ KLJUČNO
+    e.preventDefault();
 
-  currentX = e.touches[0].clientX;
-  const diff = currentX - startX;
+    currentX = e.touches[0].clientX;
+    const diff = currentX - startX;
 
-  if (diff < 0) {
-    content.style.transform = `translateX(${diff}px)`;
-  }
-});
+    if (diff < 0) {
+      content.style.transform = `translateX(${diff}px)`;
+    }
+  },
+  { passive: false }
+);
 
 content.addEventListener('touchend', e => {
   if (!swiping) return;

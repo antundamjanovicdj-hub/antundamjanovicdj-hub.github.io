@@ -494,38 +494,29 @@ let startX = 0;
 let currentX = 0;
 let swiping = false;
 
-content.addEventListener('touchstart', e => {
-  startX = e.touches[0].clientX;
+content.addEventListener('pointerdown', e => {
+  startX = e.clientX;
   swiping = true;
 });
 
-content.addEventListener(
-  'touchmove',
-  e => {
-    if (!swiping) return;
+content.addEventListener('pointermove', e => {
+  if (!swiping) return;
 
-    e.preventDefault();
+  currentX = e.clientX;
+  const diff = currentX - startX;
 
-    currentX = e.touches[0].clientX;
-    const diff = currentX - startX;
+  if (diff < 0) {
+    content.style.transform = `translateX(${diff}px)`;
+  }
+});
 
-    if (diff < 0) {
-      content.style.transform = `translateX(${diff}px)`;
-    }
-  },
-  { passive: false }
-);
-
-content.addEventListener('touchend', e => {
+content.addEventListener('pointerup', e => {
   if (!swiping) return;
   swiping = false;
 
   const diff = currentX - startX;
 
   if (diff < -80) {
-    e.preventDefault();
-    e.stopPropagation();
-
     shoppingItems = shoppingItems.filter(i => i.id !== item.id);
     renderShoppingList();
     deleteShoppingItem(item.id);

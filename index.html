@@ -493,11 +493,12 @@ li.addEventListener('click', () => {
   addShoppingItem(item); // ✅ koristi db.js add/put
 });
 
-// ===== MOBILE ONLY: swipe visual feedback (NO DELETE) =====
+// ===== MOBILE ONLY: swipe to delete (FINAL) =====
 if (IS_TOUCH_DEVICE) {
   let startX = 0;
   let currentX = 0;
   let swiping = false;
+  const DELETE_THRESHOLD = 80; // px
 
   li.addEventListener('touchstart', e => {
     startX = e.touches[0].clientX;
@@ -511,7 +512,6 @@ if (IS_TOUCH_DEVICE) {
     currentX = e.touches[0].clientX;
     const diff = currentX - startX;
 
-    // samo ulijevo + limit pomaka
     if (diff < 0) {
       const limited = Math.max(diff, -120);
       li.style.transform = `translateX(${limited}px)`;
@@ -522,14 +522,22 @@ if (IS_TOUCH_DEVICE) {
     if (!swiping) return;
     swiping = false;
 
-    // uvijek se vrati nazad (nema brisanja)
-    li.style.transition = 'transform 0.15s ease-out';
-    li.style.transform = 'translateX(0)';
+    const diff = currentX - startX;
 
-    // cleanup transition
-    setTimeout(() => {
-      li.style.transition = '';
-    }, 150);
+    if (diff < -DELETE_THRESHOLD) {
+      // ✅ DELETE
+      shoppingItems = shoppingItems.filter(i => i.id !== item.id);
+      renderShoppingList();
+      deleteShoppingItem(item.id);
+    } else {
+      // ⬅️ SNAP BACK
+      li.style.transition = 'transform 0.15s ease-out';
+      li.style.transform = 'translateX(0)';
+
+      setTimeout(() => {
+        li.style.transition = '';
+      }, 150);
+    }
   });
 }
 

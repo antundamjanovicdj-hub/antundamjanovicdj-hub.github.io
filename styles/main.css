@@ -602,6 +602,8 @@ html, body {
 
 .shopping-item {
   transition: transform 0.2s ease;
+}
+.shopping-item-content {
   touch-action: pan-y;
 }
 

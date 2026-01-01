@@ -471,53 +471,59 @@ function renderShoppingList() {
 
   visibleItems.forEach(item => {
     const li = document.createElement('li');
-    li.textContent = item.title;
-    li.className = 'shopping-item';
+li.className = 'shopping-item';
 
-    if (item.checked) li.classList.add('checked');
+li.innerHTML = `
+  <div class="shopping-item-delete">🗑️</div>
+  <div class="shopping-item-content">${item.title}</div>
+`;
 
-    // tap / click = check
-    li.addEventListener('click', () => {
-      item.checked = !item.checked;
-      renderShoppingList();
-      addShoppingItem(item); // ✅ koristi db.js add/put
-    });
+if (item.checked) li.classList.add('checked');
 
-   // ===== MOBILE: swipe left delete =====
+// tap / click = check
+li.addEventListener('click', () => {
+  item.checked = !item.checked;
+  renderShoppingList();
+  addShoppingItem(item);
+});
+
+// ===== MOBILE: swipe left delete (content only) =====
+const content = li.querySelector('.shopping-item-content');
+
 let startX = 0;
 let currentX = 0;
 let swiping = false;
 
-li.addEventListener('touchstart', e => {
+content.addEventListener('touchstart', e => {
   startX = e.touches[0].clientX;
   swiping = true;
 });
 
-li.addEventListener('touchmove', e => {
+content.addEventListener('touchmove', e => {
   if (!swiping) return;
   currentX = e.touches[0].clientX;
   const diff = currentX - startX;
 
   if (diff < 0) {
-    li.style.transform = `translateX(${diff}px)`;
+    content.style.transform = `translateX(${diff}px)`;
   }
 });
 
-li.addEventListener('touchend', e => {
+content.addEventListener('touchend', e => {
   if (!swiping) return;
   swiping = false;
 
   const diff = currentX - startX;
 
   if (diff < -80) {
-    e.preventDefault();     // ⬅️ spriječi click
-    e.stopPropagation();   // ⬅️ spriječi ghost click
+    e.preventDefault();
+    e.stopPropagation();
 
     shoppingItems = shoppingItems.filter(i => i.id !== item.id);
     renderShoppingList();
     deleteShoppingItem(item.id);
   } else {
-    li.style.transform = '';
+    content.style.transform = '';
   }
 });
 

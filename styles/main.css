@@ -573,6 +573,8 @@ html, body {
 }
 
 .shopping-item-content {
+  position: relative;
+  z-index: 1;
   padding: 12px 8px;
   background: white;
   transition: transform 0.2s ease;
@@ -588,7 +590,9 @@ html, body {
   justify-content: flex-end;
   padding-right: 20px;
   font-size: 20px;
+  z-index: 0;
 }
+
 .shopping-item {
   transition: transform 0.2s ease;
   touch-action: pan-y;

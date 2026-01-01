@@ -496,7 +496,10 @@ let swiping = false;
 
 content.addEventListener('pointerdown', e => {
   startX = e.clientX;
+  currentX = startX;
   swiping = true;
+
+  content.setPointerCapture(e.pointerId);
 });
 
 content.addEventListener('pointermove', e => {
@@ -510,7 +513,7 @@ content.addEventListener('pointermove', e => {
   }
 });
 
-content.addEventListener('pointerup', e => {
+function endPointerSwipe(e) {
   if (!swiping) return;
   swiping = false;
 
@@ -523,7 +526,14 @@ content.addEventListener('pointerup', e => {
   } else {
     content.style.transform = '';
   }
-});
+
+  try {
+    content.releasePointerCapture(e.pointerId);
+  } catch {}
+}
+
+content.addEventListener('pointerup', endPointerSwipe);
+content.addEventListener('pointercancel', endPointerSwipe);
 
     // DESKTOP: right-click delete
     li.addEventListener('contextmenu', e => {

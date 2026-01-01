@@ -604,7 +604,7 @@ html, body {
   transition: transform 0.2s ease;
 }
 .shopping-item-content {
-  touch-action: pan-y;
+  touch-action: none;
 }
 
 .shopping-item.checked {

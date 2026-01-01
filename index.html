@@ -76,13 +76,13 @@
       />
     </div>
 
-    <ul id="shoppingList" class="shopping-list"></ul>
+    <button id="toggleArchive" class="archive-toggle archive-top-left">
+  Prikaži arhivu
+</button>
 
-    <button id="toggleArchive" class="archive-toggle">
-      Prikaži arhivu
-    </button>
+<ul id="shoppingList" class="shopping-list"></ul>
 
-    <div id="shoppingEmpty" class="empty-state">
+<div id="shoppingEmpty" class="empty-state">
       <div class="empty-emoji">🛒</div>
       <div class="empty-title" id="shoppingEmptyTitle">Nema stavki</div>
       <div class="empty-sub" id="shoppingEmptySub">
@@ -572,7 +572,11 @@ document.addEventListener('DOMContentLoaded', () => {
       : I18N[lang].shopping.showArchive;
 
     shoppingItems = await getShoppingItems();
-    renderShoppingList();
+
+// ✅ zadrži redoslijed unosa
+shoppingItems.sort((a, b) => a.createdAt - b.createdAt);
+
+renderShoppingList();
 
     setTimeout(() => document.getElementById('shoppingInput').focus(), 0);
   });

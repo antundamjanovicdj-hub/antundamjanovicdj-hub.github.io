@@ -585,7 +585,7 @@ html, body {
   padding: 12px 8px;
   background: white;
   transition: transform 0.2s ease;
-  touch-action: pan-y;
+  touch-action: none; /* ⬅️ KLJUČNO */
 }
 
 .shopping-item-delete {

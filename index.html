@@ -501,6 +501,9 @@ content.addEventListener('touchstart', e => {
 
 content.addEventListener('touchmove', e => {
   if (!swiping) return;
+
+  e.preventDefault(); // ⬅️ KLJUČNO
+
   currentX = e.touches[0].clientX;
   const diff = currentX - startX;
 

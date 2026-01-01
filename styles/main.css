@@ -571,6 +571,12 @@ html, body {
   position: relative;
   overflow: hidden;
   border-bottom: 1px solid rgba(0,0,0,0.1);
+
+  /* ⬇️ UX: veća touch zona */
+  padding: 18px 16px;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
 }
 
 .shopping-item-content {

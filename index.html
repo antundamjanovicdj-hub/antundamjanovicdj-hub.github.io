@@ -494,26 +494,28 @@ let startX = 0;
 let currentX = 0;
 let swiping = false;
 
-content.addEventListener('pointerdown', e => {
-  startX = e.clientX;
+let startX = 0;
+let currentX = 0;
+let swiping = false;
+
+content.addEventListener('touchstart', e => {
+  startX = e.touches[0].clientX;
   currentX = startX;
   swiping = true;
+}, { passive: true });
 
-  content.setPointerCapture(e.pointerId);
-});
-
-content.addEventListener('pointermove', e => {
+content.addEventListener('touchmove', e => {
   if (!swiping) return;
 
-  currentX = e.clientX;
+  currentX = e.touches[0].clientX;
   const diff = currentX - startX;
 
   if (diff < 0) {
     content.style.transform = `translateX(${diff}px)`;
   }
-});
+}, { passive: true });
 
-function endPointerSwipe(e) {
+content.addEventListener('touchend', e => {
   if (!swiping) return;
   swiping = false;
 
@@ -526,14 +528,7 @@ function endPointerSwipe(e) {
   } else {
     content.style.transform = '';
   }
-
-  try {
-    content.releasePointerCapture(e.pointerId);
-  } catch {}
-}
-
-content.addEventListener('pointerup', endPointerSwipe);
-content.addEventListener('pointercancel', endPointerSwipe);
+});
 
     // DESKTOP: right-click delete
     li.addEventListener('contextmenu', e => {

@@ -76,13 +76,13 @@
       />
     </div>
 
-    <ul id="shoppingList" class="shopping-list"></ul>
-
     <button id="toggleArchive" class="archive-toggle">
-      Prikaži arhivu
-    </button>
+  Prikaži arhivu
+</button>
 
-    <div id="shoppingEmpty" class="empty-state">
+<ul id="shoppingList" class="shopping-list"></ul>
+
+<div id="shoppingEmpty" class="empty-state">
       <div class="empty-emoji">🛒</div>
       <div class="empty-title" id="shoppingEmptyTitle">Nema stavki</div>
       <div class="empty-sub" id="shoppingEmptySub">
@@ -487,11 +487,18 @@ li.appendChild(content);
     if (item.checked) li.classList.add('checked');
 
     // tap / click = check
-    li.addEventListener('click', () => {
-      item.checked = !item.checked;
-      renderShoppingList();
-      addShoppingItem(item); // ✅ koristi db.js add/put
-    });
+    let didSwipe = false;
+
+li.addEventListener('click', () => {
+  if (didSwipe) {
+    didSwipe = false;
+    return;
+  }
+
+  item.checked = !item.checked;
+  renderShoppingList();
+  updateShoppingItem(item);
+});
 
    // ===== MOBILE: swipe left delete =====
 let startX = 0;
@@ -500,7 +507,9 @@ let swiping = false;
 
 li.addEventListener('touchstart', e => {
   startX = e.touches[0].clientX;
+  currentX = startX;
   swiping = true;
+  didSwipe = false;
 });
 
 li.addEventListener('touchmove', e => {
@@ -508,9 +517,13 @@ li.addEventListener('touchmove', e => {
   currentX = e.touches[0].clientX;
   const diff = currentX - startX;
 
-  if (diff < 0) {
-    content.style.transform = `translateX(${diff}px)`;
-  }
+  if (Math.abs(diff) > 10) {
+  didSwipe = true;
+}
+
+if (diff < 0) {
+  content.style.transform = `translateX(${diff}px)`;
+}
 });
 
 li.addEventListener('touchend', () => {
@@ -520,14 +533,13 @@ li.addEventListener('touchend', () => {
   const diff = currentX - startX;
 
   if (diff < -80) {
-    // delete
-    shoppingItems = shoppingItems.filter(i => i.id !== item.id);
-    renderShoppingList();
-    deleteShoppingItem(item.id);
-  } else {
-    // reset
-    content.style.transform = '';
-  }
+  didSwipe = true;
+  shoppingItems = shoppingItems.filter(i => i.id !== item.id);
+  renderShoppingList();
+  deleteShoppingItem(item.id);
+} else {
+  content.style.transform = '';
+}
 });
 
     // DESKTOP: right-click delete

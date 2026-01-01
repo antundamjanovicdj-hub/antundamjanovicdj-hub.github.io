@@ -493,22 +493,43 @@ li.addEventListener('click', () => {
   addShoppingItem(item); // ✅ koristi db.js add/put
 });
 
-// ===== MOBILE ONLY: swipe hook (NO ACTION YET) =====
+// ===== MOBILE ONLY: swipe visual feedback (NO DELETE) =====
 if (IS_TOUCH_DEVICE) {
   let startX = 0;
+  let currentX = 0;
+  let swiping = false;
 
   li.addEventListener('touchstart', e => {
     startX = e.touches[0].clientX;
+    currentX = startX;
+    swiping = true;
   }, { passive: true });
 
-  li.addEventListener('touchend', e => {
-    const endX = e.changedTouches[0].clientX;
-    const diff = endX - startX;
+  li.addEventListener('touchmove', e => {
+    if (!swiping) return;
 
-    // 🔍 samo za test – bez ikakvog efekta
-    if (diff < -60) {
-      console.log('SWIPE DETECTED (mobile only)');
+    currentX = e.touches[0].clientX;
+    const diff = currentX - startX;
+
+    // samo ulijevo + limit pomaka
+    if (diff < 0) {
+      const limited = Math.max(diff, -120);
+      li.style.transform = `translateX(${limited}px)`;
     }
+  }, { passive: true });
+
+  li.addEventListener('touchend', () => {
+    if (!swiping) return;
+    swiping = false;
+
+    // uvijek se vrati nazad (nema brisanja)
+    li.style.transition = 'transform 0.15s ease-out';
+    li.style.transform = 'translateX(0)';
+
+    // cleanup transition
+    setTimeout(() => {
+      li.style.transition = '';
+    }, 150);
   });
 }
 

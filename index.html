@@ -471,8 +471,18 @@ function renderShoppingList() {
 
   visibleItems.forEach(item => {
     const li = document.createElement('li');
-    li.textContent = item.title;
-    li.className = 'shopping-item';
+li.className = 'shopping-item';
+
+const content = document.createElement('div');
+content.className = 'shopping-item-content';
+content.textContent = item.title;
+
+const deleteBg = document.createElement('div');
+deleteBg.className = 'shopping-item-delete';
+deleteBg.textContent = '🗑️';
+
+li.appendChild(deleteBg);
+li.appendChild(content);
 
     if (item.checked) li.classList.add('checked');
 
@@ -499,7 +509,7 @@ li.addEventListener('touchmove', e => {
   const diff = currentX - startX;
 
   if (diff < 0) {
-    li.style.transform = `translateX(${diff}px)`;
+    content.style.transform = `translateX(${diff}px)`;
   }
 });
 
@@ -516,7 +526,7 @@ li.addEventListener('touchend', () => {
     deleteShoppingItem(item.id);
   } else {
     // reset
-    li.style.transform = '';
+    content.style.transform = '';
   }
 });
 

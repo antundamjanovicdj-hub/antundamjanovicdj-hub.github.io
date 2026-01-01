@@ -567,9 +567,27 @@ html, body {
 }
 /* Shopping item checked state */
 .shopping-item {
-  padding: 12px 8px;
+  position: relative;
+  overflow: hidden;
   border-bottom: 1px solid rgba(0,0,0,0.1);
-  cursor: pointer;
+}
+
+.shopping-item-content {
+  padding: 12px 8px;
+  background: white;
+  transition: transform 0.2s ease;
+  touch-action: pan-y;
+}
+
+.shopping-item-delete {
+  position: absolute;
+  inset: 0;
+  background: #ff5252;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 20px;
+  font-size: 20px;
 }
 .shopping-item {
   transition: transform 0.2s ease;

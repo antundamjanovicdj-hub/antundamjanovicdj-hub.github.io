@@ -503,19 +503,20 @@ li.addEventListener('touchmove', e => {
   }
 });
 
-li.addEventListener('touchend', () => {
+li.addEventListener('touchend', e => {
   if (!swiping) return;
   swiping = false;
 
   const diff = currentX - startX;
 
   if (diff < -80) {
-    // delete
+    e.preventDefault();     // ⬅️ spriječi click
+    e.stopPropagation();   // ⬅️ spriječi ghost click
+
     shoppingItems = shoppingItems.filter(i => i.id !== item.id);
     renderShoppingList();
     deleteShoppingItem(item.id);
   } else {
-    // reset
     li.style.transform = '';
   }
 });

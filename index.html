@@ -168,9 +168,15 @@
 
 <script>
 /* ===== HELPERS ===== */
+/* ===== HELPERS ===== */
 function getLang() {
   return localStorage.getItem('userLang') || 'hr';
 }
+
+// ✅ DETEKCIJA TOUCH UREĐAJA (MOBITEL / TABLET)
+const IS_TOUCH_DEVICE =
+  'ontouchstart' in window ||
+  navigator.maxTouchPoints > 0;
 
 function getISODateFromDateTime(dateTimeStr) {
   if (!dateTimeStr) return null;
@@ -484,51 +490,32 @@ if (item.checked) li.classList.add('checked');
 li.addEventListener('click', () => {
   item.checked = !item.checked;
   renderShoppingList();
-  addShoppingItem(item);
+  addShoppingItem(item); // ✅ koristi db.js add/put
 });
+
+// ===== MOBILE ONLY: swipe hook (NO ACTION YET) =====
+if (IS_TOUCH_DEVICE) {
+  let startX = 0;
+
+  li.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+  }, { passive: true });
+
+  li.addEventListener('touchend', e => {
+    const endX = e.changedTouches[0].clientX;
+    const diff = endX - startX;
+
+    // 🔍 samo za test – bez ikakvog efekta
+    if (diff < -60) {
+      console.log('SWIPE DETECTED (mobile only)');
+    }
+  });
+}
 
 // ===== MOBILE: swipe left delete (content only) =====
 const content = li.querySelector('.shopping-item-content');
 
-let startX = 0;
-let currentX = 0;
-let swiping = false;
-
-let startX = 0;
-let currentX = 0;
-let swiping = false;
-
-content.addEventListener('touchstart', e => {
-  startX = e.touches[0].clientX;
-  currentX = startX;
-  swiping = true;
-}, { passive: true });
-
-content.addEventListener('touchmove', e => {
-  if (!swiping) return;
-
-  currentX = e.touches[0].clientX;
-  const diff = currentX - startX;
-
-  if (diff < 0) {
-    content.style.transform = `translateX(${diff}px)`;
-  }
-}, { passive: true });
-
-content.addEventListener('touchend', e => {
-  if (!swiping) return;
-  swiping = false;
-
-  const diff = currentX - startX;
-
-  if (diff < -80) {
-    shoppingItems = shoppingItems.filter(i => i.id !== item.id);
-    renderShoppingList();
-    deleteShoppingItem(item.id);
-  } else {
-    content.style.transform = '';
-  }
-});
+// swipe disabled for stability
 
     // DESKTOP: right-click delete
     li.addEventListener('contextmenu', e => {

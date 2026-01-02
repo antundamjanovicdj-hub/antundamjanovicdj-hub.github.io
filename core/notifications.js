@@ -44,15 +44,20 @@ export async function scheduleObligationNotification(obligation, delayMinutes = 
   const registration = await navigator.serviceWorker.ready;
 
   registration.showNotification('LifeKompas – Obveza', {
-    body: obligation.title,
-    tag: `obligation-${obligation.id}`,
-    timestamp: triggerTime,
-    icon: '/icon-192.png',
-    badge: '/icon-192.png',
-    data: {
-      obligationId: obligation.id
-    }
-  });
+  body: obligation.title,
+  tag: `obligation-${obligation.id}`,
+  timestamp: triggerTime,
+  icon: '/icon-192.png',
+  badge: '/icon-192.png',
+  data: {
+    obligationId: obligation.id
+  },
+  actions: [
+    { action: 'snooze-15', title: '⏰ 15 min' },
+    { action: 'snooze-30', title: '⏰ 30 min' },
+    { action: 'snooze-60', title: '⏰ 60 min' }
+  ]
+});
 }
 
 export async function rescheduleObligationNotification(obligation) {

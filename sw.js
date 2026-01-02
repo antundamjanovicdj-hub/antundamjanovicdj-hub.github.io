@@ -10,7 +10,13 @@ self.addEventListener('notificationclick', event => {
   const data = event.notification.data;
   event.notification.close();
 
-  if (event.action === 'snooze-15') {
+  const map = {
+    'snooze-15': 15,
+    'snooze-30': 30,
+    'snooze-60': 60
+  };
+
+  if (map[event.action]) {
     event.waitUntil(
       self.clients.matchAll({ type: 'window', includeUncontrolled: true })
         .then(clients => {
@@ -18,7 +24,7 @@ self.addEventListener('notificationclick', event => {
             clients[0].postMessage({
               type: 'SNOOZE',
               obligationId: data.obligationId,
-              minutes: 15
+              minutes: map[event.action]
             });
           }
         })

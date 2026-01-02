@@ -784,6 +784,9 @@ renderShoppingList();
     await obligationDB.add(obligation);
 
     alert(isEdit ? 'Obveza ažurirana!' : 'Obveza spremljena!');
+import('./core/notifications.js').then(({ scheduleObligationNotification }) => {
+  scheduleObligationNotification(obligation);
+});
 
     document.getElementById('obligationTitle').value = '';
     document.getElementById('obligationNote').value = '';

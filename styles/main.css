@@ -469,6 +469,21 @@ html, body {
   cursor: pointer;
   width: 100%;
 }
+.obligation-edit {
+  margin-top: 10px;
+  padding: 10px 14px;
+
+  background: #ffcc80;
+  color: #0d3b25;
+  border: none;
+  border-radius: 14px;
+
+  font-size: 1.05rem;
+  font-weight: 600;
+
+  cursor: pointer;
+  width: 100%;
+}
 
 .obligation-toggle-status:hover {
   background: #0a4a27;

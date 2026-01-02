@@ -1,5 +1,19 @@
 // core/notifications.js
 
+function applyQuietHours(date) {
+  const startHour = 22;
+  const endHour = 7;
+
+  const d = new Date(date);
+  const hour = d.getHours();
+
+  if (hour >= startHour || hour < endHour) {
+    d.setHours(endHour, 0, 0, 0);
+  }
+
+  return d;
+}
+
 export function canUseNotifications() {
   return (
     'Notification' in window &&
@@ -42,10 +56,12 @@ export async function scheduleObligationNotification(obligation, delayMinutes = 
   } else {
     if (!obligation?.dateTime || !obligation?.reminder) return;
 
-    triggerTime =
-      new Date(obligation.dateTime).getTime() -
-      Number(obligation.reminder) * 60 * 1000;
-  }
+    let triggerTime =
+  new Date(obligation.dateTime).getTime() -
+  Number(obligation.reminder) * 60 * 1000;
+
+triggerTime = applyQuietHours(new Date(triggerTime)).getTime();
+}
 
   if (triggerTime <= Date.now()) return;
 const { isNative, scheduleNativeNotification } =

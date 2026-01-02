@@ -312,6 +312,25 @@ html, body {
   border-radius: 8px;
   background: white;
 }
+.repeat-label {
+  display: block;
+  margin-top: 16px;
+}
+
+.repeat-label span {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #0d3b25;
+}
+
+#repeatType {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: white;
+}
 
 .btn-save {
   width: 100%;

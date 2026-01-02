@@ -76,9 +76,13 @@
       />
     </div>
 
-    <button id="toggleArchive" class="archive-toggle archive-top-left">
+    <button id="toggleArchive" class="archive-toggle">
   Prikaži arhivu
 </button>
+
+<div id="shoppingSwipeHint" class="swipe-hint hidden">
+  ← Povuci ulijevo za brisanje
+</div>
 
 <ul id="shoppingList" class="shopping-list"></ul>
 
@@ -505,6 +509,23 @@ if (IS_TOUCH_DEVICE) {
     currentX = startX;
     swiping = true;
   }, { passive: true });
+// 🔎 MICRO HINT – show on first swipe only
+const hint = document.getElementById('shoppingSwipeHint');
+const hintSeen = localStorage.getItem('shoppingSwipeHintSeen');
+
+if (IS_TOUCH_DEVICE && hint && !hintSeen) {
+  hint.classList.remove('hidden');
+
+  setTimeout(() => {
+    hint.style.opacity = '0';
+    setTimeout(() => {
+      hint.classList.add('hidden');
+      hint.style.opacity = '';
+    }, 300);
+  }, 2500);
+
+  localStorage.setItem('shoppingSwipeHintSeen', '1');
+}
 
   li.addEventListener('touchmove', e => {
     if (!swiping) return;

@@ -655,3 +655,14 @@ html, body {
   align-self: flex-start;
   margin: 6px 0 6px 12px;
 }
+.swipe-hint {
+  margin: 8px 0 4px;
+  font-size: 13px;
+  opacity: 0.6;
+  text-align: left;
+  transition: opacity 0.3s ease;
+}
+
+.swipe-hint.hidden {
+  display: none;
+}

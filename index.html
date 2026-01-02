@@ -792,14 +792,15 @@ renderShoppingList();
   type: 'obligation',
   title: title,
   note: document.getElementById('obligationNote').value,
-      dateTime: document.getElementById('obligationDateTime').value,
-      reminder: document.getElementById('enableReminder').checked
-        ? document.getElementById('reminderTime').value
-        : null,
-      status: isEdit ? (existing?.status || 'active') : 'active',
-      createdAt: isEdit ? (existing?.createdAt || new Date().toISOString()) : new Date().toISOString(),
-      lang: lang
-    };
+  dateTime: document.getElementById('obligationDateTime').value,
+  reminder: document.getElementById('enableReminder').checked
+    ? document.getElementById('reminderTime').value
+    : null,
+  repeat: isEdit ? (existing?.repeat || null) : null, // 'daily' | 'weekly' | null
+  status: isEdit ? (existing?.status || 'active') : 'active',
+  createdAt: isEdit ? (existing?.createdAt || new Date().toISOString()) : new Date().toISOString(),
+  lang: lang
+};
 
     await obligationDB.add(obligation);
 

@@ -417,6 +417,9 @@ html, body {
   font-style: italic;
   color: #666;
   white-space: pre-wrap;
+
+  font-size: 1.1rem;
+  line-height: 1.5;
 }
 
 .obligation-delete {

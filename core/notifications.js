@@ -87,12 +87,14 @@ if (isNative()) {
 
   const registration = await navigator.serviceWorker.ready;
 
-  registration.showNotification('LifeKompas – Obveza', {
+  registration.showNotification('🧭 LifeKompas', {
   body: obligation.title,
   tag: `obligation-${obligation.id}`,
-  timestamp: triggerTime,
+  renotify: true,
+  requireInteraction: true,   // iOS: ne nestaje odmah
   icon: '/icon-192.png',
   badge: '/icon-192.png',
+  silent: false,
   data: {
     obligationId: obligation.id
   },
@@ -102,7 +104,6 @@ if (isNative()) {
     { action: 'snooze-60', title: '⏰ 60 min' }
   ]
 });
-}
 
 export async function rescheduleObligationNotification(obligation) {
   await cancelObligationNotification(obligation.id);

@@ -169,6 +169,22 @@
 <!-- SKRIPTOVE -->
 <script src="core/i18n.js"></script>
 <script src="core/db.js"></script>
+<script type="module">
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js');
+  }
+</script>
+<script type="module">
+  import {
+    requestNotificationPermission,
+    showTestNotification
+  } from './core/notifications.js';
+
+  const granted = await requestNotificationPermission();
+  if (granted) {
+    showTestNotification();
+  }
+</script>
 
 <script>
 /* ===== HELPERS ===== */

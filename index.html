@@ -355,12 +355,25 @@ if (newStatus === 'done') {
       const nextDate = new Date(baseDate);
 
       if (obligation.repeat === 'daily') {
-        nextDate.setDate(baseDate.getDate() + 1);
-      }
+  nextDate.setDate(baseDate.getDate() + 1);
+}
 
-      if (obligation.repeat === 'weekly') {
-        nextDate.setDate(baseDate.getDate() + 7);
-      }
+if (obligation.repeat === 'weekly') {
+  nextDate.setDate(baseDate.getDate() + 7);
+}
+
+if (obligation.repeat === 'monthly') {
+  const year = baseDate.getFullYear();
+  const month = baseDate.getMonth() + 1; // next month
+  const day = baseDate.getDate();
+
+  // zadnji dan ciljanog mjeseca
+  const lastDayOfTargetMonth = new Date(year, month + 1, 0).getDate();
+
+  nextDate.setFullYear(year);
+  nextDate.setMonth(month);
+  nextDate.setDate(Math.min(day, lastDayOfTargetMonth));
+}
 
       const nextObligation = {
         ...obligation,

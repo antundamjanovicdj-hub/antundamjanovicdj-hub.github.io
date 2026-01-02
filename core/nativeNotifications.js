@@ -1,15 +1,36 @@
 // core/nativeNotifications.js
-// Stub – aktivira se tek u native appu (Capacitor)
+import { Capacitor } from '@capacitor/core';
+import { LocalNotifications } from '@capacitor/local-notifications';
 
 export function isNative() {
-  return !!window.Capacitor;
+  return Capacitor.isNativePlatform();
 }
 
 export async function scheduleNativeNotification(obligation, triggerTime) {
-  // Ovdje će kasnije ići Capacitor Local Notifications
-  // Trenutno namjerno prazno
+  if (!isNative()) return;
+
+  await LocalNotifications.requestPermissions();
+
+  await LocalNotifications.schedule({
+    notifications: [
+      {
+        id: obligation.id,
+        title: 'LifeKompas – Obveza',
+        body: obligation.title,
+        schedule: { at: new Date(triggerTime) },
+        sound: 'default',
+        extra: {
+          obligationId: obligation.id
+        }
+      }
+    ]
+  });
 }
 
 export async function cancelNativeNotification(obligationId) {
-  // placeholder
+  if (!isNative()) return;
+
+  await LocalNotifications.cancel({
+    notifications: [{ id: obligationId }]
+  });
 }

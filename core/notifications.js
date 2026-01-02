@@ -14,6 +14,14 @@ export async function requestNotificationPermission() {
 }
 
 export async function cancelObligationNotification(obligationId) {
+  const { isNative, cancelNativeNotification } =
+    await import('./nativeNotifications.js');
+
+  if (isNative()) {
+    await cancelNativeNotification(obligationId);
+    return;
+  }
+
   if (!canUseNotifications()) return;
 
   const registration = await navigator.serviceWorker.ready;

@@ -315,18 +315,18 @@ function attachObligationHandlers(container) {
 
       const obligations = await obligationDB.getAll();
       const obligation = obligations.find(o => o.id === id);
-      if (obligation) {
-        obligation.status = newStatus;
-        await obligationDB.add(obligation);
+      if (!obligation) return;
 
+      obligation.status = newStatus;
+      await obligationDB.add(obligation);
+
+      if (newStatus === 'done') {
         import('./core/notifications.js').then(({ cancelObligationNotification }) => {
-          if (newStatus === 'done') {
-            cancelObligationNotification(id);
-          }
+          cancelObligationNotification(id);
         });
-
-        refreshCurrentObligationsView();
       }
+
+      refreshCurrentObligationsView();
     });
   });
 
@@ -347,10 +347,18 @@ function attachObligationHandlers(container) {
       e.stopPropagation();
       const id = parseInt(btn.dataset.id, 10);
       const langNow = getLang();
-      if (confirm(I18N[langNow].obligationsList.deleteConfirm || 'Obrisati obvezu?')) {
-        await obligationDB.delete(id);
-        refreshCurrentObligationsView();
+
+      if (!confirm(I18N[langNow].obligationsList.deleteConfirm || 'Obrisati obvezu?')) {
+        return;
       }
+
+      await obligationDB.delete(id);
+
+      import('./core/notifications.js').then(({ cancelObligationNotification }) => {
+        cancelObligationNotification(id);
+      });
+
+      refreshCurrentObligationsView();
     });
   });
 }

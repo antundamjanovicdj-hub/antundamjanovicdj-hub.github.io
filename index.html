@@ -279,7 +279,17 @@ function buildObligationCard(ob, lang) {
     reminderStr = I18N[lang].obligationsList[key] || `${ob.reminder} min`;
   }
 
-  const repeatIcon = ob.repeat ? ' 🔁' : '';
+  let repeatIcon = '';
+let repeatTitle = '';
+
+if (ob.repeat) {
+  repeatIcon = ' 🔁';
+
+  if (ob.repeat === 'daily') repeatTitle = 'Svaki dan';
+  else if (ob.repeat === 'weekly') repeatTitle = 'Svaki tjedan';
+  else if (ob.repeat === 'monthly') repeatTitle = 'Svaki mjesec';
+  else repeatTitle = 'Prilagođeno';
+}
   const statusText = ob.status === 'done'
     ? `✅ ${I18N[lang].obligationsList.statusDone}`
     : `⏳ ${I18N[lang].obligationsList.statusActive}`;
@@ -293,7 +303,7 @@ function buildObligationCard(ob, lang) {
 
   return `
     <div class="obligation-card" data-id="${ob.id}" style="background:${bgColor}; border-left:4px solid ${borderColor};">
-      <div class="obligation-title">${ob.title}${repeatIcon}</div>
+      <div class="obligation-title" title="${repeatTitle}">${ob.title}${repeatIcon}</div>
       ${ob.note ? `<div class="obligation-note">${ob.note}</div>` : ''}
       <div class="obligation-meta">
         <div class="obligation-date">📅 ${dateStr}</div>

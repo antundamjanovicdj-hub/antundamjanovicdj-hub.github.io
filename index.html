@@ -610,6 +610,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // SHOPPING BUTTON (open + load + focus)
   document.getElementById('btnShopping').addEventListener('click', async () => {
     const lang = getLang();
+// isolated swipe hint (safe)
+  showShoppingSwipeHintOnce();
 
     showScreen('screen-shopping');
 
@@ -836,6 +838,40 @@ renderShoppingList();
   });
 
 });
+/* ===== SHOPPING SWIPE HINT (ISOLATED HELPER) ===== */
+function showShoppingSwipeHintOnce() {
+  try {
+    if (!('ontouchstart' in window)) return;
+
+    const hint = document.getElementById('shoppingSwipeHint');
+    if (!hint) return;
+
+    const seen = localStorage.getItem('shoppingSwipeHintSeen');
+    if (seen) return;
+
+    hint.classList.remove('hidden');
+    hint.style.opacity = '0.7';
+  } catch (e) {
+    console.warn('Swipe hint helper skipped');
+  }
+}
+
+function hideShoppingSwipeHintForever() {
+  try {
+    const hint = document.getElementById('shoppingSwipeHint');
+    if (!hint) return;
+
+    hint.style.opacity = '0';
+    setTimeout(() => {
+      hint.classList.add('hidden');
+      hint.style.opacity = '';
+    }, 300);
+
+    localStorage.setItem('shoppingSwipeHintSeen', '1');
+  } catch (e) {
+    console.warn('Swipe hint hide skipped');
+  }
+}
 </script>
 
 </body>

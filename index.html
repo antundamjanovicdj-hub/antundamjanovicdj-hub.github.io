@@ -128,6 +128,14 @@
           <option value="1440">1 dan prije</option>
         </select>
       </div>
+<label class="repeat-label">
+  <span>Ponavljanje</span>
+  <select id="repeatType">
+    <option value="">Bez ponavljanja</option>
+    <option value="daily">Svaki dan</option>
+    <option value="weekly">Svaki tjedan</option>
+  </select>
+</label>
 
       <button id="saveObligation" class="btn-save">💾 Spremi</button>
       <button id="cancelObligation" class="btn-cancel"></button>
@@ -253,6 +261,10 @@ function openEditForm(ob) {
   document.getElementById('saveObligation').textContent = I18N[lang].obligation.update;
   document.getElementById('saveObligation').dataset.editId = ob.id;
   document.getElementById('cancelObligation').textContent = `✖️ ${I18N[lang].obligation.cancel}`;
+const repeatSelect = document.getElementById('repeatType');
+  if (repeatSelect) {
+    repeatSelect.value = ob.repeat || '';
+  }
 }
 
 /* ===== RENDER CARD (reused) ===== */
@@ -267,6 +279,7 @@ function buildObligationCard(ob, lang) {
     reminderStr = I18N[lang].obligationsList[key] || `${ob.reminder} min`;
   }
 
+  const repeatIcon = ob.repeat ? ' 🔁' : '';
   const statusText = ob.status === 'done'
     ? `✅ ${I18N[lang].obligationsList.statusDone}`
     : `⏳ ${I18N[lang].obligationsList.statusActive}`;
@@ -280,7 +293,7 @@ function buildObligationCard(ob, lang) {
 
   return `
     <div class="obligation-card" data-id="${ob.id}" style="background:${bgColor}; border-left:4px solid ${borderColor};">
-      <div class="obligation-title">${ob.title}</div>
+      <div class="obligation-title">${ob.title}${repeatIcon}</div>
       ${ob.note ? `<div class="obligation-note">${ob.note}</div>` : ''}
       <div class="obligation-meta">
         <div class="obligation-date">📅 ${dateStr}</div>
@@ -823,7 +836,7 @@ renderShoppingList();
   reminder: document.getElementById('enableReminder').checked
     ? document.getElementById('reminderTime').value
     : null,
-  repeat: isEdit ? (existing?.repeat || null) : null, // 'daily' | 'weekly' | null
+  repeat: document.getElementById('repeatType')?.value || null,
   status: isEdit ? (existing?.status || 'active') : 'active',
   createdAt: isEdit ? (existing?.createdAt || new Date().toISOString()) : new Date().toISOString(),
   lang: lang
@@ -852,6 +865,8 @@ import('./core/notifications.js').then(({ scheduleObligationNotification }) => {
     document.getElementById('obligationDateTime').value = '';
     document.getElementById('enableReminder').checked = false;
     document.getElementById('reminderOptions').classList.add('hidden');
+const repeatSelect = document.getElementById('repeatType');
+if (repeatSelect) repeatSelect.value = '';
     document.getElementById('saveObligation').removeAttribute('data-edit-id');
 
     if (isEdit) {

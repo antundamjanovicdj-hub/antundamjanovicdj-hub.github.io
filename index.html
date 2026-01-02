@@ -614,6 +614,18 @@ const content = li.querySelector('.shopping-item-content');
 
 /* ===== INIT ===== */
 document.addEventListener('DOMContentLoaded', () => {
+navigator.serviceWorker?.addEventListener('message', e => {
+  if (e.data?.type === 'SNOOZE') {
+    import('./core/notifications.js').then(({ snoozeObligation }) => {
+      obligationDB.getAll().then(items => {
+        const ob = items.find(o => o.id === e.data.obligationId);
+        if (ob) {
+          snoozeObligation(ob, e.data.minutes);
+        }
+      });
+    });
+  }
+});
 
   // JEZICI
   document.querySelectorAll('.lang-btn').forEach(btn => {

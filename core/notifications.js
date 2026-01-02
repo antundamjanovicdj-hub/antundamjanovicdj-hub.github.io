@@ -24,13 +24,20 @@ export async function cancelObligationNotification(obligationId) {
   notifications.forEach(n => n.close());
 }
 
-export async function scheduleObligationNotification(obligation) {
+export async function scheduleObligationNotification(obligation, delayMinutes = null) {
   if (!canUseNotifications()) return;
-  if (!obligation?.dateTime || !obligation?.reminder) return;
 
-  const triggerTime =
-    new Date(obligation.dateTime).getTime() -
-    Number(obligation.reminder) * 60 * 1000;
+  let triggerTime;
+
+  if (delayMinutes !== null) {
+    triggerTime = Date.now() + delayMinutes * 60 * 1000;
+  } else {
+    if (!obligation?.dateTime || !obligation?.reminder) return;
+
+    triggerTime =
+      new Date(obligation.dateTime).getTime() -
+      Number(obligation.reminder) * 60 * 1000;
+  }
 
   if (triggerTime <= Date.now()) return;
 
@@ -51,4 +58,9 @@ export async function scheduleObligationNotification(obligation) {
 export async function rescheduleObligationNotification(obligation) {
   await cancelObligationNotification(obligation.id);
   await scheduleObligationNotification(obligation);
+}
+
+export async function snoozeObligation(obligation, minutes) {
+  await cancelObligationNotification(obligation.id);
+  await scheduleObligationNotification(obligation, minutes);
 }

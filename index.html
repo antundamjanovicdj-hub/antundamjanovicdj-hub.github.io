@@ -362,6 +362,27 @@ if (obligation.skipNextRepeat) {
 }
       const baseDate = new Date(obligation.dateTime);
       const nextDate = new Date(baseDate);
+if (obligation.repeat === 'custom' && obligation.customRepeat) {
+  const { unit, every } = obligation.customRepeat;
+  const baseDate = new Date(obligation.dateTime);
+  const nextDate = new Date(baseDate);
+
+  if (unit === 'day') nextDate.setDate(baseDate.getDate() + every);
+  if (unit === 'week') nextDate.setDate(baseDate.getDate() + every * 7);
+  if (unit === 'month') nextDate.setMonth(baseDate.getMonth() + every);
+
+  const nextObligation = {
+    ...obligation,
+    id: Date.now(),
+    status: 'active',
+    dateTime: nextDate.toISOString().slice(0, 16),
+    createdAt: new Date().toISOString()
+  };
+
+  await obligationDB.add(nextObligation);
+  await scheduleObligationNotification(nextObligation);
+  return;
+}
 
       if (obligation.repeat === 'daily') {
   nextDate.setDate(baseDate.getDate() + 1);
@@ -869,6 +890,7 @@ renderShoppingList();
     ? document.getElementById('reminderTime').value
     : null,
   repeat: document.getElementById('repeatType')?.value || null,
+  customRepeat: isEdit ? (existing?.customRepeat || null) : null,
   repeatPaused: isEdit ? (existing?.repeatPaused || false) : false,
   skipNextRepeat: isEdit ? (existing?.skipNextRepeat || false) : false,
   status: isEdit ? (existing?.status || 'active') : 'active',

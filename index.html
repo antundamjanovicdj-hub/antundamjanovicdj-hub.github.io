@@ -325,10 +325,14 @@ function attachObligationHandlers(container) {
       if (obligation) {
         obligation.status = newStatus;
         await obligationDB.add(obligation);
-        refreshCurrentObligationsView();
-      }
-    });
-  });
+
+import('./core/notifications.js').then(({ cancelObligationNotification }) => {
+  if (newStatus === 'done') {
+    cancelObligationNotification(id);
+  }
+});
+
+refreshCurrentObligationsView();
 
   // UREĐIVANJE
   container.querySelectorAll('.obligation-edit').forEach(btn => {
@@ -783,7 +787,18 @@ renderShoppingList();
 
     await obligationDB.add(obligation);
 
-    alert(isEdit ? 'Obveza ažurirana!' : 'Obveza spremljena!');
+import('./core/notifications.js').then(async ({
+  scheduleObligationNotification,
+  rescheduleObligationNotification
+}) => {
+  if (isEdit) {
+    await rescheduleObligationNotification(obligation);
+  } else {
+    await scheduleObligationNotification(obligation);
+  }
+});
+
+alert(isEdit ? 'Obveza ažurirana!' : 'Obveza spremljena!');
 import('./core/notifications.js').then(({ scheduleObligationNotification }) => {
   scheduleObligationNotification(obligation);
 });

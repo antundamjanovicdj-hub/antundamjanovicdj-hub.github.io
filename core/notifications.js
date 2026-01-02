@@ -13,6 +13,17 @@ export async function requestNotificationPermission() {
   return permission === 'granted';
 }
 
+export async function cancelObligationNotification(obligationId) {
+  if (!canUseNotifications()) return;
+
+  const registration = await navigator.serviceWorker.ready;
+  const notifications = await registration.getNotifications({
+    tag: `obligation-${obligationId}`
+  });
+
+  notifications.forEach(n => n.close());
+}
+
 export async function scheduleObligationNotification(obligation) {
   if (!canUseNotifications()) return;
   if (!obligation?.dateTime || !obligation?.reminder) return;
@@ -35,4 +46,9 @@ export async function scheduleObligationNotification(obligation) {
       obligationId: obligation.id
     }
   });
+}
+
+export async function rescheduleObligationNotification(obligation) {
+  await cancelObligationNotification(obligation.id);
+  await scheduleObligationNotification(obligation);
 }

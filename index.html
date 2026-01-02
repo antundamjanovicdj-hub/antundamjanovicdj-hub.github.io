@@ -318,15 +318,42 @@ function attachObligationHandlers(container) {
       if (!obligation) return;
 
       obligation.status = newStatus;
-      await obligationDB.add(obligation);
+await obligationDB.add(obligation);
 
-      if (newStatus === 'done') {
-        import('./core/notifications.js').then(({ cancelObligationNotification }) => {
-          cancelObligationNotification(id);
-        });
+if (newStatus === 'done') {
+  import('./core/notifications.js').then(async ({
+    cancelObligationNotification,
+    scheduleObligationNotification
+  }) => {
+    cancelObligationNotification(id);
+
+    if (obligation.repeat && obligation.dateTime) {
+      const baseDate = new Date(obligation.dateTime);
+      const nextDate = new Date(baseDate);
+
+      if (obligation.repeat === 'daily') {
+        nextDate.setDate(baseDate.getDate() + 1);
       }
 
-      refreshCurrentObligationsView();
+      if (obligation.repeat === 'weekly') {
+        nextDate.setDate(baseDate.getDate() + 7);
+      }
+
+      const nextObligation = {
+        ...obligation,
+        id: Date.now(),
+        status: 'active',
+        dateTime: nextDate.toISOString().slice(0, 16),
+        createdAt: new Date().toISOString()
+      };
+
+      await obligationDB.add(nextObligation);
+      await scheduleObligationNotification(nextObligation);
+    }
+  });
+}
+
+refreshCurrentObligationsView();
     });
   });
 

@@ -509,6 +509,22 @@ if (IS_TOUCH_DEVICE) {
     currentX = startX;
     swiping = true;
   }, { passive: true });
+// označi da je swipe započeo (za CSS)
+li.classList.add('swiping');
+
+// 🧠 MICRO HINT – sakrij tek nakon PRVOG swipea
+const hint = document.getElementById('shoppingSwipeHint');
+const hintSeen = localStorage.getItem('shoppingSwipeHintSeen');
+
+if (IS_TOUCH_DEVICE && hint && !hintSeen) {
+  hint.style.opacity = '0';
+  setTimeout(() => {
+    hint.classList.add('hidden');
+    hint.style.opacity = '';
+  }, 300);
+
+  localStorage.setItem('shoppingSwipeHintSeen', '1');
+}
 // 🔎 MICRO HINT – show on first swipe only
 const hint = document.getElementById('shoppingSwipeHint');
 const hintSeen = localStorage.getItem('shoppingSwipeHintSeen');
@@ -543,6 +559,7 @@ li.style.transform = `translateX(${limited}px)`;
   li.addEventListener('touchend', () => {
     if (!swiping) return;
     swiping = false;
+  li.classList.remove('swiping');
 
     const diff = currentX - startX;
 

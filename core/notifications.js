@@ -1,14 +1,23 @@
 // core/notifications.js
 
 function applyQuietHours(date) {
-  const startHour = 22;
-  const endHour = 7;
+  const start = localStorage.getItem('quietStart') || '22:00';
+  const end = localStorage.getItem('quietEnd') || '07:00';
+
+  const [startH, startM] = start.split(':').map(Number);
+  const [endH, endM] = end.split(':').map(Number);
 
   const d = new Date(date);
-  const hour = d.getHours();
+  const h = d.getHours();
+  const m = d.getMinutes();
 
-  if (hour >= startHour || hour < endHour) {
-    d.setHours(endHour, 0, 0, 0);
+  const afterStart =
+    h > startH || (h === startH && m >= startM);
+  const beforeEnd =
+    h < endH || (h === endH && m < endM);
+
+  if (afterStart || beforeEnd) {
+    d.setHours(endH, endM, 0, 0);
   }
 
   return d;

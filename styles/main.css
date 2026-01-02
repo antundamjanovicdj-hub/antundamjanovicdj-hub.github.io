@@ -332,6 +332,31 @@ html, body {
   background: white;
 }
 
+.quiet-hours-label {
+  display: block;
+  margin-top: 16px;
+}
+
+.quiet-hours-label span {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #0d3b25;
+}
+
+.quiet-hours-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.quiet-hours-row input[type="time"] {
+  flex: 1;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
 .btn-save {
   width: 100%;
   padding: 14px;

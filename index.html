@@ -136,6 +136,14 @@
     <option value="weekly">Svaki tjedan</option>
   </select>
 </label>
+<label class="quiet-hours-label">
+  <span>Tihe sate</span>
+  <div class="quiet-hours-row">
+    <input type="time" id="quietStart" value="22:00">
+    <span>–</span>
+    <input type="time" id="quietEnd" value="07:00">
+  </div>
+</label>
 
       <button id="saveObligation" class="btn-save">💾 Spremi</button>
       <button id="cancelObligation" class="btn-cancel"></button>
@@ -711,6 +719,22 @@ const content = li.querySelector('.shopping-item-content');
 
 /* ===== INIT ===== */
 document.addEventListener('DOMContentLoaded', () => {
+// Quiet hours – load/save
+  const quietStartInput = document.getElementById('quietStart');
+  const quietEndInput = document.getElementById('quietEnd');
+
+  if (quietStartInput && quietEndInput) {
+    quietStartInput.value = localStorage.getItem('quietStart') || '22:00';
+    quietEndInput.value = localStorage.getItem('quietEnd') || '07:00';
+
+    quietStartInput.addEventListener('change', () => {
+      localStorage.setItem('quietStart', quietStartInput.value);
+    });
+
+    quietEndInput.addEventListener('change', () => {
+      localStorage.setItem('quietEnd', quietEndInput.value);
+    });
+  }
 navigator.serviceWorker?.addEventListener('message', e => {
   if (e.data?.type === 'SNOOZE') {
     import('./core/notifications.js').then(({ snoozeObligation }) => {

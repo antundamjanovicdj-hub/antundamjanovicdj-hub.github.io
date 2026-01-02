@@ -319,13 +319,16 @@ function attachObligationHandlers(container) {
         obligation.status = newStatus;
         await obligationDB.add(obligation);
 
-import('./core/notifications.js').then(({ cancelObligationNotification }) => {
-  if (newStatus === 'done') {
-    cancelObligationNotification(id);
-  }
-});
+        import('./core/notifications.js').then(({ cancelObligationNotification }) => {
+          if (newStatus === 'done') {
+            cancelObligationNotification(id);
+          }
+        });
 
-refreshCurrentObligationsView();
+        refreshCurrentObligationsView();
+      }
+    });
+  });
 
   // UREĐIVANJE
   container.querySelectorAll('.obligation-edit').forEach(btn => {
@@ -887,3 +890,4 @@ import('./core/notifications.js').then(({ scheduleObligationNotification }) => {
 </script>
 
 </body>
+</html>

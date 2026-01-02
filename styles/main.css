@@ -264,8 +264,11 @@ html, body {
 #obligationNote {
   border: 1px solid #ccc;
   border-radius: 10px;
-  padding: 10px;
+  padding: 12px;
   resize: none;
+
+  font-size: 1.1rem;
+  line-height: 1.5;
 }
 
 .datetime-label {

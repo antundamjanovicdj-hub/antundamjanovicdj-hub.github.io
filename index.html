@@ -389,8 +389,12 @@ async function loadDailyForDate(isoDate) {
   if (picker && picker.value !== isoDate) picker.value = isoDate;
 
   const lang = getLang();
-  const all = await obligationDB.getAll();
-  const filtered = all.filter(o => getISODateFromDateTime(o.dateTime) === isoDate);
+  const all = (await obligationDB.getAll())
+  .filter(o => o.type !== 'shopping');
+
+const filtered = all.filter(o =>
+  getISODateFromDateTime(o.dateTime) === isoDate
+);
   const groups = groupObligationsByStatus(filtered);
 
   const openWrap = document.getElementById('dailyOpenWrap');
@@ -438,7 +442,11 @@ async function renderObligationsList() {
   const container = document.getElementById('obligationsContainer');
   const lang = getLang();
 
-  const obligations = await obligationDB.getAll();
+  const obligations = (await obligationDB.getAll())
+  .filter(o =>
+    o.type !== 'shopping' &&
+    o.status !== 'done'
+  );
 
   obligations.sort((a, b) => {
     if (a.status !== b.status) return a.status === 'active' ? -1 : 1;
@@ -610,8 +618,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // SHOPPING BUTTON (open + load + focus)
   document.getElementById('btnShopping').addEventListener('click', async () => {
     const lang = getLang();
-// isolated swipe hint (safe)
-  showShoppingSwipeHintOnce();
 
     showScreen('screen-shopping');
 
@@ -746,9 +752,10 @@ renderShoppingList();
     }
 
     const obligation = {
-      id: isEdit ? editId : Date.now(),
-      title: title,
-      note: document.getElementById('obligationNote').value,
+  id: isEdit ? editId : Date.now(),
+  type: 'obligation',
+  title: title,
+  note: document.getElementById('obligationNote').value,
       dateTime: document.getElementById('obligationDateTime').value,
       reminder: document.getElementById('enableReminder').checked
         ? document.getElementById('reminderTime').value
@@ -838,40 +845,6 @@ renderShoppingList();
   });
 
 });
-/* ===== SHOPPING SWIPE HINT (ISOLATED HELPER) ===== */
-function showShoppingSwipeHintOnce() {
-  try {
-    if (!('ontouchstart' in window)) return;
-
-    const hint = document.getElementById('shoppingSwipeHint');
-    if (!hint) return;
-
-    const seen = localStorage.getItem('shoppingSwipeHintSeen');
-    if (seen) return;
-
-    hint.classList.remove('hidden');
-    hint.style.opacity = '0.7';
-  } catch (e) {
-    console.warn('Swipe hint helper skipped');
-  }
-}
-
-function hideShoppingSwipeHintForever() {
-  try {
-    const hint = document.getElementById('shoppingSwipeHint');
-    if (!hint) return;
-
-    hint.style.opacity = '0';
-    setTimeout(() => {
-      hint.classList.add('hidden');
-      hint.style.opacity = '';
-    }, 300);
-
-    localStorage.setItem('shoppingSwipeHintSeen', '1');
-  } catch (e) {
-    console.warn('Swipe hint hide skipped');
-  }
-}
 </script>
 
 </body>

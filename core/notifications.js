@@ -1,6 +1,10 @@
 // core/notifications.js
 
-function applyQuietHours(date) {
+function applyQuietHours(date, obligation) {
+  if (obligation?.urgent) {
+    return new Date(date); // ⛔ preskoči quiet hours
+  }
+
   const start = localStorage.getItem('quietStart') || '22:00';
   const end = localStorage.getItem('quietEnd') || '07:00';
 
@@ -69,7 +73,7 @@ export async function scheduleObligationNotification(obligation, delayMinutes = 
   new Date(obligation.dateTime).getTime() -
   Number(obligation.reminder) * 60 * 1000;
 
-triggerTime = applyQuietHours(new Date(triggerTime)).getTime();
+triggerTime = applyQuietHours(new Date(triggerTime), obligation).getTime();
 }
 
   if (triggerTime <= Date.now()) return;

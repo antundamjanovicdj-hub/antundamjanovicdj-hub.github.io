@@ -119,6 +119,10 @@
         <input type="checkbox" id="enableReminder">
         <span id="reminderLabel">Podsjetnik</span>
       </label>
+      <label class="reminder-checkbox">
+        <input type="checkbox" id="urgentObligation">
+        <span>Hitno (ignorira tihe sate)</span>
+     </label>
 
       <div id="reminderOptions" class="hidden">
         <select id="reminderTime">
@@ -263,6 +267,10 @@ function openEditForm(ob) {
   document.getElementById('obligationNote').value = ob.note || '';
   document.getElementById('obligationDateTime').value = ob.dateTime || '';
   document.getElementById('enableReminder').checked = !!ob.reminder;
+  const urgentCheckbox = document.getElementById('urgentObligation');
+if (urgentCheckbox) {
+  urgentCheckbox.checked = !!ob.urgent;
+}
   document.getElementById('reminderOptions').classList.toggle('hidden', !ob.reminder);
   if (ob.reminder) document.getElementById('reminderTime').value = ob.reminder;
 
@@ -910,6 +918,7 @@ renderShoppingList();
   title: title,
   note: document.getElementById('obligationNote').value,
   dateTime: document.getElementById('obligationDateTime').value,
+  urgent: document.getElementById('urgentObligation')?.checked || false,
   reminder: document.getElementById('enableReminder').checked
     ? document.getElementById('reminderTime').value
     : null,

@@ -572,20 +572,25 @@ html, body {
   overflow: hidden;
   border-bottom: 1px solid rgba(0,0,0,0.1);
 
-  /* ⬇️ UX: veća touch zona */
-  padding: 18px 16px;
+  /* parent bez paddinga → nema “curenja” crvene */
   min-height: 56px;
   display: flex;
-  align-items: center;
+  align-items: stretch;
 }
 
 .shopping-item-content {
   position: relative;
   z-index: 1;
-  padding: 12px 8px;
-  background: white;
+
+  /* ⬇️ padding SELI OVAMO */
+  padding: 18px 16px;
+
+  background: #ffffff;     /* bijelo SAMO na contentu */
+  width: 100%;
+  height: 100%;
+
   transition: transform 0.2s ease;
-  touch-action: none; /* ⬅️ KLJUČNO */
+  touch-action: none;
 }
 
 .shopping-item-delete {

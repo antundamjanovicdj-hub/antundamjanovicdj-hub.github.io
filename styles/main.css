@@ -590,12 +590,14 @@ html, body {
 
 .shopping-item-delete {
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 84px;              /* ⬅️ samo zona kante */
   background: #ff5252;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  padding-right: 20px;
+  justify-content: center;  /* ⬅️ kanta u sredini zone */
   font-size: 20px;
   z-index: 0;
 }

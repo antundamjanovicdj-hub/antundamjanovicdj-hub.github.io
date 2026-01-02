@@ -513,8 +513,9 @@ if (IS_TOUCH_DEVICE) {
     const diff = currentX - startX;
 
     if (diff < 0) {
-      const limited = Math.max(diff, -120);
-      li.style.transform = `translateX(${limited}px)`;
+      const MAX_SWIPE = 84; // px – isto kao širina delete zone
+const limited = Math.max(diff, -MAX_SWIPE);
+li.style.transform = `translateX(${limited}px)`;
     }
   }, { passive: true });
 

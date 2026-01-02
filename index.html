@@ -350,7 +350,16 @@ if (newStatus === 'done') {
   }) => {
     cancelObligationNotification(id);
 
-    if (obligation.repeat && obligation.dateTime) {
+    if (
+  obligation.repeat &&
+  obligation.dateTime &&
+  !obligation.repeatPaused
+) {
+if (obligation.skipNextRepeat) {
+  obligation.skipNextRepeat = false;
+  await obligationDB.add(obligation);
+  return;
+}
       const baseDate = new Date(obligation.dateTime);
       const nextDate = new Date(baseDate);
 
@@ -860,6 +869,8 @@ renderShoppingList();
     ? document.getElementById('reminderTime').value
     : null,
   repeat: document.getElementById('repeatType')?.value || null,
+  repeatPaused: isEdit ? (existing?.repeatPaused || false) : false,
+  skipNextRepeat: isEdit ? (existing?.skipNextRepeat || false) : false,
   status: isEdit ? (existing?.status || 'active') : 'active',
   createdAt: isEdit ? (existing?.createdAt || new Date().toISOString()) : new Date().toISOString(),
   lang: lang

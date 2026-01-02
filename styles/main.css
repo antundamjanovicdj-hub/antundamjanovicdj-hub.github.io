@@ -8,6 +8,8 @@ html, body {
   width: 100%;
   height: 100%;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  background: #000;          /* ⬅️ KLJUČNO */
 }
 
 .app {
@@ -24,6 +26,10 @@ html, body {
   inset: 0;
   width: 100%;
   height: 100%;
+
+  overflow: hidden;          /* ⬅️ KLJUČNO: nema pulla cijelog screena */
+  overscroll-behavior: none; /* ⬅️ Android overscroll fix */
+
   opacity: 0;
   transform: translateY(6px);
   transition: opacity 180ms ease-out, transform 180ms ease-out;
@@ -41,6 +47,11 @@ html, body {
 #screen-menu,
 #screen-add-obligation {
   background: url('../images/welcome-bg.png') center/cover no-repeat;
+}
+
+#screen-shopping,
+#screen-obligations-list {
+  background: white;
 }
 
 /* ===== WELCOME EKRAN ===== */
@@ -336,9 +347,11 @@ html, body {
 /* ===== PREGLED OBVEZA ===== */
 #screen-obligations-list {
   padding: 20px;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
+
+  overflow-y: auto;
+  overscroll-behavior: none; /* ⬅️ KLJUČNO */
 }
 
 .obligations-header {
@@ -509,6 +522,9 @@ html, body {
   padding: 16px;
   display: flex;
   flex-direction: column;
+
+  overflow-y: auto;          /* scroll samo unutar screena */
+  overscroll-behavior: none; /* ⬅️ sprječava pull / peek */
 }
 
 #screen-shopping .screen-title {

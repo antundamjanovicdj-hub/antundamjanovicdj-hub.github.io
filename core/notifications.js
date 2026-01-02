@@ -40,6 +40,13 @@ export async function scheduleObligationNotification(obligation, delayMinutes = 
   }
 
   if (triggerTime <= Date.now()) return;
+const { isNative, scheduleNativeNotification } =
+  await import('./nativeNotifications.js');
+
+if (isNative()) {
+  await scheduleNativeNotification(obligation, triggerTime);
+  return;
+}
 
   const registration = await navigator.serviceWorker.ready;
 

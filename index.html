@@ -175,15 +175,8 @@
   }
 </script>
 <script type="module">
-  import {
-    requestNotificationPermission,
-    showTestNotification
-  } from './core/notifications.js';
-
-  const granted = await requestNotificationPermission();
-  if (granted) {
-    showTestNotification();
-  }
+  import { requestNotificationPermission } from './core/notifications.js';
+  requestNotificationPermission();
 </script>
 
 <script>

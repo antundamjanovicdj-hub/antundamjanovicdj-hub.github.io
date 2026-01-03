@@ -1,0 +1,758 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  background: #000;          /* ⬅️ KLJUČNO */
+}
+
+.app {
+  width: 100%;
+  height: 100%;
+  position: fixed;   /* ⬅️ KLJUČNO */
+  inset: 0;          /* ⬅️ zaključa na viewport */
+  overflow: hidden;  /* ⬅️ nema pull/peek efekta */
+}
+
+/* ===== EKRANI ===== */
+.screen {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+
+  overflow: hidden;          /* ⬅️ KLJUČNO: nema pulla cijelog screena */
+  overscroll-behavior: none; /* ⬅️ Android overscroll fix */
+
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 180ms ease-out, transform 180ms ease-out;
+  pointer-events: none;
+}
+
+.screen.active {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* ===== POZADINA — SLIKA NA SVIM EKRANIMA ===== */
+#screen-lang,
+#screen-menu,
+#screen-add-obligation {
+  background: url('../images/welcome-bg.png') center/cover no-repeat;
+}
+
+#screen-shopping,
+#screen-obligations-list {
+  background: white;
+}
+
+/* ===== WELCOME EKRAN ===== */
+.lang-title-top,
+.lang-title-bottom {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Caveat', cursive;
+  font-weight: 700;
+  font-size: 36px;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+  z-index: 10;
+}
+
+.lang-title-top {
+  top: 80px;
+}
+
+.lang-title-bottom {
+  bottom: 80px;
+}
+
+.lang-grid-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 280px;
+}
+
+.lang-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.lang-btn {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.85);
+  color: #0d3b25;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.lang-btn:hover {
+  transform: scale(1.04);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+/* ===== GLAVNI IZBORNIK ===== */
+.back {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  font-size: 1.8rem;
+  color: #0d3b25;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  z-index: 100;
+}
+
+.main-menu-buttons {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 180px;
+}
+
+.menu-item {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 16px;
+  font-family: 'Caveat', cursive;
+  font-size: 1.4rem;
+  font-weight: 700;
+  background: #ffcc80; /* ISTA BOJA KAO POPUP */
+  color: #0d3b25;
+  cursor: pointer;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transform: translateX(100%);
+  opacity: 0;
+}
+.menu-item:hover {
+  background: #ffd9a6;
+  transform: scale(1.04);
+}
+
+.menu-item.animate {
+  transform: translateX(0);
+  opacity: 1;
+  transition: transform 0.6s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.4s ease;
+}
+
+/* ===== POPUP ZA OBVEZE ===== */
+.popup-balloon {
+  position: fixed;
+  top: 180px;
+  right: 20px;
+  width: 240px;
+  display: none;
+  z-index: 1000;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.3s ease;
+}
+
+.popup-balloon.animate {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.balloon-content {
+  background: white;
+  border-radius: 20px;
+  padding: 16px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+}
+
+.balloon-btn {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border: none;
+  border-radius: 14px;
+  background: #ffcc80;
+  color: #0d3b25;
+  font-family: 'Caveat', cursive;
+  font-size: 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.2s;
+}
+
+.balloon-btn:hover {
+  background: #ffd9a6;
+}
+
+/* ===== FULL-SCREEN FORM ZA OBVEZU ===== */
+#screen-add-obligation {
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.obligation-form {
+  width: 100%;
+  max-width: 400px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 24px;
+  border-radius: 20px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+}
+
+.obligation-form input,
+.obligation-form textarea,
+.datetime-label,
+.reminder-checkbox {
+  width: 100%;
+  margin: 12px 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+#obligationTitle {
+  font-size: 1.4rem;
+  font-weight: bold;
+  border: none;
+  border-bottom: 2px solid #0d5e32;
+  padding: 8px 0;
+  outline: none;
+}
+
+#obligationNote {
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 12px;
+  resize: none;
+
+  font-size: 1.1rem;
+  line-height: 1.5;
+}
+
+.datetime-label {
+  display: block;
+  margin-top: 16px;
+}
+
+.datetime-label span {
+  display: block;
+  margin-bottom: 6px;
+  color: #0d3b25;
+  font-weight: 600;
+}
+
+#obligationDateTime {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.reminder-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.reminder-checkbox input {
+  width: auto;
+  transform: scale(1.3);
+}
+
+#reminderOptions {
+  margin-top: 12px;
+}
+
+#reminderOptions select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: white;
+}
+.repeat-label {
+  display: block;
+  margin-top: 16px;
+}
+
+.repeat-label span {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #0d3b25;
+}
+
+#repeatType {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: white;
+}
+
+.quiet-hours-label {
+  display: block;
+  margin-top: 16px;
+}
+
+.quiet-hours-label span {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #0d3b25;
+}
+
+.quiet-hours-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.quiet-hours-row input[type="time"] {
+  flex: 1;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.btn-save {
+  width: 100%;
+  padding: 14px;
+  margin-top: 20px;
+  background: #0d5e32;
+  color: white;
+  border: none;
+  border-radius: 16px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.btn-cancel {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  background: #f44336;
+  color: white;
+  border: none;
+  border-radius: 16px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.btn-cancel:hover {
+  background: #d0d0d0;
+}
+
+.hidden {
+  display: none !important;
+}
+/* ===== PREGLED OBVEZA ===== */
+#screen-obligations-list {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+
+  overflow-y: auto;
+  overscroll-behavior: none; /* ⬅️ KLJUČNO */
+}
+
+.obligations-header {
+  text-align: center;
+  margin-bottom: 20px;
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+.obligations-header h2 {
+  font-family: 'Caveat', cursive;
+  font-size: 2rem;
+  margin-bottom: 8px;
+}
+
+.obligations-header p {
+  font-size: 1.1rem;
+}
+
+.obligations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.obligation-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  position: relative;
+}
+
+.obligation-title {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #0d3b25;
+  margin-bottom: 6px;
+}
+
+.obligation-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 8px 0;
+  font-size: 0.95rem;
+}
+
+.obligation-date,
+.obligation-time,
+.obligation-reminder {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #555;
+}
+
+.obligation-note {
+  margin-top: 10px;
+  font-style: italic;
+  color: #666;
+  white-space: pre-wrap;
+
+  font-size: 1.1rem;
+  line-height: 1.5;
+}
+
+.obligation-delete {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: #ff6b6b;
+  color: white;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.obligation-delete:hover {
+  background: #ff5252;
+}
+
+.empty-list {
+  text-align: center;
+  color: white;
+  font-size: 1.2rem;
+  padding: 40px;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+.obligation-status {
+  font-weight: bold;
+  color: #0d3b25;
+  margin-top: 6px;
+  font-size: 0.95rem;
+}
+
+.obligation-toggle-status {
+  margin-top: 10px;
+  padding: 6px 12px;
+  background: #0d5e32;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  width: 100%;
+}
+.obligation-edit {
+  margin-top: 10px;
+  padding: 6px 12px;
+
+  background: #ffcc80;
+  color: #0d3b25;
+  border: none;
+  border-radius: 12px;
+
+  font-size: 0.95rem;
+  font-weight: 600;
+
+  cursor: pointer;
+  width: 100%;
+}
+
+.obligation-toggle-status:hover {
+  background: #0a4a27;
+}
+/* ===== TOOLBAR IZNAD OBVEZA ===== */
+.obligations-toolbar {
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.toolbar-btn {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 16px;
+  background: #ffcc80; /* ista boja kao ostali akcijski gumbi */
+  color: #0d3b25;
+  font-family: 'Caveat', cursive;
+  font-size: 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  transition: all 0.2s ease;
+}
+
+.toolbar-btn:hover {
+  background: #ffd9a6;
+  transform: scale(1.04);
+}
+/* ===== STACK NAVIGATION ANIMATION ===== */
+.screen {
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 180ms ease-out, transform 180ms ease-out;
+  pointer-events: none;
+}
+
+.screen.active {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+#dateFilter {
+  margin: 10px 0 16px;
+  display: flex;
+  justify-content: center;
+}
+
+#dateFilter input {
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+/* Shopping screen */
+#screen-shopping {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+
+  overflow-y: auto;          /* scroll samo unutar screena */
+  overscroll-behavior: none; /* ⬅️ sprječava pull / peek */
+}
+
+#screen-shopping .screen-title {
+  margin: 8px 0 12px;
+}
+
+.shopping-addbar {
+  position: sticky;
+  top: 0;
+  background: inherit;
+  padding: 8px 0 12px;
+  z-index: 2;
+  width: 100%;
+}
+
+#shoppingInput {
+  width: 100%;
+  font-size: 16px;
+  padding: 12px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.15);
+  text-align: center;
+}
+
+.shopping-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex: 1;
+}
+.shopping-list {
+  width: 100%;
+  flex-grow: 1;
+}
+
+.empty-state {
+  margin: 4px 0;            /* ⬅️ ukupno bliže gore */
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px dashed rgba(0,0,0,0.25);
+  text-align: center;
+  margin-top: 8px;         /* ⬅️ dodatno povući prema inputu */
+  opacity: 0.9;
+}
+
+.empty-emoji {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+.empty-title {
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.empty-sub {
+  opacity: 0.85;
+  font-size: 14px;
+}
+/* Shopping item checked state */
+.shopping-item {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+
+  /* parent bez paddinga → nema “curenja” crvene */
+  min-height: 56px;
+  display: flex;
+  align-items: stretch;
+}
+
+.shopping-item-content {
+  position: relative;
+  z-index: 1;
+
+  /* ⬇️ padding SELI OVAMO */
+  padding: 18px 16px;
+
+  background: #ffffff;     /* bijelo SAMO na contentu */
+  width: 100%;
+  height: 100%;
+
+  transition: transform 0.2s ease;
+  touch-action: none;
+}
+
+.shopping-item-delete {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 84px;
+  background: #ff5252;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  z-index: 0;
+
+  opacity: 0;              /* ⬅️ skriveno po defaultu */
+  transition: opacity 0.2s ease;
+}
+
+.shopping-item.swiping .shopping-item-delete {
+  opacity: 1;              /* ⬅️ vidi se tek tijekom swipea */
+}
+
+.shopping-item {
+  transition: transform 0.2s ease;
+}
+.shopping-item-content {
+  touch-action: pan-y;
+}
+
+.shopping-item.checked {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+/* Ensure empty state never blocks clicks */
+#shoppingEmpty {
+  pointer-events: none;
+}
+/* Hint that long-press / right-click deletes */
+.shopping-item {
+  user-select: none;
+}
+
+.shopping-item.checked::after {
+  content: ' ✕';
+  opacity: 0.4;
+}
+/* Archive toggle */
+.archive-toggle {
+  margin: 0 0 8px;
+  background: none;
+  border: none;
+  color: inherit;
+  opacity: 0.7;
+  font-size: 14px;
+  cursor: pointer;
+  align-self: flex-start;
+}
+.archive-toggle {
+  margin: 8px 0 12px;
+  background: none;
+  border: none;
+  color: inherit;
+  opacity: 0.7;
+  font-size: 14px;
+  cursor: pointer;
+}
+.archive-top-left {
+  align-self: flex-start;
+  margin: 6px 0 6px 12px;
+}
+.swipe-hint {
+  margin: 8px 0 4px;
+  font-size: 13px;
+  opacity: 0.6;
+  text-align: left;
+  transition: opacity 0.3s ease;
+}
+
+.swipe-hint.hidden {
+  display: none;
+}

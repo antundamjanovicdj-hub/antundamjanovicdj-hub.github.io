@@ -1,0 +1,1033 @@
+!DOCTYPE html>
+<html lang="hr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>LifeKompas</title>
+
+  <!-- ✅ CAVEAT FONT -->
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&display=swap" rel="stylesheet">
+
+  <link rel="manifest" href="manifest-v2.json?v=2" />
+  <link rel="icon" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="LifeKompas">
+  <meta name="theme-color" content="#0d5e32">
+
+  <link rel="stylesheet" href="styles/main.css">
+</head>
+
+<body>
+
+<div class="app">
+
+  <!-- LANGUAGE SCREEN -->
+  <div id="screen-lang" class="screen active">
+    <div class="lang-title-top">LIFE</div>
+    <div class="lang-grid-container">
+      <div class="lang-row">
+        <button class="lang-btn" data-lang="hr">🇭🇷 Hrvatski</button>
+        <button class="lang-btn" data-lang="en">🇺🇸 English</button>
+      </div>
+      <div class="lang-row">
+        <button class="lang-btn" data-lang="de">🇩🇪 Deutsch</button>
+        <button class="lang-btn" data-lang="ru">🇷🇺 Русский</button>
+      </div>
+      <div class="lang-row">
+        <button class="lang-btn" data-lang="pt">🇵🇹 Português</button>
+        <button class="lang-btn" data-lang="tr">🇹🇷 Türkçe</button>
+      </div>
+      <div class="lang-row">
+        <button class="lang-btn" data-lang="zh">🇨🇳 中文</button>
+        <button class="lang-btn" data-lang="ja">🇯🇵 日本語</button>
+      </div>
+    </div>
+    <div class="lang-title-bottom">KOMPAS</div>
+  </div>
+
+  <!-- MAIN MENU -->
+  <div id="screen-menu" class="screen">
+    <button class="back" id="backMenu">←</button>
+    <div class="main-menu-buttons">
+      <button class="menu-item" id="btnObligations">🧭 Obveze</button>
+      <button class="menu-item" id="btnShopping">🛒 Kupovina</button>
+      <button class="menu-item" id="btnContacts">👥 Kontakti</button>
+      <button class="menu-item" id="btnFinances">💰 Financije</button>
+      <button class="menu-item" id="btnHealth">❤️ Zdravlje</button>
+      <button class="menu-item" id="btnDiary">📓 Dnevnik</button>
+    </div>
+  </div>
+
+  <!-- SHOPPING SCREEN -->
+  <div id="screen-shopping" class="screen">
+    <button class="back" id="backShopping">←</button>
+
+    <h2 class="screen-title" id="shoppingTitle">🛒 Kupovina</h2>
+
+    <div class="shopping-addbar">
+      <input
+        id="shoppingInput"
+        type="text"
+        autocomplete="off"
+        inputmode="text"
+        placeholder="Dodaj stavku i stisni Enter"
+      />
+    </div>
+
+    <button id="toggleArchive" class="archive-toggle">
+  Prikaži arhivu
+</button>
+
+<div id="shoppingSwipeHint" class="swipe-hint hidden">
+  ← Povuci ulijevo za brisanje
+</div>
+
+<ul id="shoppingList" class="shopping-list"></ul>
+
+<div id="shoppingEmpty" class="empty-state">
+      <div class="empty-emoji">🛒</div>
+      <div class="empty-title" id="shoppingEmptyTitle">Nema stavki</div>
+      <div class="empty-sub" id="shoppingEmptySub">
+        Dodaj prvu stavku gore.
+      </div>
+    </div>
+  </div>
+
+  <!-- POPUP ZA OBVEZE -->
+  <div id="obligationsPopup" class="popup-balloon">
+    <div class="balloon-content">
+      <button class="balloon-btn" id="btnAddObligation">➕ Dodaj obvezu</button>
+      <button class="balloon-btn" id="btnViewObligations">📅 Pregled obveza</button>
+    </div>
+  </div>
+
+  <!-- EKRAN: DODAVANJE/UREĐIVANJE OBVEZE -->
+  <div id="screen-add-obligation" class="screen">
+    <button class="back" id="backToAddObligation">←</button>
+    <div class="obligation-form">
+      <input type="text" id="obligationTitle" placeholder="Naslov obveze" maxlength="100">
+      <textarea id="obligationNote" placeholder="Napomena" rows="3"></textarea>
+
+      <label class="datetime-label">
+        <span id="obligationDateTimeLabel">Datum i vrijeme</span>
+        <input type="datetime-local" id="obligationDateTime">
+      </label>
+
+      <label class="reminder-checkbox">
+        <input type="checkbox" id="enableReminder">
+        <span id="reminderLabel">Podsjetnik</span>
+      </label>
+      <label class="reminder-checkbox">
+        <input type="checkbox" id="urgentObligation">
+        <span>Hitno (ignorira tihe sate)</span>
+     </label>
+
+      <div id="reminderOptions" class="hidden">
+        <select id="reminderTime">
+          <option value="30">30 minuta prije</option>
+          <option value="60">1 sat prije</option>
+          <option value="120">2 sata prije</option>
+          <option value="1440">1 dan prije</option>
+        </select>
+      </div>
+<label class="repeat-label">
+  <span>Ponavljanje</span>
+  <select id="repeatType">
+    <option value="">Bez ponavljanja</option>
+    <option value="daily">Svaki dan</option>
+    <option value="weekly">Svaki tjedan</option>
+  </select>
+</label>
+<label class="quiet-hours-label">
+  <span>Tihe sate</span>
+  <div class="quiet-hours-row">
+    <input type="time" id="quietStart" value="22:00">
+    <span>–</span>
+    <input type="time" id="quietEnd" value="07:00">
+  </div>
+</label>
+
+      <button id="saveObligation" class="btn-save">💾 Spremi</button>
+      <button id="cancelObligation" class="btn-cancel"></button>
+    </div>
+  </div>
+
+  <!-- EKRAN: PREGLED OBVEZA -->
+  <div id="screen-obligations-list" class="screen">
+    <button class="back" id="backToObligationsList">←</button>
+
+    <!-- TOOLBAR -->
+    <div class="obligations-toolbar">
+      <button id="btnViewByDays" class="toolbar-btn">
+        📆 Pregled po danima
+      </button>
+    </div>
+
+    <!-- DATE PICKER – samo za daily view -->
+    <div id="dailyDateBar" class="hidden" style="padding: 8px 12px;">
+      <input
+        type="date"
+        id="dailyDatePicker"
+        style="width:100%; padding:10px; border-radius:10px; border:1px solid rgba(0,0,0,0.15);"
+      >
+    </div>
+
+    <!-- LIST VIEW -->
+    <div id="obligationsContainer" class="obligations-list"></div>
+
+    <!-- DAILY VIEW -->
+    <div id="dailyView" class="hidden" style="padding: 0 12px 16px;">
+      <div id="dailyOpenWrap"></div>
+      <div id="dailyDoneWrap"></div>
+    </div>
+  </div>
+
+</div> <!-- .app -->
+
+<!-- SKRIPTOVE -->
+<script src="core/i18n.js"></script>
+<script src="core/db.js"></script>
+<script type="module">
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js');
+  }
+</script>
+<script type="module">
+  import { requestNotificationPermission } from './core/notifications.js';
+  requestNotificationPermission();
+</script>
+
+<script>
+/* ===== HELPERS ===== */
+/* ===== HELPERS ===== */
+function getLang() {
+  return localStorage.getItem('userLang') || 'hr';
+}
+
+// ✅ DETEKCIJA TOUCH UREĐAJA (MOBITEL / TABLET)
+const IS_TOUCH_DEVICE =
+  'ontouchstart' in window ||
+  navigator.maxTouchPoints > 0;
+
+function getISODateFromDateTime(dateTimeStr) {
+  if (!dateTimeStr) return null;
+  return String(dateTimeStr).split('T')[0] || null;
+}
+
+function todayISO() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function showScreen(screenId) {
+  const screens = document.querySelectorAll('.screen');
+  const next = document.getElementById(screenId);
+
+  screens.forEach(screen => screen.classList.remove('active'));
+
+  requestAnimationFrame(() => {
+    next?.classList.add('active');
+  });
+}
+
+/* ===== SET LANGUAGE + SHOW MENU ===== */
+function setLanguage(lang) {
+  localStorage.setItem('userLang', lang);
+  document.documentElement.setAttribute('lang', lang);
+
+  if (typeof I18N === 'undefined' || !I18N[lang]) {
+    showScreen('screen-menu');
+    return;
+  }
+
+  document.getElementById('btnObligations').textContent = I18N[lang].menu.obligations;
+  document.getElementById('btnShopping').textContent = I18N[lang].menu.shopping;
+  document.getElementById('btnContacts').textContent = I18N[lang].menu.contacts;
+  document.getElementById('btnFinances').textContent = I18N[lang].menu.finances;
+  document.getElementById('btnHealth').textContent = I18N[lang].menu.health;
+  document.getElementById('btnDiary').textContent = I18N[lang].menu.diary;
+
+  showScreen('screen-menu');
+
+  setTimeout(() => {
+    document.querySelectorAll('.menu-item').forEach((item, i) => {
+      setTimeout(() => item.classList.add('animate'), 150 * i);
+    });
+  }, 50);
+}
+
+/* ===== OTVORI FORMU ZA UREĐIVANJE ===== */
+function openEditForm(ob) {
+  showScreen('screen-add-obligation');
+
+  const lang = getLang();
+
+  document.getElementById('obligationTitle').value = ob.title;
+  document.getElementById('obligationNote').value = ob.note || '';
+  document.getElementById('obligationDateTime').value = ob.dateTime || '';
+  document.getElementById('enableReminder').checked = !!ob.reminder;
+  const urgentCheckbox = document.getElementById('urgentObligation');
+if (urgentCheckbox) {
+  urgentCheckbox.checked = !!ob.urgent;
+}
+  document.getElementById('reminderOptions').classList.toggle('hidden', !ob.reminder);
+  if (ob.reminder) document.getElementById('reminderTime').value = ob.reminder;
+
+  document.getElementById('saveObligation').textContent = I18N[lang].obligation.update;
+  document.getElementById('saveObligation').dataset.editId = ob.id;
+  document.getElementById('cancelObligation').textContent = `✖️ ${I18N[lang].obligation.cancel}`;
+const repeatSelect = document.getElementById('repeatType');
+  if (repeatSelect) {
+    repeatSelect.value = ob.repeat || '';
+  }
+}
+
+/* ===== RENDER CARD (reused) ===== */
+function buildObligationCard(ob, lang) {
+  const dt = ob.dateTime ? new Date(ob.dateTime) : null;
+  const dateStr = dt ? dt.toLocaleDateString(I18N[lang].lang || 'hr-HR') : '—';
+  const timeStr = dt ? dt.toLocaleTimeString(I18N[lang].lang || 'hr-HR', { hour: '2-digit', minute: '2-digit' }) : '—';
+
+  let reminderStr = '';
+  if (ob.reminder) {
+    const key = `reminder${ob.reminder}`;
+    reminderStr = I18N[lang].obligationsList[key] || `${ob.reminder} min`;
+  }
+
+  let repeatIcon = '';
+let repeatTitle = '';
+
+if (ob.repeat) {
+  repeatIcon = ' 🔁';
+
+  if (ob.repeat === 'daily') repeatTitle = 'Svaki dan';
+  else if (ob.repeat === 'weekly') repeatTitle = 'Svaki tjedan';
+  else if (ob.repeat === 'monthly') repeatTitle = 'Svaki mjesec';
+  else repeatTitle = 'Prilagođeno';
+}
+  const statusText = ob.status === 'done'
+    ? `✅ ${I18N[lang].obligationsList.statusDone}`
+    : `⏳ ${I18N[lang].obligationsList.statusActive}`;
+
+  const bgColor = ob.status === 'done' ? '#e8f5e9' : '#e3f2fd';
+  const borderColor = ob.status === 'done' ? '#4caf50' : '#2196f3';
+
+  const toggleBtnText = ob.status === 'done'
+    ? I18N[lang].obligationsList.markActive
+    : I18N[lang].obligationsList.markDone;
+
+  return `
+    <div class="obligation-card" data-id="${ob.id}" style="background:${bgColor}; border-left:4px solid ${borderColor};">
+      <div class="obligation-title" title="${repeatTitle}">${ob.title}${repeatIcon}</div>
+      ${ob.note ? `<div class="obligation-note">${ob.note}</div>` : ''}
+      <div class="obligation-meta">
+        <div class="obligation-date">📅 ${dateStr}</div>
+        <div class="obligation-time">⏰ ${timeStr}</div>
+        ${reminderStr ? `<div class="obligation-reminder">🔔 ${reminderStr}</div>` : ''}
+        <div class="obligation-status">${statusText}</div>
+      </div>
+      <button class="obligation-toggle-status" data-id="${ob.id}" data-status="${ob.status}">
+        ${toggleBtnText}
+      </button>
+      <button class="obligation-edit" data-id="${ob.id}">✏️ ${I18N[lang].obligationsList.edit}</button>
+      <button
+        class="obligation-delete"
+        data-id="${ob.id}"
+        title="${I18N[lang].obligationsList.delete || 'Obriši'}"
+        aria-label="${I18N[lang].obligationsList.delete || 'Obriši'}"
+      >
+        🗑️
+      </button>
+    </div>
+  `;
+}
+
+function attachObligationHandlers(container) {
+  // PROMJENA STATUSA
+  container.querySelectorAll('.obligation-toggle-status').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const id = parseInt(btn.dataset.id, 10);
+      const currentStatus = btn.dataset.status;
+      const newStatus = currentStatus === 'done' ? 'active' : 'done';
+
+      const obligations = await obligationDB.getAll();
+      const obligation = obligations.find(o => o.id === id);
+      if (!obligation) return;
+
+      obligation.status = newStatus;
+await obligationDB.add(obligation);
+
+if (newStatus === 'done') {
+  import('./core/notifications.js').then(async ({
+    cancelObligationNotification,
+    scheduleObligationNotification
+  }) => {
+    cancelObligationNotification(id);
+
+    if (
+  obligation.repeat &&
+  obligation.dateTime &&
+  !obligation.repeatPaused
+) {
+if (obligation.skipNextRepeat) {
+  obligation.skipNextRepeat = false;
+  await obligationDB.add(obligation);
+  return;
+}
+      const baseDate = new Date(obligation.dateTime);
+      const nextDate = new Date(baseDate);
+if (obligation.repeat === 'custom' && obligation.customRepeat) {
+  const { unit, every } = obligation.customRepeat;
+  const baseDate = new Date(obligation.dateTime);
+  const nextDate = new Date(baseDate);
+
+  if (unit === 'day') nextDate.setDate(baseDate.getDate() + every);
+  if (unit === 'week') nextDate.setDate(baseDate.getDate() + every * 7);
+  if (unit === 'month') nextDate.setMonth(baseDate.getMonth() + every);
+
+  const nextObligation = {
+    ...obligation,
+    id: Date.now(),
+    status: 'active',
+    dateTime: nextDate.toISOString().slice(0, 16),
+    createdAt: new Date().toISOString()
+  };
+
+  await obligationDB.add(nextObligation);
+  await scheduleObligationNotification(nextObligation);
+  return;
+}
+
+      if (obligation.repeat === 'daily') {
+  nextDate.setDate(baseDate.getDate() + 1);
+}
+
+if (obligation.repeat === 'weekly') {
+  nextDate.setDate(baseDate.getDate() + 7);
+}
+
+if (obligation.repeat === 'monthly') {
+  const year = baseDate.getFullYear();
+  const month = baseDate.getMonth() + 1; // next month
+  const day = baseDate.getDate();
+
+  // zadnji dan ciljanog mjeseca
+  const lastDayOfTargetMonth = new Date(year, month + 1, 0).getDate();
+
+  nextDate.setFullYear(year);
+  nextDate.setMonth(month);
+  nextDate.setDate(Math.min(day, lastDayOfTargetMonth));
+}
+
+      const nextObligation = {
+        ...obligation,
+        id: Date.now(),
+        status: 'active',
+        dateTime: nextDate.toISOString().slice(0, 16),
+        createdAt: new Date().toISOString()
+      };
+
+      await obligationDB.add(nextObligation);
+      await scheduleObligationNotification(nextObligation);
+    }
+  });
+}
+
+refreshCurrentObligationsView();
+    });
+  });
+
+  // UREĐIVANJE
+  container.querySelectorAll('.obligation-edit').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const id = parseInt(btn.dataset.id, 10);
+      const obligations = await obligationDB.getAll();
+      const ob = obligations.find(o => o.id === id);
+      if (ob) openEditForm(ob);
+    });
+  });
+
+  // BRISANJE
+  container.querySelectorAll('.obligation-delete').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const id = parseInt(btn.dataset.id, 10);
+      const langNow = getLang();
+
+      if (!confirm(I18N[langNow].obligationsList.deleteConfirm || 'Obrisati obvezu?')) {
+        return;
+      }
+
+      await obligationDB.delete(id);
+
+      import('./core/notifications.js').then(({ cancelObligationNotification }) => {
+        cancelObligationNotification(id);
+      });
+
+      refreshCurrentObligationsView();
+    });
+  });
+}
+
+/* ===== DAILY VIEW LOGIC ===== */
+let viewMode = 'list'; // 'list' | 'days'
+let currentDailyDate = todayISO();
+
+function showListMode() {
+  viewMode = 'list';
+
+  const dailyView = document.getElementById('dailyView');
+  const dailyDateBar = document.getElementById('dailyDateBar');
+  const list = document.getElementById('obligationsContainer');
+  const btn = document.getElementById('btnViewByDays');
+
+  if (dailyView) dailyView.classList.add('hidden');
+  if (dailyDateBar) dailyDateBar.classList.add('hidden');
+  if (list) list.classList.remove('hidden');
+
+  const lang = getLang();
+  if (btn) btn.textContent = I18N[lang].obligationsView.byDay;
+}
+
+function showDailyMode() {
+  viewMode = 'days';
+
+  const dailyView = document.getElementById('dailyView');
+  const dailyDateBar = document.getElementById('dailyDateBar');
+  const list = document.getElementById('obligationsContainer');
+  const btn = document.getElementById('btnViewByDays');
+
+  if (list) list.classList.add('hidden');
+  if (dailyView) dailyView.classList.remove('hidden');
+  if (dailyDateBar) dailyDateBar.classList.remove('hidden');
+
+  const lang = getLang();
+  if (btn) btn.textContent = I18N[lang].obligationsView.asList;
+}
+
+function groupObligationsByStatus(items) {
+  return {
+    open: items.filter(i => i.status !== 'done'),
+    done: items.filter(i => i.status === 'done')
+  };
+}
+
+async function loadDailyForDate(isoDate) {
+  currentDailyDate = isoDate;
+
+  const picker = document.getElementById('dailyDatePicker');
+  if (picker && picker.value !== isoDate) picker.value = isoDate;
+
+  const lang = getLang();
+  const all = (await obligationDB.getAll())
+  .filter(o => o.type !== 'shopping');
+
+const filtered = all.filter(o =>
+  getISODateFromDateTime(o.dateTime) === isoDate
+);
+  const groups = groupObligationsByStatus(filtered);
+
+  const openWrap = document.getElementById('dailyOpenWrap');
+  const doneWrap = document.getElementById('dailyDoneWrap');
+  const emptyHtml = `<div class="empty-list">${I18N[lang].obligationsList.noObligations}</div>`;
+
+  if (groups.open.length === 0) {
+    openWrap.innerHTML = `<div class="empty-list">—</div>`;
+  } else {
+    openWrap.innerHTML = `
+      <div style="font-weight:800; margin:8px 0;">Aktivne (${groups.open.length})</div>
+      ${groups.open.map(ob => buildObligationCard(ob, lang)).join('')}
+    `;
+    attachObligationHandlers(openWrap);
+  }
+
+  if (groups.done.length === 0) {
+    doneWrap.innerHTML = `<div class="empty-list">—</div>`;
+  } else {
+    doneWrap.innerHTML = `
+      <div style="font-weight:800; margin:8px 0;">Završene (${groups.done.length})</div>
+      ${groups.done.map(ob => buildObligationCard(ob, lang)).join('')}
+    `;
+    attachObligationHandlers(doneWrap);
+  }
+
+  if (groups.open.length === 0 && groups.done.length === 0) {
+    openWrap.innerHTML = emptyHtml;
+    doneWrap.innerHTML = '';
+  }
+}
+
+function refreshCurrentObligationsView() {
+  if (viewMode === 'days') {
+    loadDailyForDate(currentDailyDate);
+  } else {
+    renderObligationsList();
+  }
+}
+
+/* ===== LIST VIEW RENDER ===== */
+async function renderObligationsList() {
+  if (viewMode === 'days') return;
+
+  const container = document.getElementById('obligationsContainer');
+  const lang = getLang();
+
+  const obligations = (await obligationDB.getAll())
+  .filter(o =>
+    o.type !== 'shopping' &&
+    o.status !== 'done'
+  );
+
+  obligations.sort((a, b) => {
+    if (a.status !== b.status) return a.status === 'active' ? -1 : 1;
+    if (!a.dateTime) return 1;
+    if (!b.dateTime) return -1;
+    return new Date(b.dateTime) - new Date(a.dateTime);
+  });
+
+  if (obligations.length === 0) {
+    container.innerHTML = `<div class="empty-list">${I18N[lang].obligationsList.noObligations}</div>`;
+    return;
+  }
+
+  container.innerHTML = obligations.map(ob => buildObligationCard(ob, lang)).join('');
+  attachObligationHandlers(container);
+}
+
+/* ===== SHOPPING (IndexedDB + Archive) ===== */
+let shoppingItems = [];
+let showArchivedShopping = false;
+
+function renderShoppingList() {
+  const list = document.getElementById('shoppingList');
+  const empty = document.getElementById('shoppingEmpty');
+
+  if (!list || !empty) return;
+
+  list.innerHTML = '';
+
+  const visibleItems = showArchivedShopping
+    ? shoppingItems
+    : shoppingItems.filter(item => !item.checked);
+
+  if (visibleItems.length === 0) {
+    empty.style.display = 'block';
+    return;
+  }
+
+  empty.style.display = 'none';
+
+  visibleItems.forEach(item => {
+    const li = document.createElement('li');
+li.className = 'shopping-item';
+
+li.innerHTML = `
+  <div class="shopping-item-delete">🗑️</div>
+  <div class="shopping-item-content">${item.title}</div>
+`;
+
+if (item.checked) li.classList.add('checked');
+
+// tap / click = check
+li.addEventListener('click', () => {
+  item.checked = !item.checked;
+  renderShoppingList();
+  addShoppingItem(item); // ✅ koristi db.js add/put
+});
+
+// ===== MOBILE ONLY: swipe to delete (FINAL) =====
+if (IS_TOUCH_DEVICE) {
+  let startX = 0;
+  let currentX = 0;
+  let swiping = false;
+  const DELETE_THRESHOLD = 120; // px
+
+  li.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+    currentX = startX;
+    swiping = true;
+  }, { passive: true });
+
+// označi da je swipe započeo (za CSS)
+li.classList.add('swiping');
+// 🔎 MICRO HINT – show on first swipe only
+const hint = document.getElementById('shoppingSwipeHint');
+const hintSeen = localStorage.getItem('shoppingSwipeHintSeen');
+
+if (IS_TOUCH_DEVICE && hint && !hintSeen) {
+  hint.classList.remove('hidden');
+
+  setTimeout(() => {
+    hint.style.opacity = '0';
+    setTimeout(() => {
+      hint.classList.add('hidden');
+      hint.style.opacity = '';
+    }, 300);
+  }, 2500);
+
+  localStorage.setItem('shoppingSwipeHintSeen', '1');
+}
+
+  li.addEventListener('touchmove', e => {
+    if (!swiping) return;
+
+    currentX = e.touches[0].clientX;
+    const diff = currentX - startX;
+
+    if (diff < 0) {
+      const MAX_SWIPE = 84; // px – isto kao širina delete zone
+const limited = Math.max(diff, -MAX_SWIPE);
+li.style.transform = `translateX(${limited}px)`;
+    }
+  }, { passive: true });
+
+  li.addEventListener('touchend', () => {
+    if (!swiping) return;
+    swiping = false;
+  li.classList.remove('swiping');
+
+    const diff = currentX - startX;
+
+    if (diff < -DELETE_THRESHOLD) {
+      // ✅ DELETE
+      shoppingItems = shoppingItems.filter(i => i.id !== item.id);
+      renderShoppingList();
+      deleteShoppingItem(item.id);
+    } else {
+      // ⬅️ SNAP BACK
+      li.style.transition = 'transform 0.15s ease-out';
+      li.style.transform = 'translateX(0)';
+
+      setTimeout(() => {
+        li.style.transition = '';
+      }, 150);
+    }
+  });
+}
+
+// ===== MOBILE: swipe left delete (content only) =====
+const content = li.querySelector('.shopping-item-content');
+
+// swipe disabled for stability
+
+    // DESKTOP: right-click delete
+    li.addEventListener('contextmenu', e => {
+      e.preventDefault();
+      shoppingItems = shoppingItems.filter(i => i.id !== item.id);
+      renderShoppingList();
+      deleteShoppingItem(item.id);
+    });
+
+    list.appendChild(li);
+  });
+}
+
+/* ===== INIT ===== */
+document.addEventListener('DOMContentLoaded', () => {
+// Quiet hours – load/save
+  const quietStartInput = document.getElementById('quietStart');
+  const quietEndInput = document.getElementById('quietEnd');
+
+  if (quietStartInput && quietEndInput) {
+    quietStartInput.value = localStorage.getItem('quietStart') || '22:00';
+    quietEndInput.value = localStorage.getItem('quietEnd') || '07:00';
+
+    quietStartInput.addEventListener('change', () => {
+      localStorage.setItem('quietStart', quietStartInput.value);
+    });
+
+    quietEndInput.addEventListener('change', () => {
+      localStorage.setItem('quietEnd', quietEndInput.value);
+    });
+  }
+navigator.serviceWorker?.addEventListener('message', e => {
+  if (e.data?.type === 'SNOOZE') {
+    import('./core/notifications.js').then(({ snoozeObligation }) => {
+      obligationDB.getAll().then(items => {
+        const ob = items.find(o => o.id === e.data.obligationId);
+        if (ob) {
+          snoozeObligation(ob, e.data.minutes);
+        }
+      });
+    });
+  }
+});
+
+  // JEZICI
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      setLanguage(btn.dataset.lang);
+    });
+  });
+
+  // BACK - MENU
+  document.getElementById('backMenu').addEventListener('click', () => {
+    showScreen('screen-lang');
+    document.querySelectorAll('.menu-item')
+      .forEach(item => item.classList.remove('animate'));
+  });
+
+  // BACK - SHOPPING
+  document.getElementById('backShopping').addEventListener('click', () => {
+    showScreen('screen-menu');
+  });
+
+  // SHOPPING BUTTON (open + load + focus)
+  document.getElementById('btnShopping').addEventListener('click', async () => {
+    const lang = getLang();
+
+    showScreen('screen-shopping');
+
+    document.getElementById('shoppingTitle').textContent = I18N[lang].shopping.title;
+    document.getElementById('shoppingInput').placeholder = I18N[lang].shopping.placeholder;
+    document.getElementById('shoppingEmptyTitle').textContent = I18N[lang].shopping.emptyTitle;
+    document.getElementById('shoppingEmptySub').textContent = I18N[lang].shopping.emptySub;
+
+    const toggleBtn = document.getElementById('toggleArchive');
+    toggleBtn.textContent = showArchivedShopping
+      ? I18N[lang].shopping.hideArchive
+      : I18N[lang].shopping.showArchive;
+
+    shoppingItems = await getShoppingItems();
+
+// ✅ zadrži redoslijed unosa
+shoppingItems.sort((a, b) => a.createdAt - b.createdAt);
+
+renderShoppingList();
+
+    setTimeout(() => document.getElementById('shoppingInput').focus(), 0);
+  });
+
+  // SHOPPING INPUT - Enter to add item
+  const shoppingInput = document.getElementById('shoppingInput');
+  if (shoppingInput) {
+    shoppingInput.addEventListener('keydown', e => {
+      if (e.key !== 'Enter') return;
+
+      const title = shoppingInput.value.trim();
+      if (!title) return;
+
+      const item = {
+        id: crypto.randomUUID(),
+        title,
+        checked: false,
+        createdAt: Date.now()
+      };
+
+      shoppingItems.push(item);
+      renderShoppingList();
+      addShoppingItem(item);
+
+      shoppingInput.value = '';
+      shoppingInput.focus();
+    });
+  }
+
+  // ARCHIVE TOGGLE
+  const toggleArchiveBtn = document.getElementById('toggleArchive');
+  if (toggleArchiveBtn) {
+    toggleArchiveBtn.addEventListener('click', () => {
+      showArchivedShopping = !showArchivedShopping;
+
+      const lang = getLang();
+      toggleArchiveBtn.textContent = showArchivedShopping
+        ? I18N[lang].shopping.hideArchive
+        : I18N[lang].shopping.showArchive;
+
+      renderShoppingList();
+    });
+  }
+
+  // POPUP OBVEZE (open)
+  document.getElementById('btnObligations').addEventListener('click', () => {
+    const popup = document.getElementById('obligationsPopup');
+    const lang = getLang();
+
+    document.getElementById('btnViewByDays').textContent = I18N[lang].obligationsView.byDay;
+    document.getElementById('btnAddObligation').textContent = I18N[lang].menu.addObligation;
+    document.getElementById('btnViewObligations').textContent = I18N[lang].menu.viewObligations;
+
+    popup.style.display = 'block';
+    setTimeout(() => popup.classList.add('animate'), 10);
+  });
+
+  // ZATVORI POPUP
+  document.addEventListener('click', (e) => {
+    const popup = document.getElementById('obligationsPopup');
+    const btn = document.getElementById('btnObligations');
+    if (popup.style.display === 'block' && !popup.contains(e.target) && e.target !== btn) {
+      popup.classList.remove('animate');
+      setTimeout(() => popup.style.display = 'none', 300);
+    }
+  });
+
+  // FORMA ZA DODAVANJE
+  document.getElementById('btnAddObligation').addEventListener('click', () => {
+    const popup = document.getElementById('obligationsPopup');
+    popup.classList.remove('animate');
+    setTimeout(() => popup.style.display = 'none', 300);
+
+    showScreen('screen-add-obligation');
+
+    const lang = getLang();
+    document.getElementById('obligationTitle').placeholder = I18N[lang].obligation.title;
+    document.getElementById('obligationNote').placeholder = I18N[lang].obligation.note;
+    document.getElementById('obligationDateTimeLabel').textContent = I18N[lang].obligation.dateTime;
+    document.getElementById('reminderLabel').textContent = I18N[lang].obligation.reminder;
+    document.getElementById('saveObligation').textContent = I18N[lang].obligation.save;
+    document.getElementById('cancelObligation').textContent = `✖️ ${I18N[lang].obligation.cancel}`;
+    document.getElementById('saveObligation').removeAttribute('data-edit-id');
+  });
+
+  // BACK IZ FORME
+  document.getElementById('backToAddObligation').addEventListener('click', () => {
+    showScreen('screen-menu');
+  });
+
+  // PODSJETNIK
+  document.getElementById('enableReminder').addEventListener('change', (e) => {
+    document.getElementById('reminderOptions').classList.toggle('hidden', !e.target.checked);
+  });
+
+  // SPREMI ILI AŽURIRAJ
+  document.getElementById('saveObligation').addEventListener('click', async () => {
+    const title = document.getElementById('obligationTitle').value.trim();
+    if (!title) {
+      alert('Unesi naslov obveze!');
+      return;
+    }
+
+    const editIdStr = document.getElementById('saveObligation').dataset.editId;
+    const isEdit = !!editIdStr;
+    const editId = isEdit ? parseInt(editIdStr, 10) : null;
+    const lang = getLang();
+
+    let existing = null;
+    if (isEdit) {
+      const all = await obligationDB.getAll();
+      existing = all.find(o => o.id === editId) || null;
+    }
+
+    const obligation = {
+  id: isEdit ? editId : Date.now(),
+  type: 'obligation',
+  title: title,
+  note: document.getElementById('obligationNote').value,
+  dateTime: document.getElementById('obligationDateTime').value,
+  urgent: document.getElementById('urgentObligation')?.checked || false,
+  reminder: document.getElementById('enableReminder').checked
+    ? document.getElementById('reminderTime').value
+    : null,
+  repeat: document.getElementById('repeatType')?.value || null,
+  customRepeat: isEdit ? (existing?.customRepeat || null) : null,
+  repeatPaused: isEdit ? (existing?.repeatPaused || false) : false,
+  skipNextRepeat: isEdit ? (existing?.skipNextRepeat || false) : false,
+  status: isEdit ? (existing?.status || 'active') : 'active',
+  createdAt: isEdit ? (existing?.createdAt || new Date().toISOString()) : new Date().toISOString(),
+  lang: lang
+};
+
+    await obligationDB.add(obligation);
+
+import('./core/notifications.js').then(async ({
+  scheduleObligationNotification,
+  rescheduleObligationNotification
+}) => {
+  if (isEdit) {
+    await rescheduleObligationNotification(obligation);
+  } else {
+    await scheduleObligationNotification(obligation);
+  }
+});
+
+alert(isEdit ? 'Obveza ažurirana!' : 'Obveza spremljena!');
+import('./core/notifications.js').then(({ scheduleObligationNotification }) => {
+  scheduleObligationNotification(obligation);
+});
+
+    document.getElementById('obligationTitle').value = '';
+    document.getElementById('obligationNote').value = '';
+    document.getElementById('obligationDateTime').value = '';
+    document.getElementById('enableReminder').checked = false;
+    document.getElementById('reminderOptions').classList.add('hidden');
+const repeatSelect = document.getElementById('repeatType');
+if (repeatSelect) repeatSelect.value = '';
+    document.getElementById('saveObligation').removeAttribute('data-edit-id');
+
+    if (isEdit) {
+      showScreen('screen-obligations-list');
+      refreshCurrentObligationsView();
+    } else {
+      showScreen('screen-menu');
+    }
+  });
+
+  // ODUSTANI
+  document.getElementById('cancelObligation').addEventListener('click', () => {
+    const isEdit = !!document.getElementById('saveObligation').dataset.editId;
+    document.getElementById('saveObligation').removeAttribute('data-edit-id');
+
+    if (isEdit) {
+      showScreen('screen-obligations-list');
+      refreshCurrentObligationsView();
+    } else {
+      showScreen('screen-menu');
+    }
+  });
+
+  // PREGLED OBVEZA
+  document.getElementById('btnViewObligations').addEventListener('click', () => {
+    const popup = document.getElementById('obligationsPopup');
+    popup.classList.remove('animate');
+    setTimeout(() => popup.style.display = 'none', 300);
+
+    showScreen('screen-obligations-list');
+    showListMode();
+    renderObligationsList();
+  });
+
+  // BACK IZ LISTE
+  document.getElementById('backToObligationsList').addEventListener('click', () => {
+    showScreen('screen-menu');
+  });
+
+  // DATE PICKER
+  const dailyDatePicker = document.getElementById('dailyDatePicker');
+  if (dailyDatePicker) {
+    dailyDatePicker.value = todayISO();
+    currentDailyDate = dailyDatePicker.value;
+
+    dailyDatePicker.addEventListener('change', () => {
+      if (viewMode !== 'days') return;
+      loadDailyForDate(dailyDatePicker.value);
+    });
+  }
+
+  // TOGGLE LIST/DAY VIEW
+  const btnViewByDays = document.getElementById('btnViewByDays');
+  if (btnViewByDays) {
+    btnViewByDays.addEventListener('click', async () => {
+      if (viewMode === 'list') {
+        showDailyMode();
+        await loadDailyForDate(currentDailyDate || todayISO());
+      } else {
+        showListMode();
+        await renderObligationsList();
+      }
+    });
+  }
+
+  // PROVJERA
+  obligationDB.getAll().then(obligations => {
+    console.log('Učitane obveze iz IndexedDB:', obligations);
+  });
+
+});
+</script>
+
+</body>
+</html>

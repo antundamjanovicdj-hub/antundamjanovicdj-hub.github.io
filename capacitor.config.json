@@ -1,0 +1,6 @@
+{
+  "appId": "com.lifekompas.app",
+  "appName": "LifeKompas",
+  "webDir": "public",
+  "bundledWebRuntime": false
+}

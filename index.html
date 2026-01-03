@@ -191,7 +191,7 @@
 <script src="core/db.js"></script>
 <script type="module">
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js');
+    navigator.serviceWorker.register('./sw.js', { type: 'module' });
   }
 </script>
 <script type="module">
@@ -199,7 +199,7 @@
   requestNotificationPermission();
 </script>
 
-<script>
+<script type="module">
 /* ===== HELPERS ===== */
 /* ===== HELPERS ===== */
 function getLang() {

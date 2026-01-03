@@ -103,6 +103,7 @@ if (isNative()) {
     { action: 'snooze-60', title: '⏰ 60 min' }
   ]
 });
+}
 
 export async function rescheduleObligationNotification(obligation) {
   await cancelObligationNotification(obligation.id);

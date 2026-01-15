@@ -20,14 +20,24 @@ shopping: {
   hideArchive: "Sakrij arhivu"
 },
     obligation: {
-      title: "Naslov obveze",
-      note: "Napomena",
-      dateTime: "Datum i vrijeme",
-      reminder: "Podsjetnik",
-      save: "💾 Spremi",
-      update: "Ažuriraj",
-      cancel: "Odustani"
-    },
+  title: "Naslov obveze",
+  note: "Napomena",
+  dateTime: "Datum i vrijeme",
+  reminder: "Podsjetnik",
+  urgent: "Hitno (ignorira tihe sate)",
+  quietHours: "Tihe sate",
+  repeat: "Ponavljanje",
+  repeatNone: "Bez ponavljanja",
+  repeatDaily: "Svaki dan",
+  repeatWeekly: "Svaki tjedan",
+  save: "💾 Spremi",
+  update: "Ažuriraj",
+  cancel: "Odustani"
+},
+popup: {
+  newObligationTitle: "➕ Nova obveza",
+  newObligationSaved: "Obveza je spremljena"
+},
     obligationsList: {
       title: "Moje obveze",
       total: "Ukupno",
@@ -70,14 +80,24 @@ shopping: {
   hideArchive: "Hide archive"
 },
     obligation: {
-      title: "Title",
-      note: "Note",
-      dateTime: "Date & time",
-      reminder: "Reminder",
-      save: "💾 Save",
-      update: "Update",
-      cancel: "Cancel"
-    },
+  title: "Title",
+  note: "Note",
+  dateTime: "Date & time",
+  reminder: "Reminder",
+  urgent: "Urgent (ignores quiet hours)",
+  quietHours: "Quiet hours",
+  repeat: "Repeat",
+  repeatNone: "No repeat",
+  repeatDaily: "Daily",
+  repeatWeekly: "Weekly",
+  save: "💾 Save",
+  update: "Update",
+  cancel: "Cancel"
+},
+popup: {
+  newObligationTitle: "➕ New obligation",
+  newObligationSaved: "Obligation saved"
+},
     obligationsList: {
       title: "My obligations",
       total: "Total",
@@ -120,14 +140,24 @@ shopping: {
   hideArchive: "Archiv ausblenden"
 },
     obligation: {
-      title: "Titel",
-      note: "Notiz",
-      dateTime: "Datum & Uhrzeit",
-      reminder: "Erinnerung",
-      save: "💾 Speichern",
-      update: "Aktualisieren",
-      cancel: "Abbrechen"
-    },
+  title: "Titel",
+  note: "Notiz",
+  dateTime: "Datum & Uhrzeit",
+  reminder: "Erinnerung",
+  urgent: "Dringend (ignoriert Ruhezeiten)",
+  quietHours: "Ruhezeiten",
+  repeat: "Wiederholung",
+  repeatNone: "Keine Wiederholung",
+  repeatDaily: "Täglich",
+  repeatWeekly: "Wöchentlich",
+  save: "💾 Speichern",
+  update: "Aktualisieren",
+  cancel: "Abbrechen"
+},
+popup: {
+  newObligationTitle: "➕ Neue Verpflichtung",
+  newObligationSaved: "Verpflichtung gespeichert"
+},
     obligationsList: {
       title: "Meine Verpflichtungen",
       total: "Gesamt",
@@ -170,14 +200,24 @@ shopping: {
   hideArchive: "Скрыть архив"
 },
     obligation: {
-      title: "Название",
-      note: "Заметка",
-      dateTime: "Дата и время",
-      reminder: "Напоминание",
-      save: "💾 Сохранить",
-      update: "Обновить",
-      cancel: "Отмена"
-    },
+  title: "Название",
+  note: "Заметка",
+  dateTime: "Дата и время",
+  reminder: "Напоминание",
+  urgent: "Срочно (игнорирует тихие часы)",
+  quietHours: "Тихие часы",
+  repeat: "Повтор",
+  repeatNone: "Без повтора",
+  repeatDaily: "Ежедневно",
+  repeatWeekly: "Еженедельно",
+  save: "💾 Сохранить",
+  update: "Обновить",
+  cancel: "Отмена"
+},
+popup: {
+  newObligationTitle: "➕ Новая обязанность",
+  newObligationSaved: "Обязанность сохранена"
+},
     obligationsList: {
       title: "Мои обязанности",
       total: "Всего",
@@ -220,14 +260,24 @@ shopping: {
   hideArchive: "Ocultar arquivo"
 },
     obligation: {
-      title: "Título",
-      note: "Nota",
-      dateTime: "Data e hora",
-      reminder: "Lembrete",
-      save: "💾 Salvar",
-      update: "Atualizar",
-      cancel: "Cancelar"
-    },
+  title: "Título",
+  note: "Nota",
+  dateTime: "Data e hora",
+  reminder: "Lembrete",
+  urgent: "Urgente (ignora horas silenciosas)",
+  quietHours: "Horas silenciosas",
+  repeat: "Repetir",
+  repeatNone: "Sem repetição",
+  repeatDaily: "Diariamente",
+  repeatWeekly: "Semanalmente",
+  save: "💾 Salvar",
+  update: "Atualizar",
+  cancel: "Cancelar"
+},
+popup: {
+  newObligationTitle: "➕ Nova obrigação",
+  newObligationSaved: "Obrigação salva"
+},
     obligationsList: {
       title: "Minhas obrigações",
       total: "Total",
@@ -270,14 +320,24 @@ shopping: {
   hideArchive: "Arşivi gizle"
 },
     obligation: {
-      title: "Başlık",
-      note: "Not",
-      dateTime: "Tarih ve saat",
-      reminder: "Hatırlatma",
-      save: "💾 Kaydet",
-      update: "Güncelle",
-      cancel: "İptal"
-    },
+  title: "Başlık",
+  note: "Not",
+  dateTime: "Tarih ve saat",
+  reminder: "Hatırlatma",
+  urgent: "Acil (sessiz saatleri yok sayar)",
+  quietHours: "Sessiz saatler",
+  repeat: "Tekrar",
+  repeatNone: "Tekrar yok",
+  repeatDaily: "Günlük",
+  repeatWeekly: "Haftalık",
+  save: "💾 Kaydet",
+  update: "Güncelle",
+  cancel: "İptal"
+},
+popup: {
+  newObligationTitle: "➕ Yeni yükümlülük",
+  newObligationSaved: "Yükümlülük kaydedildi"
+},
     obligationsList: {
       title: "Yükümlülüklerim",
       total: "Toplam",
@@ -320,14 +380,24 @@ shopping: {
   hideArchive: "隐藏存档"
 },
     obligation: {
-      title: "标题",
-      note: "备注",
-      dateTime: "日期和时间",
-      reminder: "提醒",
-      save: "💾 保存",
-      update: "更新",
-      cancel: "取消"
-    },
+  title: "标题",
+  note: "备注",
+  dateTime: "日期和时间",
+  reminder: "提醒",
+  urgent: "紧急（忽略安静时间）",
+  quietHours: "安静时间",
+  repeat: "重复",
+  repeatNone: "不重复",
+  repeatDaily: "每天",
+  repeatWeekly: "每周",
+  save: "💾 保存",
+  update: "更新",
+  cancel: "取消"
+},
+popup: {
+  newObligationTitle: "➕ 新义务",
+  newObligationSaved: "义务已保存"
+},
     obligationsList: {
       title: "我的义务",
       total: "总计",
@@ -370,14 +440,24 @@ shopping: {
   hideArchive: "アーカイブ非表示"
 },
     obligation: {
-      title: "タイトル",
-      note: "メモ",
-      dateTime: "日付と時刻",
-      reminder: "リマインダー",
-      save: "💾 保存",
-      update: "更新",
-      cancel: "キャンセル"
-    },
+  title: "タイトル",
+  note: "メモ",
+  dateTime: "日付と時刻",
+  reminder: "リマインダー",
+  urgent: "緊急（サイレント時間を無視）",
+  quietHours: "サイレント時間",
+  repeat: "繰り返し",
+  repeatNone: "繰り返しなし",
+  repeatDaily: "毎日",
+  repeatWeekly: "毎週",
+  save: "💾 保存",
+  update: "更新",
+  cancel: "キャンセル"
+},
+popup: {
+  newObligationTitle: "➕ 新しい義務",
+  newObligationSaved: "義務が保存されました"
+},
     obligationsList: {
       title: "私の義務",
       total: "合計",

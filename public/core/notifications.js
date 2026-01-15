@@ -1,115 +1,78 @@
-// core/notifications.js
+const { LocalNotifications } = Capacitor.Plugins;
 
-function applyQuietHours(date, obligation) {
-  if (obligation?.urgent) {
-    return new Date(date); // ⛔ preskoči quiet hours
-  }
-
-  const start = localStorage.getItem('quietStart') || '22:00';
-  const end = localStorage.getItem('quietEnd') || '07:00';
-
-  const [startH, startM] = start.split(':').map(Number);
-  const [endH, endM] = end.split(':').map(Number);
-
-  const d = new Date(date);
-  const h = d.getHours();
-  const m = d.getMinutes();
-
-  const afterStart =
-    h > startH || (h === startH && m >= startM);
-  const beforeEnd =
-    h < endH || (h === endH && m < endM);
-
-  if (afterStart || beforeEnd) {
-    d.setHours(endH, endM, 0, 0);
-  }
-
-  return d;
-}
-
-export function canUseNotifications() {
-  return (
-    'Notification' in window &&
-    'serviceWorker' in navigator
-  );
-}
-
+// ===== PERMISSION =====
 export async function requestNotificationPermission() {
-  if (!canUseNotifications()) return false;
-  const permission = await Notification.requestPermission();
-  return permission === 'granted';
+  const perm = await LocalNotifications.requestPermissions();
+  console.log("Notification permission:", perm.display);
+  return perm.display === 'granted';
 }
 
-export async function cancelObligationNotification(obligationId) {
-  const { isNative, cancelNativeNotification } =
-    await import('./nativeNotifications.js');
+// ===== SCHEDULE OBLIGATION =====
+export async function scheduleObligationNotification(obligation) {
+  if (!obligation.dateTime) return;
 
-  if (isNative()) {
-    await cancelNativeNotification(obligationId);
-    return;
-  }
-
-  if (!canUseNotifications()) return;
-
-  const registration = await navigator.serviceWorker.ready;
-  const notifications = await registration.getNotifications({
-    tag: `obligation-${obligationId}`
-  });
-
-  notifications.forEach(n => n.close());
-}
-
-export async function scheduleObligationNotification(obligation, delayMinutes = null) {
-
-  let triggerTime;
-
-  if (delayMinutes !== null) {
-    triggerTime = Date.now() + delayMinutes * 60 * 1000;
-  } else {
-    if (!obligation?.dateTime || !obligation?.reminder) return;
-
-    triggerTime =
-  new Date(obligation.dateTime).getTime() -
-  Number(obligation.reminder) * 60 * 1000;
-
-triggerTime = applyQuietHours(new Date(triggerTime), obligation).getTime();
-}
+  const eventTime = new Date(obligation.dateTime).getTime();
+  let reminderMinutes = obligation.reminder ? parseInt(obligation.reminder, 10) : 0;
+  const triggerTime = eventTime - reminderMinutes * 60 * 1000;
 
   if (triggerTime <= Date.now()) return;
-const { isNative, scheduleNativeNotification } =
-  await import('./nativeNotifications.js');
 
-if (isNative()) {
-  await scheduleNativeNotification(obligation, triggerTime);
-  return;
-}
-
-  const registration = await navigator.serviceWorker.ready;
-
-  registration.showNotification('🧭 LifeKompas', {
-  body: obligation.title,
-  tag: `obligation-${obligation.id}`,
-  renotify: true,
-  requireInteraction: true,   // iOS: ne nestaje odmah
-  icon: '/icon-192.png',
-  badge: '/icon-192.png',
-  silent: false,
-  data: {
-    obligationId: obligation.id
-  },
-  actions: [
-    { action: 'snooze-15', title: '⏰ 15 min' },
-    { action: 'snooze-30', title: '⏰ 30 min' },
-    { action: 'snooze-60', title: '⏰ 60 min' }
+  await LocalNotifications.schedule({
+  notifications: [
+    {
+      id: Math.floor(obligation.id % 2147483647),
+      title: "LifeKompas podsjetnik",
+      body: obligation.title,
+      schedule: { at: new Date(triggerTime) },
+      sound: null,
+      extra: { obligationId: obligation.id },
+      importance: 5,
+      visibility: 1
+    }
   ]
 });
 
+  console.log("Podsjetnik zakazan:", obligation.title);
+}
+
+// ===== CANCEL =====
+export async function cancelObligationNotification(id) {
+  const intId = Math.floor(id % 2147483647);
+  await LocalNotifications.cancel({ notifications: [{ id: intId }] });
+}
+
+// ===== RESCHEDULE =====
 export async function rescheduleObligationNotification(obligation) {
   await cancelObligationNotification(obligation.id);
   await scheduleObligationNotification(obligation);
 }
 
-export async function snoozeObligation(obligation, minutes) {
-  await cancelObligationNotification(obligation.id);
-  await scheduleObligationNotification(obligation, minutes);
+// ===== TEST =====
+export async function sendTestNotification() {
+  await LocalNotifications.schedule({
+    notifications: [
+      {
+        id: Math.floor(Date.now() / 1000),
+        title: "LifeKompas test",
+        body: "Test notifikacija radi.",
+        schedule: { at: new Date(Date.now() + 3000) }
+      }
+    ]
+  });
+}
+
+// ===== RESCHEDULE ALL ON APP START =====
+export async function rescheduleAllObligations(obligations) {
+  for (const ob of obligations) {
+    if (!ob.reminder) continue;
+    if (!ob.dateTime) continue;
+
+    const eventTime = new Date(ob.dateTime).getTime();
+    const reminderMinutes = parseInt(ob.reminder, 10) || 0;
+    const triggerTime = eventTime - reminderMinutes * 60 * 1000;
+
+    if (triggerTime <= Date.now()) continue;
+
+    await scheduleObligationNotification(ob);
+  }
 }

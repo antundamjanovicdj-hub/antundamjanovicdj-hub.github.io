@@ -1,9 +1,13 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="hr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>LifeKompas</title>
+
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
 
   <!-- ✅ CAVEAT FONT -->
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&display=swap" rel="stylesheet">
@@ -121,27 +125,27 @@
       </label>
       <label class="reminder-checkbox">
         <input type="checkbox" id="urgentObligation">
-        <span>Hitno (ignorira tihe sate)</span>
+        <span id="urgentLabel"></span>
      </label>
 
       <div id="reminderOptions" class="hidden">
         <select id="reminderTime">
-          <option value="30">30 minuta prije</option>
-          <option value="60">1 sat prije</option>
-          <option value="120">2 sata prije</option>
-          <option value="1440">1 dan prije</option>
-        </select>
+  <option value="30"></option>
+  <option value="60"></option>
+  <option value="120"></option>
+  <option value="1440"></option>
+</select>
       </div>
 <label class="repeat-label">
-  <span>Ponavljanje</span>
+  <span id="repeatLabel"></span>
   <select id="repeatType">
-    <option value="">Bez ponavljanja</option>
-    <option value="daily">Svaki dan</option>
-    <option value="weekly">Svaki tjedan</option>
+    <option value=""></option>
+    <option value="daily"></option>
+    <option value="weekly"></option>
   </select>
 </label>
 <label class="quiet-hours-label">
-  <span>Tihe sate</span>
+  <span id="quietHoursLabel"></span>
   <div class="quiet-hours-row">
     <input type="time" id="quietStart" value="22:00">
     <span>–</span>
@@ -185,21 +189,41 @@
   </div>
 
 </div> <!-- .app -->
+<!-- APP VERSION -->
+<div id="appVersion" style="
+  position: fixed;
+  bottom: 4px;
+  right: 8px;
+  font-size: 11px;
+  opacity: 0.6;
+  pointer-events: none;
+"></div>
 
 <!-- SKRIPTOVE -->
 <script src="core/i18n.js"></script>
 <script src="core/db.js"></script>
-<script type="module">
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js');
-  }
-</script>
-<script type="module">
-  import { requestNotificationPermission } from './core/notifications.js';
-  requestNotificationPermission();
-</script>
 
-<script>
+<script type="module">
+// ===== APP VERSION =====
+const APP_VERSION = "0.1.0";
+
+// ===== BATTERY OPTIMIZATION CHECK =====
+import { checkBatteryOptimization } from './core/battery.js';
+document.getElementById("appVersion").textContent = "v" + APP_VERSION;
+// ===== GLOBAL CONFIG =====
+const CONFIG = {
+  notificationsEnabled: true,
+  serviceWorkerEnabled: true,
+  debug: false
+};
+// ===== INIT SERVICE WORKER (guarded) =====
+if (CONFIG.serviceWorkerEnabled) {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js')
+      .then(() => console.log("Service Worker registered"))
+      .catch(err => console.log("SW registration error:", err));
+  }
+}
 /* ===== HELPERS ===== */
 /* ===== HELPERS ===== */
 function getLang() {
@@ -224,7 +248,9 @@ function showScreen(screenId) {
   const screens = document.querySelectorAll('.screen');
   const next = document.getElementById(screenId);
 
-  screens.forEach(screen => screen.classList.remove('active'));
+  screens.forEach(screen => {
+    screen.classList.remove('active');
+  });
 
   requestAnimationFrame(() => {
     next?.classList.add('active');
@@ -272,15 +298,27 @@ if (urgentCheckbox) {
   urgentCheckbox.checked = !!ob.urgent;
 }
   document.getElementById('reminderOptions').classList.toggle('hidden', !ob.reminder);
+const reminderSelect = document.getElementById('reminderTime');
+reminderSelect.querySelector('option[value="30"]').textContent = I18N[lang].obligationsList.reminder30;
+reminderSelect.querySelector('option[value="60"]').textContent = I18N[lang].obligationsList.reminder60;
+reminderSelect.querySelector('option[value="120"]').textContent = I18N[lang].obligationsList.reminder120;
+reminderSelect.querySelector('option[value="1440"]').textContent = I18N[lang].obligationsList.reminder1440;
+  document.getElementById('urgentLabel').textContent = I18N[lang].obligation.urgent;
   if (ob.reminder) document.getElementById('reminderTime').value = ob.reminder;
 
   document.getElementById('saveObligation').textContent = I18N[lang].obligation.update;
   document.getElementById('saveObligation').dataset.editId = ob.id;
   document.getElementById('cancelObligation').textContent = `✖️ ${I18N[lang].obligation.cancel}`;
 const repeatSelect = document.getElementById('repeatType');
-  if (repeatSelect) {
-    repeatSelect.value = ob.repeat || '';
-  }
+if (repeatSelect) {
+  repeatSelect.value = ob.repeat || '';
+
+  document.getElementById('repeatLabel').textContent = I18N[lang].obligation.repeat;
+
+  repeatSelect.querySelector('option[value=""]').textContent = I18N[lang].obligation.repeatNone;
+  repeatSelect.querySelector('option[value="daily"]').textContent = I18N[lang].obligation.repeatDaily;
+  repeatSelect.querySelector('option[value="weekly"]').textContent = I18N[lang].obligation.repeatWeekly;
+}
 }
 
 /* ===== RENDER CARD (reused) ===== */
@@ -727,6 +765,10 @@ const content = li.querySelector('.shopping-item-content');
 
 /* ===== INIT ===== */
 document.addEventListener('DOMContentLoaded', () => {
+
+// Battery optimization warning (Android only)
+  checkBatteryOptimization();
+
 // Quiet hours – load/save
   const quietStartInput = document.getElementById('quietStart');
   const quietEndInput = document.getElementById('quietEnd');
@@ -878,7 +920,21 @@ renderShoppingList();
     document.getElementById('obligationNote').placeholder = I18N[lang].obligation.note;
     document.getElementById('obligationDateTimeLabel').textContent = I18N[lang].obligation.dateTime;
     document.getElementById('reminderLabel').textContent = I18N[lang].obligation.reminder;
+    const reminderSelect = document.getElementById('reminderTime');
+reminderSelect.querySelector('option[value="30"]').textContent = I18N[lang].obligationsList.reminder30;
+reminderSelect.querySelector('option[value="60"]').textContent = I18N[lang].obligationsList.reminder60;
+reminderSelect.querySelector('option[value="120"]').textContent = I18N[lang].obligationsList.reminder120;
+reminderSelect.querySelector('option[value="1440"]').textContent = I18N[lang].obligationsList.reminder1440;
+    document.getElementById('urgentLabel').textContent = I18N[lang].obligation.urgent;
+document.getElementById('quietHoursLabel').textContent = I18N[lang].obligation.quietHours;
     document.getElementById('saveObligation').textContent = I18N[lang].obligation.save;
+document.getElementById('quietHoursLabel').textContent = I18N[lang].obligation.quietHours;
+document.getElementById('repeatLabel').textContent = I18N[lang].obligation.repeat;
+
+const repeatSelect = document.getElementById('repeatType');
+repeatSelect.querySelector('option[value=""]').textContent = I18N[lang].obligation.repeatNone;
+repeatSelect.querySelector('option[value="daily"]').textContent = I18N[lang].obligation.repeatDaily;
+repeatSelect.querySelector('option[value="weekly"]').textContent = I18N[lang].obligation.repeatWeekly;
     document.getElementById('cancelObligation').textContent = `✖️ ${I18N[lang].obligation.cancel}`;
     document.getElementById('saveObligation').removeAttribute('data-edit-id');
   });
@@ -895,76 +951,86 @@ renderShoppingList();
 
   // SPREMI ILI AŽURIRAJ
   document.getElementById('saveObligation').addEventListener('click', async () => {
-    const title = document.getElementById('obligationTitle').value.trim();
-    if (!title) {
-      alert('Unesi naslov obveze!');
+  const title = document.getElementById('obligationTitle').value.trim();
+  if (!title) {
+  alert(I18N[getLang()].popup.newObligationTitle);
+  return;
+}
+
+  const editIdStr = document.getElementById('saveObligation').dataset.editId;
+  const isEdit = !!editIdStr;
+  const editId = isEdit ? parseInt(editIdStr, 10) : null;
+  const lang = getLang();
+
+  let existing = null;
+  if (isEdit) {
+    const all = await obligationDB.getAll();
+    existing = all.find(o => o.id === editId) || null;
+  }
+
+  const obligation = {
+    id: isEdit ? editId : Date.now(),
+    type: 'obligation',
+    title: title,
+    note: document.getElementById('obligationNote').value,
+    dateTime: document.getElementById('obligationDateTime').value,
+    urgent: document.getElementById('urgentObligation')?.checked || false,
+    reminder: document.getElementById('enableReminder').checked
+      ? document.getElementById('reminderTime').value
+      : null,
+    repeat: document.getElementById('repeatType')?.value || null,
+    customRepeat: isEdit ? (existing?.customRepeat || null) : null,
+    repeatPaused: isEdit ? (existing?.repeatPaused || false) : false,
+    skipNextRepeat: isEdit ? (existing?.skipNextRepeat || false) : false,
+    status: isEdit ? (existing?.status || 'active') : 'active',
+    createdAt: isEdit ? (existing?.createdAt || new Date().toISOString()) : new Date().toISOString(),
+    lang: lang
+  };
+
+  // SPREMI U DB
+  await obligationDB.add(obligation);
+
+  // ===== AUTOMATSKA DOZVOLA + ZAKAZIVANJE =====
+  const m = await import('./core/notifications.js');
+
+  if (obligation.reminder) {
+    const granted = await m.requestNotificationPermission();
+    if (!granted) {
+      alert(I18N[getLang()].popup.newObligationSaved);
+      showScreen('screen-menu');
       return;
     }
+  }
 
-    const editIdStr = document.getElementById('saveObligation').dataset.editId;
-    const isEdit = !!editIdStr;
-    const editId = isEdit ? parseInt(editIdStr, 10) : null;
-    const lang = getLang();
-
-    let existing = null;
-    if (isEdit) {
-      const all = await obligationDB.getAll();
-      existing = all.find(o => o.id === editId) || null;
-    }
-
-    const obligation = {
-  id: isEdit ? editId : Date.now(),
-  type: 'obligation',
-  title: title,
-  note: document.getElementById('obligationNote').value,
-  dateTime: document.getElementById('obligationDateTime').value,
-  urgent: document.getElementById('urgentObligation')?.checked || false,
-  reminder: document.getElementById('enableReminder').checked
-    ? document.getElementById('reminderTime').value
-    : null,
-  repeat: document.getElementById('repeatType')?.value || null,
-  customRepeat: isEdit ? (existing?.customRepeat || null) : null,
-  repeatPaused: isEdit ? (existing?.repeatPaused || false) : false,
-  skipNextRepeat: isEdit ? (existing?.skipNextRepeat || false) : false,
-  status: isEdit ? (existing?.status || 'active') : 'active',
-  createdAt: isEdit ? (existing?.createdAt || new Date().toISOString()) : new Date().toISOString(),
-  lang: lang
-};
-
-    await obligationDB.add(obligation);
-
-import('./core/notifications.js').then(async ({
-  scheduleObligationNotification,
-  rescheduleObligationNotification
-}) => {
   if (isEdit) {
-    await rescheduleObligationNotification(obligation);
+    await m.rescheduleObligationNotification(obligation);
   } else {
-    await scheduleObligationNotification(obligation);
+    await m.scheduleObligationNotification(obligation);
+  }
+
+  alert(
+  isEdit
+    ? I18N[getLang()].popup.newObligationSaved
+    : I18N[getLang()].popup.newObligationSaved
+);
+
+  // RESET FORME
+  document.getElementById('obligationTitle').value = '';
+  document.getElementById('obligationNote').value = '';
+  document.getElementById('obligationDateTime').value = '';
+  document.getElementById('enableReminder').checked = false;
+  document.getElementById('reminderOptions').classList.add('hidden');
+  const repeatSelect = document.getElementById('repeatType');
+  if (repeatSelect) repeatSelect.value = '';
+  document.getElementById('saveObligation').removeAttribute('data-edit-id');
+
+  if (isEdit) {
+    showScreen('screen-obligations-list');
+    refreshCurrentObligationsView();
+  } else {
+    showScreen('screen-menu');
   }
 });
-
-alert(isEdit ? 'Obveza ažurirana!' : 'Obveza spremljena!');
-import('./core/notifications.js').then(({ scheduleObligationNotification }) => {
-  scheduleObligationNotification(obligation);
-});
-
-    document.getElementById('obligationTitle').value = '';
-    document.getElementById('obligationNote').value = '';
-    document.getElementById('obligationDateTime').value = '';
-    document.getElementById('enableReminder').checked = false;
-    document.getElementById('reminderOptions').classList.add('hidden');
-const repeatSelect = document.getElementById('repeatType');
-if (repeatSelect) repeatSelect.value = '';
-    document.getElementById('saveObligation').removeAttribute('data-edit-id');
-
-    if (isEdit) {
-      showScreen('screen-obligations-list');
-      refreshCurrentObligationsView();
-    } else {
-      showScreen('screen-menu');
-    }
-  });
 
   // ODUSTANI
   document.getElementById('cancelObligation').addEventListener('click', () => {
@@ -1022,9 +1088,57 @@ if (repeatSelect) repeatSelect.value = '';
   }
 
   // PROVJERA
-  obligationDB.getAll().then(obligations => {
-    console.log('Učitane obveze iz IndexedDB:', obligations);
+obligationDB.getAll().then(async obligations => {
+  console.log('Učitane obveze iz IndexedDB:', obligations);
+
+  // ===== RESCHEDULE ALL FUTURE NOTIFICATIONS =====
+  const m = await import('./core/notifications.js');
+  await m.rescheduleAllObligations(obligations);
+});
+
+// ===== HANDLE NOTIFICATION TAP (deep link) =====
+if (window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.LocalNotifications) {
+  const { LocalNotifications } = Capacitor.Plugins;
+
+  LocalNotifications.addListener('localNotificationActionPerformed', (event) => {
+    const data = event?.notification?.extra || {};
+    const rawId = data.obligationId;
+
+    if (!rawId) return;
+
+    const id = Number(rawId);
+
+    // Otvori ekran liste obveza
+    showScreen('screen-obligations-list');
+    showListMode();
+    renderObligationsList();
+
+    // Nakon što povuče obveze, otvori točnu obvezu
+    obligationDB.getAll().then(items => {
+  const ob = items.find(o => Number(o.id) === id);
+  if (!ob) return;
+
+  // pričekaj da se lista iscrta
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+
+      const card = document.querySelector(
+        `.obligation-card[data-id="${ob.id}"]`
+      );
+
+      if (card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        card.classList.add('highlight');
+
+        setTimeout(() => {
+          card.classList.remove('highlight');
+        }, 2000);
+      }
+    });
   });
+});
+  });
+}
 
 });
 </script>

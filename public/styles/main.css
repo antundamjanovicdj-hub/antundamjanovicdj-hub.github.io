@@ -122,7 +122,7 @@ html, body {
 /* ===== GLAVNI IZBORNIK ===== */
 .back {
   position: absolute;
-  top: 16px;
+  top: 30px;
   right: 16px;
   width: 44px;
   height: 44px;
@@ -755,4 +755,45 @@ html, body {
 
 .swipe-hint.hidden {
   display: none;
+}
+/* ===== Notification highlight ===== */
+.obligation-card.highlight {
+  border-left-color: #ff9800 !important;
+  box-shadow: 0 0 12px rgba(255,152,0,0.9);
+  animation: pulseHighlight 1.6s ease;
+}
+
+@keyframes pulseHighlight {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+/* ===== Screen Transitions ===== */
+.screen {
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+
+.screen.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.screen.active:first-of-type {
+  transform: translateX(0);
+  transition: opacity 0.25s ease;
+}
+
+.screen.active {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+/* Safe area for Android full-screen */
+.app {
+  padding-top: 60px;
+}
+#btnViewByDays {
+  margin-top: 14px;
 }

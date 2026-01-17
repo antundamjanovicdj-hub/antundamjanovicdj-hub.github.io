@@ -20,26 +20,21 @@ html, body {
   overflow: hidden;  /* ⬅️ nema pull/peek efekta */
 }
 
-/* ===== EKRANI ===== */
+/* ===== EKRANI (FINAL) ===== */
 .screen {
+  display: none;
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-
-  overflow: hidden;          /* ⬅️ KLJUČNO: nema pulla cijelog screena */
-  overscroll-behavior: none; /* ⬅️ Android overscroll fix */
-
-  opacity: 0;
-  transform: translateY(6px);
-  transition: opacity 180ms ease-out, transform 180ms ease-out;
-  pointer-events: none;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
 }
 
 .screen.active {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
+  display: block;
 }
 
 /* ===== POZADINA — SLIKA NA SVIM EKRANIMA ===== */
@@ -394,11 +389,8 @@ html, body {
 /* ===== PREGLED OBVEZA ===== */
 #screen-obligations-list {
   padding: 20px;
-  display: flex;
-  flex-direction: column;
-
   overflow-y: auto;
-  overscroll-behavior: none; /* ⬅️ KLJUČNO */
+  overscroll-behavior: none;
 }
 
 .obligations-header {
@@ -557,19 +549,7 @@ html, body {
   background: #ffd9a6;
   transform: scale(1.04);
 }
-/* ===== STACK NAVIGATION ANIMATION ===== */
-.screen {
-  opacity: 0;
-  transform: translateY(6px);
-  transition: opacity 180ms ease-out, transform 180ms ease-out;
-  pointer-events: none;
-}
 
-.screen.active {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-}
 #dateFilter {
   margin: 10px 0 16px;
   display: flex;
@@ -585,11 +565,8 @@ html, body {
 /* Shopping screen */
 #screen-shopping {
   padding: 16px;
-  display: flex;
-  flex-direction: column;
-
-  overflow-y: auto;          /* scroll samo unutar screena */
-  overscroll-behavior: none; /* ⬅️ sprječava pull / peek */
+  overflow-y: auto;
+  overscroll-behavior: none;
 }
 
 #screen-shopping .screen-title {
@@ -768,32 +745,71 @@ html, body {
   50%  { transform: scale(1.03); }
   100% { transform: scale(1); }
 }
-/* ===== Screen Transitions ===== */
-.screen {
-  opacity: 0;
-  transition: opacity 0.25s ease;
-  pointer-events: none;
-}
 
-.screen.active {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.screen.active:first-of-type {
-  transform: translateX(0);
-  transition: opacity 0.25s ease;
-}
-
-.screen.active {
-  opacity: 1;
-  transform: translateX(0);
-  pointer-events: auto;
-}
 /* Safe area for Android full-screen */
 .app {
   padding-top: 60px;
 }
 #btnViewByDays {
   margin-top: 14px;
+}
+/* ===== FINANCES UI ===== */
+
+#screen-finances {
+  background: linear-gradient(180deg, #f7f9fb, #eef2f5);
+}
+
+/* sekcijski razmak */
+#screen-finances h3 {
+  margin: 10px 0 5px 0;
+  padding: 8px 14px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #0d5e32;
+}
+
+/* forme za unos */
+.finance-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+}
+
+.finance-form input,
+.finance-form button {
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.15);
+  font-size: 15px;
+}
+
+.finance-form button {
+  background: #0d5e32;
+  color: white;
+  font-weight: 700;
+  border: none;
+}
+
+/* liste */
+.finance-list {
+  padding: 5px 12px 15px 12px;
+}
+
+/* kartice */
+.finance-item {
+  background: white;
+  margin-bottom: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* prazna lista */
+.empty-list {
+  padding: 10px 12px;
+  opacity: 0.6;
+  font-style: italic;
 }

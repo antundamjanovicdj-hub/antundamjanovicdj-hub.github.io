@@ -63,6 +63,103 @@
       <button class="menu-item" id="btnDiary">📓 Dnevnik</button>
     </div>
   </div>
+</div>
+
+<!-- FINANCES MENU SCREEN -->
+<div id="screen-finances-menu" class="screen">
+  <button class="back" id="backFinancesMenu">←</button>
+  <h2 class="screen-title">💰 Financije</h2>
+
+  <div class="main-menu-buttons">
+    <button class="menu-item" id="btnIncomeScreen">💵 Unos prihoda</button>
+    <button class="menu-item" id="btnMonthlyCostsScreen">📅 Mjesečni troškovi</button>
+    <button class="menu-item" id="btnCreditsScreen">🏦 Krediti</button>
+    <button class="menu-item" id="btnOtherCostsScreen">🛒 Ostali troškovi</button>
+    <button class="menu-item" id="btnCostsOverview">📊 Pregled troškova</button>
+  </div>
+</div>
+<!-- FINANCE: INCOME SCREEN -->
+<div id="screen-finance-income" class="screen">
+  <button class="back" id="backFinanceIncome">←</button>
+  <h2 class="screen-title">💵 Unos prihoda</h2>
+
+  <div class="finance-form">
+    <input type="number" id="incomeAmount" placeholder="Iznos (€)">
+    <input type="text" id="incomeDesc" placeholder="Opis (npr. Plaća)">
+    <input type="date" id="incomeDate">
+    <button id="saveIncome">➕ Dodaj prihod</button>
+  </div>
+
+  <div id="incomeList" class="finance-list"></div>
+</div>
+
+
+<!-- FINANCE: MONTHLY COSTS SCREEN -->
+<div id="screen-finance-fixed" class="screen">
+  <button class="back" id="backFinanceFixed">←</button>
+  <h2 class="screen-title">📅 Mjesečni troškovi</h2>
+
+  <div class="finance-form">
+    <input type="text" id="fixedDesc" placeholder="Naziv fiksnog troška (npr. Stanarina)">
+    <input type="number" id="fixedAmount" placeholder="Iznos (€)">
+    <button id="saveFixed">➕ Dodaj fiksni trošak</button>
+  </div>
+
+  <div id="fixedList" class="finance-list"></div>
+</div>
+
+
+<!-- FINANCE: CREDITS SCREEN -->
+<div id="screen-finance-credits" class="screen">
+  <button class="back" id="backFinanceCredits">←</button>
+  <h2 class="screen-title">🏦 Krediti</h2>
+
+  <div class="finance-form">
+    <input type="text" id="creditDesc" placeholder="Naziv kredita (npr. Auto kredit)">
+    <input type="number" id="creditAmount" placeholder="Iznos rate (€)">
+
+    <label>Početak kredita</label>
+    <input type="date" id="creditStart">
+
+    <label>Završetak kredita</label>
+    <input type="date" id="creditEnd">
+
+    <label>Zadnja uplata</label>
+    <input type="date" id="creditLastPaid">
+
+    <button id="saveCredit">➕ Dodaj kredit</button>
+  </div>
+
+  <div id="creditList" class="finance-list"></div>
+</div>
+<!-- FINANCE: OTHER COSTS SCREEN -->
+<div id="screen-finance-other" class="screen">
+  <button class="back" id="backFinanceOther">←</button>
+  <h2 class="screen-title">🧾 Ostali troškovi</h2>
+
+  <!-- OTHER COST FORM -->
+  <div class="finance-form">
+    <input type="text" id="otherDesc" placeholder="Opis troška (npr. Gorivo)">
+    <input type="number" id="otherAmount" placeholder="Iznos (€)">
+    <button id="saveOther">➕ Dodaj trošak</button>
+  </div>
+
+  <!-- OTHER COST LIST -->
+  <div id="otherList" class="finance-list"></div>
+</div>
+<!-- FINANCE: COSTS OVERVIEW SCREEN -->
+<div id="screen-finance-overview" class="screen">
+  <button class="back" id="backFinanceOverview">←</button>
+  <h2 class="screen-title">📊 Pregled troškova</h2>
+
+  <div class="finance-form">
+    <label>Odaberi mjesec</label>
+    <input type="month" id="financeMonth">
+    <button id="btnCalculateMonth">Izračunaj</button>
+  </div>
+
+  <div id="monthResult" class="finance-list"></div>
+</div>
 
   <!-- SHOPPING SCREEN -->
   <div id="screen-shopping" class="screen">
@@ -248,13 +345,17 @@ function showScreen(screenId) {
   const screens = document.querySelectorAll('.screen');
   const next = document.getElementById(screenId);
 
+  // potpuno sakrij sve
   screens.forEach(screen => {
     screen.classList.remove('active');
+    screen.style.display = 'none';
   });
 
-  requestAnimationFrame(() => {
-    next?.classList.add('active');
-  });
+  // prikaži samo traženi
+  if (next) {
+    next.classList.add('active');
+    next.style.display = 'block';
+  }
 }
 
 /* ===== SET LANGUAGE + SHOW MENU ===== */
@@ -765,11 +866,93 @@ const content = li.querySelector('.shopping-item-content');
 
 /* ===== INIT ===== */
 document.addEventListener('DOMContentLoaded', () => {
+// ===== FORCE START SCREEN =====
+  showScreen('screen-lang');
 
-// Battery optimization warning (Android only)
+  // ===== SAVE INCOME =====
+  document.getElementById('saveIncome').addEventListener('click', async () => {
+    const amount = parseFloat(document.getElementById('incomeAmount').value);
+    const desc = document.getElementById('incomeDesc').value.trim();
+    const date = document.getElementById('incomeDate').value;
+
+    if (!amount || !date) return alert('Unesi iznos i datum');
+
+    const item = {
+      id: Date.now(),
+      type: 'income',
+      amount,
+      desc: desc || 'Prihod',
+      date
+    };
+
+    await addFinanceItem(item);
+
+    document.getElementById('incomeAmount').value = '';
+    document.getElementById('incomeDesc').value = '';
+    document.getElementById('incomeDate').value = '';
+
+    renderIncomeList();
+  });
+
+  // ===== SAVE FIXED =====
+  document.getElementById('saveFixed').addEventListener('click', async () => {
+    const desc = document.getElementById('fixedDesc').value.trim();
+    const amount = parseFloat(document.getElementById('fixedAmount').value);
+
+    if (!desc || !amount) return alert('Unesi naziv i iznos');
+
+    const item = {
+      id: Date.now(),
+      type: 'fixed',
+      desc,
+      amount
+    };
+
+    await addFinanceItem(item);
+
+    document.getElementById('fixedDesc').value = '';
+    document.getElementById('fixedAmount').value = '';
+
+    renderFixedList();
+  });
+
+  // ===== SAVE CREDIT =====
+  document.getElementById('saveCredit').addEventListener('click', async () => {
+    const desc = document.getElementById('creditDesc').value.trim();
+    const amount = parseFloat(document.getElementById('creditAmount').value);
+    const start = document.getElementById('creditStart').value;
+    const end = document.getElementById('creditEnd').value;
+    const lastPaid = document.getElementById('creditLastPaid').value;
+
+    if (!desc || !amount || !start || !end) {
+      return alert('Unesi sve podatke kredita');
+    }
+
+    const item = {
+      id: Date.now(),
+      type: 'credit',
+      desc,
+      amount,
+      start,
+      end,
+      lastPaid: lastPaid || null
+    };
+
+    await addFinanceItem(item);
+
+    document.getElementById('creditDesc').value = '';
+    document.getElementById('creditAmount').value = '';
+    document.getElementById('creditStart').value = '';
+    document.getElementById('creditEnd').value = '';
+    document.getElementById('creditLastPaid').value = '';
+
+    renderCreditList();
+  });
+
+  // ===== BATTERY OPTIMIZATION =====
   checkBatteryOptimization();
 
-// Quiet hours – load/save
+  // ===== QUIET HOURS =====
   const quietStartInput = document.getElementById('quietStart');
   const quietEndInput = document.getElementById('quietEnd');
 
@@ -785,20 +968,20 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.setItem('quietEnd', quietEndInput.value);
     });
   }
-navigator.serviceWorker?.addEventListener('message', e => {
-  if (e.data?.type === 'SNOOZE') {
-    import('./core/notifications.js').then(({ snoozeObligation }) => {
-      obligationDB.getAll().then(items => {
-        const ob = items.find(o => o.id === e.data.obligationId);
-        if (ob) {
-          snoozeObligation(ob, e.data.minutes);
-        }
-      });
-    });
-  }
-});
 
-  // JEZICI
+  // ===== SERVICE WORKER SNOOZE =====
+  navigator.serviceWorker?.addEventListener('message', e => {
+    if (e.data?.type === 'SNOOZE') {
+      import('./core/notifications.js').then(({ snoozeObligation }) => {
+        obligationDB.getAll().then(items => {
+          const ob = items.find(o => o.id === e.data.obligationId);
+          if (ob) snoozeObligation(ob, e.data.minutes);
+        });
+      });
+    }
+  });
+
+// JEZICI
   document.querySelectorAll('.lang-btn').forEach(btn => {
     btn.addEventListener('click', e => {
       e.preventDefault();
@@ -817,8 +1000,211 @@ navigator.serviceWorker?.addEventListener('message', e => {
   document.getElementById('backShopping').addEventListener('click', () => {
     showScreen('screen-menu');
   });
+document.getElementById('backFinanceIncome').addEventListener('click', () => {
+  showScreen('screen-finances-menu');
+});
+document.getElementById('backFinanceFixed').addEventListener('click', () => {
+  showScreen('screen-finances-menu');
+});
+document.getElementById('backFinanceCredits').addEventListener('click', () => {
+  showScreen('screen-finances-menu');
+});
+document.getElementById('backFinanceOther').addEventListener('click', () => {
+  showScreen('screen-finances-menu');
+});
+document.getElementById('backFinanceOverview').addEventListener('click', () => {
+  showScreen('screen-finances-menu');
+});
 
   // SHOPPING BUTTON (open + load + focus)
+// FINANCES BUTTON
+document.getElementById('btnFinances').addEventListener('click', () => {
+  showScreen('screen-finances-menu');
+});
+
+  // BACK - FINANCES MENU
+const backFin = document.getElementById('backFinancesMenu');
+if (backFin) {
+  backFin.addEventListener('click', () => showScreen('screen-menu'));
+}
+  // ===== FINANCES: INCOME =====
+
+  async function renderIncomeList() {
+    const list = document.getElementById('incomeList');
+    const incomes = await getFinanceItems();
+
+    incomes.sort((a, b) => b.id - a.id);
+
+    if (incomes.length === 0) {
+      list.innerHTML = '<div class="empty-list">Nema prihoda</div>';
+      return;
+    }
+
+    list.innerHTML = incomes.map(i => `
+      <div class="finance-item">
+        <div><strong>${i.amount} €</strong> – ${i.desc}</div>
+        <div>${i.date}</div>
+      </div>
+    `).join('');
+  }
+// ===== FINANCES: FIXED EXPENSES =====
+
+async function renderFixedList() {
+  const list = document.getElementById('fixedList');
+  const items = await getFinanceItems();
+  const fixed = items.filter(i => i.type === 'fixed');
+
+  fixed.sort((a, b) => b.id - a.id);
+
+  if (fixed.length === 0) {
+    list.innerHTML = '<div class="empty-list">Nema fiksnih troškova</div>';
+    return;
+  }
+
+  list.innerHTML = fixed.map(i => `
+    <div class="finance-item">
+      <div><strong>${i.amount} €</strong> – ${i.desc}</div>
+    </div>
+  `).join('');
+}
+// ===== FINANCES: CREDITS =====
+
+async function renderCreditList() {
+  const list = document.getElementById('creditList');
+  const items = await getFinanceItems();
+  const credits = items.filter(i => i.type === 'credit');
+
+  credits.sort((a, b) => b.id - a.id);
+
+  if (credits.length === 0) {
+    list.innerHTML = '<div class="empty-list">Nema kredita</div>';
+    return;
+  }
+
+  list.innerHTML = credits.map(c => `
+    <div class="finance-item">
+      <div><strong>${c.amount} €</strong> – ${c.desc}</div>
+      <div>Početak: ${c.start}</div>
+      <div>Završetak: ${c.end}</div>
+      <div>Zadnja uplata: ${c.lastPaid || '-'}</div>
+    </div>
+  `).join('');
+}
+// ===== FINANCES: MONTHLY CALCULATION =====
+
+async function calculateMonth() {
+  const monthInput = document.getElementById('financeMonth').value;
+  if (!monthInput) return alert('Odaberi mjesec');
+
+  const [year, month] = monthInput.split('-');
+  const items = await getFinanceItems();
+
+  // --- SUM INCOME ---
+  const incomes = items.filter(i =>
+    i.type === 'income' &&
+    i.date &&
+    i.date.startsWith(`${year}-${month}`)
+  );
+  const totalIncome = incomes.reduce((sum, i) => sum + Number(i.amount), 0);
+
+  // --- SUM FIXED ---
+  const fixed = items.filter(i => i.type === 'fixed');
+  const totalFixed = fixed.reduce((sum, i) => sum + Number(i.amount), 0);
+
+  // --- SUM CREDITS ---
+  const credits = items.filter(i => i.type === 'credit');
+  let totalCredits = 0;
+
+  credits.forEach(c => {
+    // ako je kredit već otplaćen
+    if (c.lastPaid && c.lastPaid >= c.end) return;
+
+    // ako je odabrani mjesec unutar trajanja kredita
+    if (monthInput >= c.start.slice(0,7) && monthInput <= c.end.slice(0,7)) {
+      totalCredits += Number(c.amount);
+    }
+  });
+
+  // --- SUM OTHER COSTS ---
+  const otherCosts = items.filter(i =>
+    i.type === 'otherCost' &&
+    i.date &&
+    i.date.startsWith(`${year}-${month}`)
+  );
+  const totalOther = otherCosts.reduce((sum, i) => sum + Number(i.amount), 0);
+
+  // --- FINAL ---
+  const result = totalIncome - totalFixed - totalCredits - totalOther;
+
+  const out = document.getElementById('monthResult');
+  out.innerHTML = `
+    <div class="finance-item"><strong>Prihodi:</strong> ${totalIncome.toFixed(2)} €</div>
+    <div class="finance-item"><strong>Mjesečni troškovi:</strong> ${totalFixed.toFixed(2)} €</div>
+    <div class="finance-item"><strong>Krediti:</strong> ${totalCredits.toFixed(2)} €</div>
+    <div class="finance-item"><strong>Ostali troškovi:</strong> ${totalOther.toFixed(2)} €</div>
+    <div class="finance-item" style="font-weight:800;">
+      Stanje: ${result.toFixed(2)} €
+    </div>
+  `;
+}
+
+// ===== CONNECT MONTH CALCULATE BUTTON =====
+document.getElementById('btnCalculateMonth')
+  .addEventListener('click', calculateMonth);
+
+  
+// ===== OTHER COSTS =====
+
+async function renderOtherList() {
+  const list = document.getElementById('otherList');
+  const items = (await obligationDB.getAll()).filter(i => i.type === 'otherCost');
+
+  if (!list) return;
+
+  if (items.length === 0) {
+    list.innerHTML = '<div class="empty-list">Nema troškova</div>';
+    return;
+  }
+
+  list.innerHTML = items.map(i => `
+    <div class="finance-item">
+      <div><strong>${i.desc}</strong></div>
+      <div>€ ${Number(i.amount).toFixed(2)}</div>
+      <div>${i.date || ''}</div>
+    </div>
+  `).join('');
+}
+
+document.getElementById('saveOther').addEventListener('click', async () => {
+  const desc = document.getElementById('otherDesc').value.trim();
+  const amount = document.getElementById('otherAmount').value;
+  const date = new Date().toISOString().split('T')[0];
+
+  if (!desc || !amount) return;
+
+  const item = {
+    id: Date.now(),
+    type: 'otherCost',
+    desc,
+    amount,
+    date,
+    createdAt: Date.now()
+  };
+
+  await obligationDB.add(item);
+
+  document.getElementById('otherDesc').value = '';
+  document.getElementById('otherAmount').value = '';
+
+  renderOtherList();
+});
+
+// CALCULATE MONTH BUTTON
+const calcBtn = document.getElementById('calcMonth');
+if (calcBtn) {
+  calcBtn.addEventListener('click', calculateMonth);
+}
+
   document.getElementById('btnShopping').addEventListener('click', async () => {
     const lang = getLang();
 
@@ -843,6 +1229,30 @@ renderShoppingList();
 
     setTimeout(() => document.getElementById('shoppingInput').focus(), 0);
   });
+// ===== FINANCES MENU BUTTON LINKS =====
+
+document.getElementById('btnIncomeScreen').addEventListener('click', async () => {
+  showScreen('screen-finance-income');
+  await renderIncomeList();
+});
+
+document.getElementById('btnMonthlyCostsScreen').addEventListener('click', async () => {
+  showScreen('screen-finance-fixed');
+  await renderFixedList();
+});
+
+document.getElementById('btnCreditsScreen').addEventListener('click', async () => {
+  showScreen('screen-finance-credits');
+  await renderCreditList();
+});
+
+document.getElementById('btnOtherCostsScreen').addEventListener('click', async () => {
+  showScreen('screen-finance-other');
+  await renderOtherList();
+});
+document.getElementById('btnCostsOverview').addEventListener('click', () => {
+  showScreen('screen-finance-overview');
+});
 
   // SHOPPING INPUT - Enter to add item
   const shoppingInput = document.getElementById('shoppingInput');
@@ -1097,48 +1507,49 @@ obligationDB.getAll().then(async obligations => {
 });
 
 // ===== HANDLE NOTIFICATION TAP (deep link) =====
-if (window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.LocalNotifications) {
-  const { LocalNotifications } = Capacitor.Plugins;
+  if (window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.LocalNotifications) {
+    const { LocalNotifications } = Capacitor.Plugins;
 
-  LocalNotifications.addListener('localNotificationActionPerformed', (event) => {
-    const data = event?.notification?.extra || {};
-    const rawId = data.obligationId;
+    LocalNotifications.addListener('localNotificationActionPerformed', (event) => {
+      const data = event?.notification?.extra || {};
+      const rawId = data.obligationId;
 
-    if (!rawId) return;
+      if (!rawId) return;
 
-    const id = Number(rawId);
+      const id = Number(rawId);
 
-    // Otvori ekran liste obveza
-    showScreen('screen-obligations-list');
-    showListMode();
-    renderObligationsList();
+      showScreen('screen-obligations-list');
+      showListMode();
+      renderObligationsList();
 
-    // Nakon što povuče obveze, otvori točnu obvezu
-    obligationDB.getAll().then(items => {
-  const ob = items.find(o => Number(o.id) === id);
-  if (!ob) return;
+      obligationDB.getAll().then(items => {
+        const ob = items.find(o => Number(o.id) === id);
+        if (!ob) return;
 
-  // pričekaj da se lista iscrta
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            const card = document.querySelector(
+              `.obligation-card[data-id="${ob.id}"]`
+            );
 
-      const card = document.querySelector(
-        `.obligation-card[data-id="${ob.id}"]`
-      );
+            if (card) {
+              card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              card.classList.add('highlight');
 
-      if (card) {
-        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        card.classList.add('highlight');
-
-        setTimeout(() => {
-          card.classList.remove('highlight');
-        }, 2000);
-      }
+              setTimeout(() => {
+                card.classList.remove('highlight');
+              }, 2000);
+            }
+          });
+        });
+      });
     });
-  });
-});
-  });
-}
+  }
+
+  // ===== FINAL FORCE START SCREEN =====
+  setTimeout(() => {
+    showScreen('screen-lang');
+  }, 0);
 
 });
 </script>

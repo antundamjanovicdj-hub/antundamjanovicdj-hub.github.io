@@ -21,6 +21,7 @@
   <meta name="theme-color" content="#0d5e32">
 
   <link rel="stylesheet" href="styles/main.css">
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 </head>
 
 <body>
@@ -177,6 +178,9 @@
         placeholder="Dodaj stavku i stisni Enter"
       />
     </div>
+<button id="btnScanReceipt" class="scan-receipt-btn">
+  📷 Skeniraj račun
+</button>
 
     <button id="toggleArchive" class="archive-toggle">
   Prikaži arhivu
@@ -1494,6 +1498,64 @@ renderShoppingList();
 
     setTimeout(() => document.getElementById('shoppingInput').focus(), 0);
   });
+
+// ===== SCAN RECEIPT BUTTON =====
+const scanBtn = document.getElementById('btnScanReceipt');
+
+if (scanBtn) {
+  scanBtn.addEventListener('click', async () => {
+    const { Camera } = Capacitor.Plugins;
+
+    try {
+      const image = await Camera.getPhoto({
+  quality: 80,
+  allowEditing: false,
+  resultType: 'dataUrl',
+
+  source: 'camera',     // 👈 forsira direktno kameru
+  direction: 'rear'     // 👈 forsira zadnju kameru
+});
+
+      // ===== OCR =====
+      alert("Obrada računa... ⏳");
+
+      const worker = await Tesseract.createWorker('eng');
+      const { data: { text } } = await worker.recognize(image.dataUrl);
+      await worker.terminate();
+
+      console.log("OCR tekst:", text);
+
+      // ===== IZVLAČENJE IZNOSA =====
+      // traži prvi broj s decimalom
+      const match = text.match(/(\d+[.,]\d{2})/);
+
+      if (match) {
+  const amount = match[1].replace(',', '.');
+
+  // ===== SPREMI U FINANCIJE - OSTALI TROŠKOVI =====
+  const item = {
+    id: Date.now(),
+    type: 'otherCost',
+    desc: "Račun (OCR)",
+    amount: Number(amount),
+    date: new Date().toISOString().split('T')[0],
+    createdAt: Date.now()
+  };
+
+  await addFinanceItem(item);
+
+  alert("Račun spremljen u Ostale troškove: " + amount + " €");
+
+} else {
+  alert("Iznos nije pronađen 😐");
+}
+
+    } catch (err) {
+      console.log("OCR error:", err);
+      alert("Greška u OCR obradi");
+    }
+  });
+}
 // ===== FINANCES MENU BUTTON LINKS =====
 
 document.getElementById('btnIncomeScreen').addEventListener('click', async () => {

@@ -19,6 +19,56 @@ shopping: {
   showArchive: "Prikaži arhivu",
   hideArchive: "Sakrij arhivu"
 },
+finances: {
+      menu: {
+        income: "💵 Unos prihoda",
+        fixed: "📅 Mjesečni troškovi",
+        credits: "🏦 Krediti",
+        other: "🛒 Ostali troškovi",
+        overview: "📊 Pregled troškova"
+      },
+      income: {
+  title: "💵 Unos prihoda",
+  dateLabel: "Datum",
+  add: "Dodaj prihod",
+  amountPh: "Iznos (€)",
+  descPh: "Opis (npr. Plaća)"
+},
+      fixed: {
+  title: "📅 Mjesečni troškovi",
+  add: "Dodaj trošak",
+  descPh: "Naziv fiksnog troška (npr. Stanarina)",
+  amountPh: "Iznos (€)"
+},
+      credits: {
+  title: "🏦 Krediti",
+  add: "Dodaj kredit",
+  descPh: "Naziv kredita (npr. Auto kredit)",
+  amountPh: "Iznos rate (€)",
+  startLabel: "Početak kredita",
+  endLabel: "Završetak kredita",
+  lastPaidLabel: "Zadnja uplata"
+},
+      other: {
+  title: "🧾 Ostali troškovi",
+  add: "Dodaj trošak",
+  descPh: "Opis troška (npr. Gorivo)",
+  amountPh: "Iznos (€)"
+},
+      overview: {
+        title: "📊 Pregled troškova",
+        calculate: "Izračunaj",
+        listIncome: "Popis prihoda",
+        listFixed: "Fiksni troškovi",
+        listCredits: "Aktivni krediti",
+        listOther: "Ostali troškovi",
+        sumIncome: "Prihodi",
+        sumFixed: "Mjesečni troškovi",
+        sumCredits: "Krediti",
+        sumOther: "Ostali troškovi",
+        sumResult: "Stanje"
+      }
+    },
     obligation: {
   title: "Naslov obveze",
   note: "Napomena",
@@ -79,6 +129,56 @@ shopping: {
   showArchive: "Show archive",
   hideArchive: "Hide archive"
 },
+finances: {
+      menu: {
+        income: "💵 Income",
+        fixed: "📅 Monthly costs",
+        credits: "🏦 Credits",
+        other: "🛒 Other costs",
+        overview: "📊 Costs overview"
+      },
+      income: {
+  title: "💵 Income",
+  dateLabel: "Date",
+  add: "Add income",
+  amountPh: "Amount (€)",
+  descPh: "Description (e.g. Salary)"
+},
+      fixed: {
+  title: "📅 Monthly costs",
+  add: "Add cost",
+  descPh: "Cost name (e.g. Rent)",
+  amountPh: "Amount (€)"
+},
+      credits: {
+  title: "🏦 Credits",
+  add: "Add credit",
+  descPh: "Credit name (e.g. Car loan)",
+  amountPh: "Installment amount (€)",
+startLabel: "Credit start",
+endLabel: "Credit end",
+lastPaidLabel: "Last payment"
+},
+      other: {
+  title: "🧾 Other costs",
+  add: "Add cost",
+  descPh: "Cost description (e.g. Fuel)",
+  amountPh: "Amount (€)"
+},
+      overview: {
+        title: "📊 Costs overview",
+        calculate: "Calculate",
+        listIncome: "Income list",
+        listFixed: "Fixed costs",
+        listCredits: "Active credits",
+        listOther: "Other costs",
+        sumIncome: "Income",
+        sumFixed: "Monthly costs",
+        sumCredits: "Credits",
+        sumOther: "Other costs",
+        sumResult: "Balance"
+      }
+    },
     obligation: {
   title: "Title",
   note: "Note",
@@ -139,6 +239,56 @@ shopping: {
   showArchive: "Archiv anzeigen",
   hideArchive: "Archiv ausblenden"
 },
+finances: {
+      menu: {
+        income: "💵 Einkommen",
+        fixed: "📅 Monatliche Kosten",
+        credits: "🏦 Kredite",
+        other: "🛒 Sonstige Kosten",
+        overview: "📊 Kostenübersicht"
+      },
+      income: {
+  title: "💵 Einkommen",
+  dateLabel: "Datum",
+  add: "Einkommen hinzufügen",
+  amountPh: "Betrag (€)",
+  descPh: "Beschreibung (z.B. Gehalt)"
+},
+      fixed: {
+  title: "📅 Monatliche Kosten",
+  add: "Kosten hinzufügen",
+  descPh: "Name der Kosten (z.B. Miete)",
+  amountPh: "Betrag (€)"
+},
+      credits: {
+  title: "🏦 Kredite",
+  add: "Kredit hinzufügen",
+  descPh: "Kreditname (z.B. Autokredit)",
+  amountPh: "Ratenbetrag (€)",
+startLabel: "Kreditbeginn",
+endLabel: "Kreditende",
+lastPaidLabel: "Letzte Zahlung"
+},
+      other: {
+  title: "🧾 Sonstige Kosten",
+  add: "Kosten hinzufügen",
+  descPh: "Kostenbeschreibung (z.B. Kraftstoff)",
+  amountPh: "Betrag (€)"
+},
+      overview: {
+        title: "📊 Kostenübersicht",
+        calculate: "Berechnen",
+        listIncome: "Einkommensliste",
+        listFixed: "Fixkosten",
+        listCredits: "Aktive Kredite",
+        listOther: "Sonstige Kosten",
+        sumIncome: "Einnahmen",
+        sumFixed: "Monatliche Kosten",
+        sumCredits: "Kredite",
+        sumOther: "Sonstige Kosten",
+        sumResult: "Saldo"
+      }
+    },
     obligation: {
   title: "Titel",
   note: "Notiz",
@@ -199,6 +349,56 @@ shopping: {
   showArchive: "Показать архив",
   hideArchive: "Скрыть архив"
 },
+finances: {
+      menu: {
+        income: "💵 Доходы",
+        fixed: "📅 Ежемесячные расходы",
+        credits: "🏦 Кредиты",
+        other: "🛒 Прочие расходы",
+        overview: "📊 Обзор расходов"
+      },
+      income: {
+  title: "💵 Доходы",
+  dateLabel: "Дата",
+  add: "Добавить доход",
+  amountPh: "Сумма (€)",
+  descPh: "Описание (например, зарплата)"
+},
+      fixed: {
+  title: "📅 Ежемесячные расходы",
+  add: "Добавить расход",
+  descPh: "Название расхода (например, аренда)",
+  amountPh: "Сумма (€)"
+},
+      credits: {
+  title: "🏦 Кредиты",
+  add: "Добавить кредит",
+  descPh: "Название кредита (например, автокредит)",
+  amountPh: "Сумма платежа (€)",
+startLabel: "Начало кредита",
+endLabel: "Окончание кредита",
+lastPaidLabel: "Последний платеж"
+},
+      other: {
+  title: "🧾 Прочие расходы",
+  add: "Добавить расход",
+  descPh: "Описание расхода (например, топливо)",
+  amountPh: "Сумма (€)"
+},
+      overview: {
+        title: "📊 Обзор расходов",
+        calculate: "Рассчитать",
+        listIncome: "Список доходов",
+        listFixed: "Фиксированные расходы",
+        listCredits: "Активные кредиты",
+        listOther: "Прочие расходы",
+        sumIncome: "Доходы",
+        sumFixed: "Ежемесячные расходы",
+        sumCredits: "Кредиты",
+        sumOther: "Прочие расходы",
+        sumResult: "Баланс"
+      }
+    },
     obligation: {
   title: "Название",
   note: "Заметка",
@@ -259,6 +459,56 @@ shopping: {
   showArchive: "Mostrar arquivo",
   hideArchive: "Ocultar arquivo"
 },
+finances: {
+      menu: {
+        income: "💵 Rendimentos",
+        fixed: "📅 Custos mensais",
+        credits: "🏦 Créditos",
+        other: "🛒 Outros custos",
+        overview: "📊 Visão geral de custos"
+      },
+      income: {
+  title: "💵 Rendimentos",
+  dateLabel: "Data",
+  add: "Adicionar rendimento",
+  amountPh: "Valor (€)",
+  descPh: "Descrição (ex. Salário)"
+},
+      fixed: {
+  title: "📅 Custos mensais",
+  add: "Adicionar custo",
+  descPh: "Nome do custo (ex. Renda)",
+  amountPh: "Valor (€)"
+},
+      credits: {
+  title: "🏦 Créditos",
+  add: "Adicionar crédito",
+  descPh: "Nome do crédito (ex. Empréstimo carro)",
+  amountPh: "Valor da parcela (€)",
+startLabel: "Início do crédito",
+endLabel: "Fim do crédito",
+lastPaidLabel: "Último pagamento"
+},
+      other: {
+  title: "🧾 Outros custos",
+  add: "Adicionar custo",
+  descPh: "Descrição do custo (ex. Combustível)",
+  amountPh: "Valor (€)"
+},
+      overview: {
+        title: "📊 Visão geral de custos",
+        calculate: "Calcular",
+        listIncome: "Lista de rendimentos",
+        listFixed: "Custos fixos",
+        listCredits: "Créditos ativos",
+        listOther: "Outros custos",
+        sumIncome: "Rendimentos",
+        sumFixed: "Custos mensais",
+        sumCredits: "Créditos",
+        sumOther: "Outros custos",
+        sumResult: "Saldo"
+      }
+    },
     obligation: {
   title: "Título",
   note: "Nota",
@@ -319,6 +569,56 @@ shopping: {
   showArchive: "Arşivi göster",
   hideArchive: "Arşivi gizle"
 },
+finances: {
+      menu: {
+        income: "💵 Gelir",
+        fixed: "📅 Aylık giderler",
+        credits: "🏦 Krediler",
+        other: "🛒 Diğer giderler",
+        overview: "📊 Gider özeti"
+      },
+      income: {
+  title: "💵 Gelir",
+  dateLabel: "Tarih",
+  add: "Gelir ekle",
+  amountPh: "Tutar (€)",
+  descPh: "Açıklama (örn. Maaş)"
+},
+      fixed: {
+  title: "📅 Aylık giderler",
+  add: "Gider ekle",
+  descPh: "Gider adı (örn. Kira)",
+  amountPh: "Tutar (€)"
+},
+      credits: {
+  title: "🏦 Krediler",
+  add: "Kredi ekle",
+  descPh: "Kredi adı (örn. Araba kredisi)",
+  amountPh: "Taksit tutarı (€)",
+startLabel: "Kredi başlangıcı",
+endLabel: "Kredi bitişi",
+lastPaidLabel: "Son ödeme"
+},
+      other: {
+  title: "🧾 Diğer giderler",
+  add: "Gider ekle",
+  descPh: "Gider açıklaması (örn. Yakıt)",
+  amountPh: "Tutar (€)"
+},
+      overview: {
+        title: "📊 Gider özeti",
+        calculate: "Hesapla",
+        listIncome: "Gelir listesi",
+        listFixed: "Sabit giderler",
+        listCredits: "Aktif krediler",
+        listOther: "Diğer giderler",
+        sumIncome: "Gelirler",
+        sumFixed: "Aylık giderler",
+        sumCredits: "Krediler",
+        sumOther: "Diğer giderler",
+        sumResult: "Bakiye"
+      }
+    },
     obligation: {
   title: "Başlık",
   note: "Not",
@@ -379,6 +679,56 @@ shopping: {
   showArchive: "显示存档",
   hideArchive: "隐藏存档"
 },
+finances: {
+      menu: {
+        income: "💵 收入",
+        fixed: "📅 每月支出",
+        credits: "🏦 贷款",
+        other: "🛒 其他支出",
+        overview: "📊 支出总览"
+      },
+      income: {
+  title: "💵 收入",
+  dateLabel: "日期",
+  add: "添加收入",
+  amountPh: "金额 (€)",
+  descPh: "描述 (例如 工资)"
+},
+      fixed: {
+  title: "📅 每月支出",
+  add: "添加支出",
+  descPh: "支出名称 (例如 房租)",
+  amountPh: "金额 (€)"
+},
+      credits: {
+  title: "🏦 贷款",
+  add: "添加贷款",
+  descPh: "贷款名称 (例如 车贷)",
+  amountPh: "每期金额 (€)",
+startLabel: "贷款开始",
+endLabel: "贷款结束",
+lastPaidLabel: "最后付款"
+},
+      other: {
+  title: "🧾 其他支出",
+  add: "添加支出",
+  descPh: "支出说明 (例如 燃油)",
+  amountPh: "金额 (€)"
+},
+      overview: {
+        title: "📊 支出总览",
+        calculate: "计算",
+        listIncome: "收入列表",
+        listFixed: "固定支出",
+        listCredits: "活跃贷款",
+        listOther: "其他支出",
+        sumIncome: "收入",
+        sumFixed: "每月支出",
+        sumCredits: "贷款",
+        sumOther: "其他支出",
+        sumResult: "余额"
+      }
+    },
     obligation: {
   title: "标题",
   note: "备注",
@@ -439,6 +789,56 @@ shopping: {
   showArchive: "アーカイブ表示",
   hideArchive: "アーカイブ非表示"
 },
+finances: {
+      menu: {
+        income: "💵 収入",
+        fixed: "📅 月間支出",
+        credits: "🏦 ローン",
+        other: "🛒 その他の支出",
+        overview: "📊 支出概要"
+      },
+      income: {
+  title: "💵 収入",
+  dateLabel: "日付",
+  add: "収入を追加",
+  amountPh: "金額 (€)",
+  descPh: "説明 (例: 給与)"
+},
+      fixed: {
+  title: "📅 月間支出",
+  add: "支出を追加",
+  descPh: "支出名 (例: 家賃)",
+  amountPh: "金額 (€)"
+},
+      credits: {
+  title: "🏦 ローン",
+  add: "ローンを追加",
+  descPh: "ローン名 (例: 車のローン)",
+  amountPh: "分割支払額 (€)",
+startLabel: "ローン開始",
+endLabel: "ローン終了",
+lastPaidLabel: "最終支払い"
+},
+      other: {
+  title: "🧾 その他の費用",
+  add: "費用を追加",
+  descPh: "費用の説明 (例: 燃料)",
+  amountPh: "金額 (€)"
+},
+      overview: {
+        title: "📊 支出概要",
+        calculate: "計算",
+        listIncome: "収入一覧",
+        listFixed: "固定費",
+        listCredits: "アクティブローン",
+        listOther: "その他の支出",
+        sumIncome: "収入",
+        sumFixed: "月間支出",
+        sumCredits: "ローン",
+        sumOther: "その他支出",
+        sumResult: "残高"
+      }
+    },
     obligation: {
   title: "タイトル",
   note: "メモ",

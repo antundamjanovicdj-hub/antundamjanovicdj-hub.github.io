@@ -45,9 +45,13 @@
         <button class="lang-btn" data-lang="tr">🇹🇷 Türkçe</button>
       </div>
       <div class="lang-row">
-        <button class="lang-btn" data-lang="zh">🇨🇳 中文</button>
-        <button class="lang-btn" data-lang="ja">🇯🇵 日本語</button>
-      </div>
+  <button class="lang-btn" data-lang="fr">🇫🇷 Français</button>
+  <button class="lang-btn" data-lang="es">🇪🇸 Español</button>
+</div>
+<div class="lang-row">
+  <button class="lang-btn" data-lang="it">🇮🇹 Italiano</button>
+  <button class="lang-btn" data-lang="hu">🇭🇺 Magyar</button>
+</div>
     </div>
     <div class="lang-title-bottom">KOMPAS</div>
   </div>
@@ -155,10 +159,10 @@
   <h2 class="screen-title">📊 Pregled troškova</h2>
 
   <div class="finance-form">
-    <label>Odaberi mjesec</label>
-    <input type="month" id="financeMonth">
-    <button id="btnCalculateMonth">Izračunaj</button>
-  </div>
+  <label id="financeMonthLabel"></label>
+  <input type="month" id="financeMonth">
+  <button id="btnCalculateMonth">Izračunaj</button>
+</div>
 
   <div id="monthResult" class="finance-list"></div>
 </div>
@@ -372,6 +376,13 @@ function setLanguage(lang) {
     showScreen('screen-menu');
     return;
   }
+// ===== LANGUAGE FALLBACK TO ENGLISH =====
+  if (!I18N[lang].obligationsView) I18N[lang].obligationsView = I18N.en.obligationsView;
+  if (!I18N[lang].obligationsList) I18N[lang].obligationsList = I18N.en.obligationsList;
+  if (!I18N[lang].obligation) I18N[lang].obligation = I18N.en.obligation;
+  if (!I18N[lang].popup) I18N[lang].popup = I18N.en.popup;
+  if (!I18N[lang].shopping) I18N[lang].shopping = I18N.en.shopping;
+  if (!I18N[lang].finances) I18N[lang].finances = I18N.en.finances;
 
   document.getElementById('btnObligations').textContent = I18N[lang].menu.obligations;
   document.getElementById('btnShopping').textContent = I18N[lang].menu.shopping;
@@ -441,6 +452,8 @@ function setLanguage(lang) {
     document.getElementById('saveCredit').textContent = "➕ " + I18N[lang].finances.credits.add;
     document.getElementById('saveOther').textContent = "➕ " + I18N[lang].finances.other.add;
     document.getElementById('btnCalculateMonth').textContent = I18N[lang].finances.overview.calculate;
+    const monthLabel = document.getElementById('financeMonthLabel');
+if (monthLabel) monthLabel.textContent = I18N[lang].obligationsView.selectDate || I18N.en.obligationsView.selectDate;
   }
   showScreen('screen-menu');
 
@@ -491,57 +504,81 @@ if (repeatSelect) {
 
 /* ===== RENDER CARD (reused) ===== */
 function buildObligationCard(ob, lang) {
-  const dt = ob.dateTime ? new Date(ob.dateTime) : null;
-  const dateStr = dt ? dt.toLocaleDateString(I18N[lang].lang || 'hr-HR') : '—';
-  const timeStr = dt ? dt.toLocaleTimeString(I18N[lang].lang || 'hr-HR', { hour: '2-digit', minute: '2-digit' }) : '—';
+  // ===== NORMALIZE OB OBJECT (prevent "undefined") =====
+  const safe = {
+    id: ob.id,
+    title: ob.title || '',
+    note: ob.note || '',
+    dateTime: ob.dateTime || null,
+    reminder: ob.reminder || null,
+    repeat: ob.repeat || null,
+    status: ob.status || 'active'
+  };
+
+  const t = (window.I18N && I18N[lang]) ? I18N[lang] : I18N.hr;
+  const ol = (t && t.obligationsList) ? t.obligationsList : I18N.hr.obligationsList;
+
+  const dt = safe.dateTime ? new Date(safe.dateTime) : null;
+  const dateStr = dt ? dt.toLocaleDateString((t && t.lang) || 'hr-HR') : '—';
+  const timeStr = dt ? dt.toLocaleTimeString((t && t.lang) || 'hr-HR', { hour: '2-digit', minute: '2-digit' }) : '—';
 
   let reminderStr = '';
-  if (ob.reminder) {
-    const key = `reminder${ob.reminder}`;
-    reminderStr = I18N[lang].obligationsList[key] || `${ob.reminder} min`;
+  if (safe.reminder) {
+    const key = `reminder${safe.reminder}`;
+    reminderStr = (ol && ol[key]) ? ol[key] : `${safe.reminder} min`;
   }
 
   let repeatIcon = '';
-let repeatTitle = '';
+  let repeatTitle = '';
 
-if (ob.repeat) {
-  repeatIcon = ' 🔁';
+  if (safe.repeat) {
+    repeatIcon = ' 🔁';
+    if (safe.repeat === 'daily') repeatTitle = (t.obligation?.repeatDaily || 'Daily');
+    else if (safe.repeat === 'weekly') repeatTitle = (t.obligation?.repeatWeekly || 'Weekly');
+    else repeatTitle = '';
+  }
 
-  if (ob.repeat === 'daily') repeatTitle = 'Svaki dan';
-  else if (ob.repeat === 'weekly') repeatTitle = 'Svaki tjedan';
-  else if (ob.repeat === 'monthly') repeatTitle = 'Svaki mjesec';
-  else repeatTitle = 'Prilagođeno';
-}
-  const statusText = ob.status === 'done'
-    ? `✅ ${I18N[lang].obligationsList.statusDone}`
-    : `⏳ ${I18N[lang].obligationsList.statusActive}`;
+  const statusDoneText = ol.statusDone || 'Done';
+  const statusActiveText = ol.statusActive || 'Active';
 
-  const bgColor = ob.status === 'done' ? '#e8f5e9' : '#e3f2fd';
-  const borderColor = ob.status === 'done' ? '#4caf50' : '#2196f3';
+  const statusText = safe.status === 'done'
+    ? `✅ ${statusDoneText}`
+    : `⏳ ${statusActiveText}`;
 
-  const toggleBtnText = ob.status === 'done'
-    ? I18N[lang].obligationsList.markActive
-    : I18N[lang].obligationsList.markDone;
+  const bgColor = safe.status === 'done' ? '#e8f5e9' : '#e3f2fd';
+  const borderColor = safe.status === 'done' ? '#4caf50' : '#2196f3';
+
+  const toggleBtnText = safe.status === 'done'
+    ? (ol.markActive || '⏳ Active')
+    : (ol.markDone || '✅ Done');
+
+  const editText = ol.edit || 'Edit';
+  const deleteText = ol.delete || 'Delete';
 
   return `
-    <div class="obligation-card" data-id="${ob.id}" style="background:${bgColor}; border-left:4px solid ${borderColor};">
-      <div class="obligation-title" title="${repeatTitle}">${ob.title}${repeatIcon}</div>
-      ${ob.note ? `<div class="obligation-note">${ob.note}</div>` : ''}
+    <div class="obligation-card" data-id="${safe.id}" style="background:${bgColor}; border-left:4px solid ${borderColor};">
+      <div class="obligation-title" title="${repeatTitle}">${safe.title}${repeatIcon}</div>
+
+      ${safe.note ? `<div class="obligation-note">${safe.note}</div>` : ''}
+
       <div class="obligation-meta">
         <div class="obligation-date">📅 ${dateStr}</div>
         <div class="obligation-time">⏰ ${timeStr}</div>
         ${reminderStr ? `<div class="obligation-reminder">🔔 ${reminderStr}</div>` : ''}
         <div class="obligation-status">${statusText}</div>
       </div>
-      <button class="obligation-toggle-status" data-id="${ob.id}" data-status="${ob.status}">
+
+      <button class="obligation-toggle-status" data-id="${safe.id}" data-status="${safe.status}">
         ${toggleBtnText}
       </button>
-      <button class="obligation-edit" data-id="${ob.id}">✏️ ${I18N[lang].obligationsList.edit}</button>
+
+      <button class="obligation-edit" data-id="${safe.id}">✏️ ${editText}</button>
+
       <button
         class="obligation-delete"
-        data-id="${ob.id}"
-        title="${I18N[lang].obligationsList.delete || 'Obriši'}"
-        aria-label="${I18N[lang].obligationsList.delete || 'Obriši'}"
+        data-id="${safe.id}"
+        title="${deleteText}"
+        aria-label="${deleteText}"
       >
         🗑️
       </button>

@@ -666,228 +666,486 @@ popup: {
     selectDate: "Tarih seç"
 }
   },
-  zh: {
-    menu: {
-      obligations: "🧭 义务",
-      shopping: "🛒 购物",
-      contacts: "👥 联系人",
-      finances: "💰 财务",
-      health: "❤️ 健康",
-      diary: "📓 日记",
-      addObligation: "➕ 添加义务",
-      viewObligations: "📅 查看义务"
-    },
-shopping: {
-  title: "🛒 购物",
-  placeholder: "添加项目并按 Enter",
-  emptyTitle: "没有项目",
-  emptySub: "在上方添加第一个项目。",
-  scanReceipt: "输入收据金额",
-  showArchive: "显示存档",
-  hideArchive: "隐藏存档"
-},
-finances: {
-      menu: {
-        income: "💵 收入",
-        fixed: "📅 每月支出",
-        credits: "🏦 贷款",
-        other: "🛒 其他支出",
-        overview: "📊 支出总览"
-      },
-      income: {
-  title: "💵 收入",
-  dateLabel: "日期",
-  add: "添加收入",
-  amountPh: "金额 (€)",
-  descPh: "描述 (例如 工资)"
-},
-      fixed: {
-  title: "📅 每月支出",
-  add: "添加支出",
-  descPh: "支出名称 (例如 房租)",
-  amountPh: "金额 (€)"
-},
-      credits: {
-  title: "🏦 贷款",
-  add: "添加贷款",
-  descPh: "贷款名称 (例如 车贷)",
-  amountPh: "每期金额 (€)",
-startLabel: "贷款开始",
-endLabel: "贷款结束",
-lastPaidLabel: "最后付款"
-},
-      other: {
-  title: "🧾 其他支出",
-  add: "添加支出",
-  descPh: "支出说明 (例如 燃油)",
-  amountPh: "金额 (€)"
-},
-      overview: {
-        title: "📊 支出总览",
-        calculate: "计算",
-        listIncome: "收入列表",
-        listFixed: "固定支出",
-        listCredits: "活跃贷款",
-        listOther: "其他支出",
-        sumIncome: "收入",
-        sumFixed: "每月支出",
-        sumCredits: "贷款",
-        sumOther: "其他支出",
-        sumResult: "余额"
-      }
-    },
-    obligation: {
-  title: "标题",
-  note: "备注",
-  dateTime: "日期和时间",
-  reminder: "提醒",
-  urgent: "紧急（忽略安静时间）",
-  quietHours: "安静时间",
-  repeat: "重复",
-  repeatNone: "不重复",
-  repeatDaily: "每天",
-  repeatWeekly: "每周",
-  save: "💾 保存",
-  update: "更新",
-  cancel: "取消"
-},
-popup: {
-  newObligationTitle: "➕ 新义务",
-  newObligationSaved: "义务已保存"
-},
-    obligationsList: {
-      title: "我的义务",
-      total: "总计",
-      noObligations: "没有义务",
-      delete: "删除",
-      deleteConfirm: "删除此义务？",
-      edit: "编辑",
-      markDone: "✅ 已完成",
-      markActive: "⏳ 重新激活",
-      statusActive: "活跃",
-      statusDone: "已完成",
-      reminder30: "提前30分钟",
-      reminder60: "提前1小时",
-      reminder120: "提前2小时",
-      reminder1440: "提前1天"
-    },
-    obligationsView: {
-      byDay: "📆 按日期查看",
-      asList: "📋 列表视图",
-      selectDate: "选择日期"
-}
+   fr: {
+  menu: {
+    obligations: "🧭 Obligations",
+    shopping: "🛒 Courses",
+    contacts: "👥 Contacts",
+    finances: "💰 Finances",
+    health: "❤️ Santé",
+    diary: "📓 Journal",
+    addObligation: "➕ Ajouter obligation",
+    viewObligations: "📅 Voir obligations"
   },
-  ja: {
-    menu: {
-      obligations: "🧭 義務",
-      shopping: "🛒 買い物",
-      contacts: "👥 連絡先",
-      finances: "💰 財務",
-      health: "❤️ 健康",
-      diary: "📓 日記",
-      addObligation: "➕ 義務を追加",
-      viewObligations: "📅 義務を表示"
-    },
-shopping: {
-  title: "🛒 買い物",
-  placeholder: "項目を追加してEnter",
-  emptyTitle: "項目なし",
-  emptySub: "上で最初の項目を追加。",
-  scanReceipt: "レシート金額を入力",
-  showArchive: "アーカイブ表示",
-  hideArchive: "アーカイブ非表示"
+
+  shopping: {
+  title: "🛒 Courses",
+  placeholder: "Ajouter un article et appuyer sur Entrée",
+  emptyTitle: "Aucun article",
+  emptySub: "Ajoutez le premier article ci-dessus.",
+  scanReceipt: "Entrer le montant du ticket",
+  showArchive: "Afficher archive",
+  hideArchive: "Masquer archive"
 },
-finances: {
-      menu: {
-        income: "💵 収入",
-        fixed: "📅 月間支出",
-        credits: "🏦 ローン",
-        other: "🛒 その他の支出",
-        overview: "📊 支出概要"
-      },
-      income: {
-  title: "💵 収入",
-  dateLabel: "日付",
-  add: "収入を追加",
-  amountPh: "金額 (€)",
-  descPh: "説明 (例: 給与)"
-},
-      fixed: {
-  title: "📅 月間支出",
-  add: "支出を追加",
-  descPh: "支出名 (例: 家賃)",
-  amountPh: "金額 (€)"
-},
-      credits: {
-  title: "🏦 ローン",
-  add: "ローンを追加",
-  descPh: "ローン名 (例: 車のローン)",
-  amountPh: "分割支払額 (€)",
-startLabel: "ローン開始",
-endLabel: "ローン終了",
-lastPaidLabel: "最終支払い"
-},
-      other: {
-  title: "🧾 その他の費用",
-  add: "費用を追加",
-  descPh: "費用の説明 (例: 燃料)",
-  amountPh: "金額 (€)"
-},
-      overview: {
-        title: "📊 支出概要",
-        calculate: "計算",
-        listIncome: "収入一覧",
-        listFixed: "固定費",
-        listCredits: "アクティブローン",
-        listOther: "その他の支出",
-        sumIncome: "収入",
-        sumFixed: "月間支出",
-        sumCredits: "ローン",
-        sumOther: "その他支出",
-        sumResult: "残高"
-      }
-    },
-    obligation: {
-  title: "タイトル",
-  note: "メモ",
-  dateTime: "日付と時刻",
-  reminder: "リマインダー",
-  urgent: "緊急（サイレント時間を無視）",
-  quietHours: "サイレント時間",
-  repeat: "繰り返し",
-  repeatNone: "繰り返しなし",
-  repeatDaily: "毎日",
-  repeatWeekly: "毎週",
-  save: "💾 保存",
-  update: "更新",
-  cancel: "キャンセル"
+
+obligation: {
+  title: "Titre",
+  note: "Note",
+  dateTime: "Date et heure",
+  reminder: "Rappel",
+  urgent: "Urgent (ignore les heures silencieuses)",
+  quietHours: "Heures silencieuses",
+  repeat: "Répétition",
+  repeatNone: "Aucune répétition",
+  repeatDaily: "Chaque jour",
+  repeatWeekly: "Chaque semaine",
+  save: "💾 Enregistrer",
+  update: "Mettre à jour",
+  cancel: "Annuler"
 },
 popup: {
-  newObligationTitle: "➕ 新しい義務",
-  newObligationSaved: "義務が保存されました"
+  newObligationTitle: "➕ Nouvelle obligation",
+  newObligationSaved: "Obligation enregistrée"
 },
-    obligationsList: {
-      title: "私の義務",
-      total: "合計",
-      noObligations: "義務はありません",
-      delete: "削除",
-      deleteConfirm: "この義務を削除しますか？",
-      edit: "編集",
-      markDone: "✅ 完了",
-      markActive: "⏳ 再アクティブ",
-      statusActive: "アクティブ",
-      statusDone: "完了",
-      reminder30: "30分前",
-      reminder60: "1時間前",
-      reminder120: "2時間前",
-      reminder1440: "1日前"
-    },
-    obligationsView: {
-      byDay: "📆 日別表示",
-      asList: "📋 リスト表示",
-      selectDate: "日付を選択"
+obligationsList: {
+  title: "Mes obligations",
+  total: "Total",
+  noObligations: "Aucune obligation",
+  delete: "Supprimer",
+  deleteConfirm: "Supprimer cette obligation ?",
+  edit: "Modifier",
+  markDone: "✅ Terminé",
+  markActive: "⏳ Revenir actif",
+  statusActive: "Actif",
+  statusDone: "Terminé",
+  reminder30: "30 min avant",
+  reminder60: "1 heure avant",
+  reminder120: "2 heures avant",
+  reminder1440: "1 jour avant"
+},
+obligationsView: {
+  byDay: "📆 Par jour",
+  asList: "📋 Voir en liste",
+  selectDate: "Choisir une date"
+},
+
+  finances: {
+  menu: {
+    income: "💵 Revenus",
+    fixed: "📅 Dépenses mensuelles",
+    credits: "🏦 Crédits",
+    other: "🛒 Autres dépenses",
+    overview: "📊 Aperçu des dépenses"
+  },
+
+  income: {
+    title: "💵 Revenus",
+    dateLabel: "Date",
+    add: "Ajouter revenu",
+    amountPh: "Montant (€)",
+    descPh: "Description (ex. Salaire)"
+  },
+
+  fixed: {
+    title: "📅 Dépenses mensuelles",
+    add: "Ajouter dépense",
+    descPh: "Nom de la dépense (ex. Loyer)",
+    amountPh: "Montant (€)"
+  },
+
+  credits: {
+    title: "🏦 Crédits",
+    add: "Ajouter crédit",
+    descPh: "Nom du crédit (ex. Prêt auto)",
+    amountPh: "Montant de la mensualité (€)",
+    startLabel: "Début du crédit",
+    endLabel: "Fin du crédit",
+    lastPaidLabel: "Dernier paiement"
+  },
+
+  other: {
+    title: "🧾 Autres dépenses",
+    add: "Ajouter dépense",
+    descPh: "Description (ex. Carburant)",
+    amountPh: "Montant (€)"
+  },
+
+  overview: {
+    title: "📊 Aperçu des dépenses",
+    calculate: "Calculer",
+    listIncome: "Liste des revenus",
+    listFixed: "Dépenses fixes",
+    listCredits: "Crédits actifs",
+    listOther: "Autres dépenses",
+    sumIncome: "Revenus",
+    sumFixed: "Dépenses mensuelles",
+    sumCredits: "Crédits",
+    sumOther: "Autres dépenses",
+    sumResult: "Solde"
+  }
+}
+},
+
+es: {
+  menu: {
+    obligations: "🧭 Obligaciones",
+    shopping: "🛒 Compras",
+    contacts: "👥 Contactos",
+    finances: "💰 Finanzas",
+    health: "❤️ Salud",
+    diary: "📓 Diario",
+    addObligation: "➕ Añadir obligación",
+    viewObligations: "📅 Ver obligaciones"
+  },
+
+  shopping: {
+  title: "🛒 Compras",
+  placeholder: "Añadir artículo y pulsar Enter",
+  emptyTitle: "Sin artículos",
+  emptySub: "Añade el primer artículo arriba.",
+  scanReceipt: "Introducir importe del ticket",
+  showArchive: "Mostrar archivo",
+  hideArchive: "Ocultar archivo"
+},
+
+obligation: {
+  title: "Título",
+  note: "Nota",
+  dateTime: "Fecha y hora",
+  reminder: "Recordatorio",
+  urgent: "Urgente (ignora horas silenciosas)",
+  quietHours: "Horas silenciosas",
+  repeat: "Repetición",
+  repeatNone: "Sin repetición",
+  repeatDaily: "Cada día",
+  repeatWeekly: "Cada semana",
+  save: "💾 Guardar",
+  update: "Actualizar",
+  cancel: "Cancelar"
+},
+popup: {
+  newObligationTitle: "➕ Nueva obligación",
+  newObligationSaved: "Obligación guardada"
+},
+obligationsList: {
+  title: "Mis obligaciones",
+  total: "Total",
+  noObligations: "Sin obligaciones",
+  delete: "Eliminar",
+  deleteConfirm: "¿Eliminar esta obligación?",
+  edit: "Editar",
+  markDone: "✅ Hecho",
+  markActive: "⏳ Volver activo",
+  statusActive: "Activo",
+  statusDone: "Hecho",
+  reminder30: "30 min antes",
+  reminder60: "1 hora antes",
+  reminder120: "2 horas antes",
+  reminder1440: "1 día antes"
+},
+obligationsView: {
+  byDay: "📆 Por día",
+  asList: "📋 Ver como lista",
+  selectDate: "Seleccionar fecha"
+},
+
+  finances: {
+  menu: {
+    income: "💵 Ingresos",
+    fixed: "📅 Gastos mensuales",
+    credits: "🏦 Créditos",
+    other: "🛒 Otros gastos",
+    overview: "📊 Resumen de gastos"
+  },
+
+  income: {
+    title: "💵 Ingresos",
+    dateLabel: "Fecha",
+    add: "Añadir ingreso",
+    amountPh: "Importe (€)",
+    descPh: "Descripción (ej. Salario)"
+  },
+
+  fixed: {
+    title: "📅 Gastos mensuales",
+    add: "Añadir gasto",
+    descPh: "Nombre del gasto (ej. Alquiler)",
+    amountPh: "Importe (€)"
+  },
+
+  credits: {
+    title: "🏦 Créditos",
+    add: "Añadir crédito",
+    descPh: "Nombre del crédito (ej. Préstamo coche)",
+    amountPh: "Cuota (€)",
+    startLabel: "Inicio del crédito",
+    endLabel: "Fin del crédito",
+    lastPaidLabel: "Último pago"
+  },
+
+  other: {
+    title: "🧾 Otros gastos",
+    add: "Añadir gasto",
+    descPh: "Descripción (ej. Combustible)",
+    amountPh: "Importe (€)"
+  },
+
+  overview: {
+    title: "📊 Resumen de gastos",
+    calculate: "Calcular",
+    listIncome: "Lista de ingresos",
+    listFixed: "Gastos fijos",
+    listCredits: "Créditos activos",
+    listOther: "Otros gastos",
+    sumIncome: "Ingresos",
+    sumFixed: "Gastos mensuales",
+    sumCredits: "Créditos",
+    sumOther: "Otros gastos",
+    sumResult: "Saldo"
+  }
+}
+},
+
+hu: {
+  menu: {
+    obligations: "🧭 Kötelezettségek",
+    shopping: "🛒 Bevásárlás",
+    contacts: "👥 Kapcsolatok",
+    finances: "💰 Pénzügyek",
+    health: "❤️ Egészség",
+    diary: "📓 Napló",
+    addObligation: "➕ Kötelezettség hozzáadása",
+    viewObligations: "📅 Kötelezettségek"
+  },
+
+  shopping: {
+  title: "🛒 Bevásárlás",
+  placeholder: "Adj hozzá elemet és nyomj Entert",
+  emptyTitle: "Nincs elem",
+  emptySub: "Add hozzá az első elemet fent.",
+  scanReceipt: "Számla összeg megadása",
+  showArchive: "Archívum mutatása",
+  hideArchive: "Archívum elrejtése"
+},
+
+obligation: {
+  title: "Cím",
+  note: "Megjegyzés",
+  dateTime: "Dátum és idő",
+  reminder: "Emlékeztető",
+  urgent: "Sürgős (figyelmen kívül hagyja a csendes órákat)",
+  quietHours: "Csendes órák",
+  repeat: "Ismétlés",
+  repeatNone: "Nincs ismétlés",
+  repeatDaily: "Minden nap",
+  repeatWeekly: "Minden héten",
+  save: "💾 Mentés",
+  update: "Frissítés",
+  cancel: "Mégse"
+},
+popup: {
+  newObligationTitle: "➕ Új kötelezettség",
+  newObligationSaved: "Kötelezettség elmentve"
+},
+obligationsList: {
+  title: "Kötelezettségeim",
+  total: "Összesen",
+  noObligations: "Nincs kötelezettség",
+  delete: "Törlés",
+  deleteConfirm: "Törlöd a kötelezettséget?",
+  edit: "Szerkesztés",
+  markDone: "✅ Kész",
+  markActive: "⏳ Újra aktív",
+  statusActive: "Aktív",
+  statusDone: "Kész",
+  reminder30: "30 perccel előtte",
+  reminder60: "1 órával előtte",
+  reminder120: "2 órával előtte",
+  reminder1440: "1 nappal előtte"
+},
+obligationsView: {
+  byDay: "📆 Napi nézet",
+  asList: "📋 Lista nézet",
+  selectDate: "Dátum kiválasztása"
+},
+
+  finances: {
+  menu: {
+    income: "💵 Bevétel",
+    fixed: "📅 Havi költségek",
+    credits: "🏦 Hitelek",
+    other: "🛒 Egyéb költségek",
+    overview: "📊 Költség áttekintés"
+  },
+
+  income: {
+    title: "💵 Bevétel",
+    dateLabel: "Dátum",
+    add: "Bevétel hozzáadása",
+    amountPh: "Összeg (€)",
+    descPh: "Leírás (pl. Fizetés)"
+  },
+
+  fixed: {
+    title: "📅 Havi költségek",
+    add: "Költség hozzáadása",
+    descPh: "Költség neve (pl. Lakbér)",
+    amountPh: "Összeg (€)"
+  },
+
+  credits: {
+    title: "🏦 Hitelek",
+    add: "Hitel hozzáadása",
+    descPh: "Hitel neve (pl. Autóhitel)",
+    amountPh: "Részlet összege (€)",
+    startLabel: "Hitel kezdete",
+    endLabel: "Hitel vége",
+    lastPaidLabel: "Utolsó befizetés"
+  },
+
+  other: {
+    title: "🧾 Egyéb költségek",
+    add: "Költség hozzáadása",
+    descPh: "Leírás (pl. Üzemanyag)",
+    amountPh: "Összeg (€)"
+  },
+
+  overview: {
+    title: "📊 Költség áttekintés",
+    calculate: "Számítás",
+    listIncome: "Bevételek listája",
+    listFixed: "Fix költségek",
+    listCredits: "Aktív hitelek",
+    listOther: "Egyéb költségek",
+    sumIncome: "Bevételek",
+    sumFixed: "Havi költségek",
+    sumCredits: "Hitelek",
+    sumOther: "Egyéb költségek",
+    sumResult: "Egyenleg"
+  }
+}
+},
+
+it: {
+  menu: {
+    obligations: "🧭 Obblighi",
+    shopping: "🛒 Spesa",
+    contacts: "👥 Contatti",
+    finances: "💰 Finanze",
+    health: "❤️ Salute",
+    diary: "📓 Diario",
+    addObligation: "➕ Aggiungi obbligo",
+    viewObligations: "📅 Vedi obblighi"
+  },
+
+  shopping: {
+  title: "🛒 Spesa",
+  placeholder: "Aggiungi articolo e premi Invio",
+  emptyTitle: "Nessun articolo",
+  emptySub: "Aggiungi il primo articolo sopra.",
+  scanReceipt: "Inserisci importo scontrino",
+  showArchive: "Mostra archivio",
+  hideArchive: "Nascondi archivio"
+},
+
+obligation: {
+  title: "Titolo",
+  note: "Nota",
+  dateTime: "Data e ora",
+  reminder: "Promemoria",
+  urgent: "Urgente (ignora le ore silenziose)",
+  quietHours: "Ore silenziose",
+  repeat: "Ripetizione",
+  repeatNone: "Nessuna ripetizione",
+  repeatDaily: "Ogni giorno",
+  repeatWeekly: "Ogni settimana",
+  save: "💾 Salva",
+  update: "Aggiorna",
+  cancel: "Annulla"
+},
+popup: {
+  newObligationTitle: "➕ Nuovo obbligo",
+  newObligationSaved: "Obbligo salvato"
+},
+obligationsList: {
+  title: "I miei obblighi",
+  total: "Totale",
+  noObligations: "Nessun obbligo",
+  delete: "Elimina",
+  deleteConfirm: "Eliminare questo obbligo?",
+  edit: "Modifica",
+  markDone: "✅ Completato",
+  markActive: "⏳ Di nuovo attivo",
+  statusActive: "Attivo",
+  statusDone: "Completato",
+  reminder30: "30 min prima",
+  reminder60: "1 ora prima",
+  reminder120: "2 ore prima",
+  reminder1440: "1 giorno prima"
+},
+obligationsView: {
+  byDay: "📆 Per giorno",
+  asList: "📋 Vista elenco",
+  selectDate: "Seleziona data"
+},
+
+  finances: {
+  menu: {
+    income: "💵 Entrate",
+    fixed: "📅 Costi mensili",
+    credits: "🏦 Crediti",
+    other: "🛒 Altri costi",
+    overview: "📊 Riepilogo costi"
+  },
+
+  income: {
+    title: "💵 Entrate",
+    dateLabel: "Data",
+    add: "Aggiungi entrata",
+    amountPh: "Importo (€)",
+    descPh: "Descrizione (es. Stipendio)"
+  },
+
+  fixed: {
+    title: "📅 Costi mensili",
+    add: "Aggiungi costo",
+    descPh: "Nome del costo (es. Affitto)",
+    amountPh: "Importo (€)"
+  },
+
+  credits: {
+    title: "🏦 Crediti",
+    add: "Aggiungi credito",
+    descPh: "Nome del credito (es. Prestito auto)",
+    amountPh: "Rata (€)",
+    startLabel: "Inizio credito",
+    endLabel: "Fine credito",
+    lastPaidLabel: "Ultimo pagamento"
+  },
+
+  other: {
+    title: "🧾 Altri costi",
+    add: "Aggiungi costo",
+    descPh: "Descrizione (es. Carburante)",
+    amountPh: "Importo (€)"
+  },
+
+  overview: {
+    title: "📊 Riepilogo costi",
+    calculate: "Calcola",
+    listIncome: "Lista entrate",
+    listFixed: "Costi fissi",
+    listCredits: "Crediti attivi",
+    listOther: "Altri costi",
+    sumIncome: "Entrate",
+    sumFixed: "Costi mensili",
+    sumCredits: "Crediti",
+    sumOther: "Altri costi",
+    sumResult: "Saldo"
+    }
    }
   }
+
 };
 
 I18N.hr.lang = 'hr-HR';
@@ -896,7 +1154,9 @@ I18N.de.lang = 'de-DE';
 I18N.ru.lang = 'ru-RU';
 I18N.pt.lang = 'pt-PT';
 I18N.tr.lang = 'tr-TR';
-I18N.zh.lang = 'zh-CN';
-I18N.ja.lang = 'ja-JP';
+I18N.fr.lang = 'fr-FR';
+I18N.es.lang = 'es-ES';
+I18N.it.lang = 'it-IT';
+I18N.hu.lang = 'hu-HU';
 
 window.I18N = I18N;

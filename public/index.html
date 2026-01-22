@@ -179,7 +179,7 @@
       />
     </div>
 <button id="btnScanReceipt" class="scan-receipt-btn">
-  📷 Skeniraj račun
+  ➕
 </button>
 
     <button id="toggleArchive" class="archive-toggle">
@@ -1484,6 +1484,12 @@ if (calcBtn) {
     document.getElementById('shoppingEmptyTitle').textContent = I18N[lang].shopping.emptyTitle;
     document.getElementById('shoppingEmptySub').textContent = I18N[lang].shopping.emptySub;
 
+// --- SCAN RECEIPT BUTTON ---
+const scanBtnText = document.getElementById('btnScanReceipt');
+if (scanBtnText && I18N[lang].shopping.scanReceipt) {
+  scanBtnText.textContent = "➕ " + I18N[lang].shopping.scanReceipt;
+}
+
     const toggleBtn = document.getElementById('toggleArchive');
     toggleBtn.textContent = showArchivedShopping
       ? I18N[lang].shopping.hideArchive
@@ -1499,61 +1505,36 @@ renderShoppingList();
     setTimeout(() => document.getElementById('shoppingInput').focus(), 0);
   });
 
-// ===== SCAN RECEIPT BUTTON =====
+// ===== ENTER RECEIPT AMOUNT BUTTON =====
 const scanBtn = document.getElementById('btnScanReceipt');
 
-if (scanBtn) {
+if (scanBtn && !scanBtn.dataset.bound) {
+  scanBtn.dataset.bound = "1";
+
   scanBtn.addEventListener('click', async () => {
-    const { Camera } = Capacitor.Plugins;
 
-    try {
-      const image = await Camera.getPhoto({
-  quality: 80,
-  allowEditing: false,
-  resultType: 'dataUrl',
+    const userAmount = prompt("Upiši iznos računa (€):");
+    if (userAmount === null) return;
 
-  source: 'camera',     // 👈 forsira direktno kameru
-  direction: 'rear'     // 👈 forsira zadnju kameru
-});
-
-      // ===== OCR =====
-      alert("Obrada računa... ⏳");
-
-      const worker = await Tesseract.createWorker('eng');
-      const { data: { text } } = await worker.recognize(image.dataUrl);
-      await worker.terminate();
-
-      console.log("OCR tekst:", text);
-
-      // ===== IZVLAČENJE IZNOSA =====
-      // traži prvi broj s decimalom
-      const match = text.match(/(\d+[.,]\d{2})/);
-
-      if (match) {
-  const amount = match[1].replace(',', '.');
-
-  // ===== SPREMI U FINANCIJE - OSTALI TROŠKOVI =====
-  const item = {
-    id: Date.now(),
-    type: 'otherCost',
-    desc: "Račun (OCR)",
-    amount: Number(amount),
-    date: new Date().toISOString().split('T')[0],
-    createdAt: Date.now()
-  };
-
-  await addFinanceItem(item);
-
-  alert("Račun spremljen u Ostale troškove: " + amount + " €");
-
-} else {
-  alert("Iznos nije pronađen 😐");
-}
-
-    } catch (err) {
-      console.log("OCR error:", err);
-      alert("Greška u OCR obradi");
+    const amount = Number(userAmount.replace(',', '.'));
+    if (!amount || isNaN(amount)) {
+      alert("Neispravan iznos");
+      return;
     }
+
+    // ===== SPREMI U OSTALI TROŠKOVI =====
+    const item = {
+      id: Date.now(),
+      type: 'otherCost',
+      desc: "Račun",
+      amount: amount,
+      date: new Date().toISOString().split('T')[0],
+      createdAt: Date.now()
+    };
+
+    await addFinanceItem(item);
+
+    alert("Račun spremljen: " + amount.toFixed(2) + " €");
   });
 }
 // ===== FINANCES MENU BUTTON LINKS =====

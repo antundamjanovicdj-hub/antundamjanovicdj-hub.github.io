@@ -16,6 +16,7 @@ shopping: {
   placeholder: "Dodaj stavku i stisni Enter",
   emptyTitle: "Nema stavki",
   emptySub: "Dodaj prvu stavku gore.",
+  scanReceipt: "Unesi iznos računa",
   showArchive: "Prikaži arhivu",
   hideArchive: "Sakrij arhivu"
 },
@@ -126,6 +127,7 @@ shopping: {
   placeholder: "Add item and press Enter",
   emptyTitle: "No items",
   emptySub: "Add your first item above.",
+  scanReceipt: "Enter receipt amount",
   showArchive: "Show archive",
   hideArchive: "Hide archive"
 },
@@ -236,6 +238,7 @@ shopping: {
   placeholder: "Artikel eingeben und Enter drücken",
   emptyTitle: "Keine Einträge",
   emptySub: "Füge oben einen Eintrag hinzu.",
+  scanReceipt: "Rechnungsbetrag eingeben",
   showArchive: "Archiv anzeigen",
   hideArchive: "Archiv ausblenden"
 },
@@ -346,6 +349,7 @@ shopping: {
   placeholder: "Добавьте товар и нажмите Enter",
   emptyTitle: "Нет товаров",
   emptySub: "Добавьте первый товар выше.",
+  scanReceipt: "Ввести сумму чека",
   showArchive: "Показать архив",
   hideArchive: "Скрыть архив"
 },
@@ -456,6 +460,7 @@ shopping: {
   placeholder: "Adicione item e pressione Enter",
   emptyTitle: "Sem itens",
   emptySub: "Adicione o primeiro item acima.",
+  scanReceipt: "Inserir valor do recibo",
   showArchive: "Mostrar arquivo",
   hideArchive: "Ocultar arquivo"
 },
@@ -566,6 +571,7 @@ shopping: {
   placeholder: "Öğe ekle ve Enter'a bas",
   emptyTitle: "Öğe yok",
   emptySub: "Yukarıdan ilk öğeyi ekle.",
+  scanReceipt: "Fiş tutarı gir",
   showArchive: "Arşivi göster",
   hideArchive: "Arşivi gizle"
 },
@@ -676,6 +682,7 @@ shopping: {
   placeholder: "添加项目并按 Enter",
   emptyTitle: "没有项目",
   emptySub: "在上方添加第一个项目。",
+  scanReceipt: "输入收据金额",
   showArchive: "显示存档",
   hideArchive: "隐藏存档"
 },
@@ -786,6 +793,7 @@ shopping: {
   placeholder: "項目を追加してEnter",
   emptyTitle: "項目なし",
   emptySub: "上で最初の項目を追加。",
+  scanReceipt: "レシート金額を入力",
   showArchive: "アーカイブ表示",
   hideArchive: "アーカイブ非表示"
 },

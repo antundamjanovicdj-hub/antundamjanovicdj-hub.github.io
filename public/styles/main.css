@@ -41,13 +41,17 @@ html, body {
 #screen-lang,
 #screen-menu,
 #screen-add-obligation,
-#screen-finances-menu,
+#screen-finances-menu {
+  background: url('../images/welcome-bg.png') center/cover no-repeat;
+}
+
+/* FINANCES inner screens – soft green background */
 #screen-finance-income,
 #screen-finance-fixed,
 #screen-finance-credits,
 #screen-finance-other,
 #screen-finance-overview {
-  background: url('../images/welcome-bg.png') center/cover no-repeat;
+  background: linear-gradient(180deg, #e8f5ee, #d6efe3);
 }
 
 #screen-shopping,
@@ -848,4 +852,8 @@ html, body {
   background: #0d5e32;
   color: white;
   font-size: 15px;
+}
+/* ===== FINANCES BACKGROUND ===== */
+.finance-background {
+  background: #f5f7fa;
 }

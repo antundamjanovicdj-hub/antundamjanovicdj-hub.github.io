@@ -857,3 +857,12 @@ html, body {
 .finance-background {
   background: #f5f7fa;
 }
+/* ===== FIX: space for back button on finance screens ===== */
+#screen-finance-income,
+#screen-finance-fixed,
+#screen-finance-credits,
+#screen-finance-other,
+#screen-finance-overview {
+  padding-top: 60px;
+  box-sizing: border-box;
+}

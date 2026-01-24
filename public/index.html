@@ -294,7 +294,55 @@
     </div>
   </div>
 
+<!-- CONTACT FORM SCREEN -->
+<div id="screen-contact-form" class="screen finance-background">
+  <button class="back" id="backContactForm">←</button>
+
+  <h2 class="screen-title">👤 Novi kontakt</h2>
+
+  <div class="contact-form">
+
+    <input type="text" id="contactFirstName" placeholder="Ime">
+<input type="text" id="contactLastName" placeholder="Prezime">
+<input type="text" id="contactBirthDate" placeholder="Datum rođenja">
+<input type="text" id="contactAddress" placeholder="Adresa">
+<input type="email" id="contactEmail" placeholder="E-mail">
+<input type="tel" id="contactPhone" placeholder="Telefon">
+
+<!-- PHOTO PICKER -->
+<input type="file" id="contactPhotoInput" accept="image/*">
+
+<button id="saveContact">💾 Spremi kontakt</button>
+
+  </div>
+</div>
+
+<!-- CONTACT DETAILS SCREEN -->
+<div id="screen-contact-details" class="screen finance-background">
+  <button class="back" id="backContactDetails">←</button>
+
+  <h2 class="screen-title">👤 Kontakt</h2>
+
+  <div id="contactDetailsContent" class="contact-details"></div>
+</div>
+
 </div> <!-- .app -->
+
+<!-- CONTACTS SCREEN -->
+<div id="screen-contacts" class="screen finance-background">
+  <button class="back" id="backContacts">←</button>
+
+  <h2 class="screen-title" id="contactsTitle">👥 Kontakti</h2>
+
+  <button id="btnAddContact" class="btn-add-contact">➕ Dodaj kontakt</button>
+
+  <div class="contacts-search">
+    <input type="text" id="searchContacts" placeholder="Search...">
+  </div>
+
+  <div id="contactsList" class="contacts-list"></div>
+</div>
+
 <!-- APP VERSION -->
 <div id="appVersion" style="
   position: fixed;
@@ -308,6 +356,7 @@
 <!-- SKRIPTOVE -->
 <script src="core/i18n.js"></script>
 <script src="core/db.js"></script>
+<script src="core/contacts.js"></script>
 
 <script type="module">
 // ===== APP VERSION =====
@@ -366,6 +415,9 @@ function showScreen(screenId) {
     next.style.display = 'block';
   }
 }
+
+// ✅ expose for non-module scripts (contacts.js etc.)
+window.showScreen = showScreen;
 
 /* ===== SET LANGUAGE + SHOW MENU ===== */
 function setLanguage(lang) {
@@ -970,6 +1022,10 @@ const content = li.querySelector('.shopping-item-content');
 
 /* ===== INIT ===== */
 document.addEventListener('DOMContentLoaded', () => {
+
+ // ===== CONTACTS INIT =====
+  initContacts();
+
 // ===== FORCE START SCREEN =====
   showScreen('screen-lang');
 
@@ -1174,6 +1230,10 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('backShopping').addEventListener('click', () => {
     showScreen('screen-menu');
   });
+// BACK - CONTACTS
+document.getElementById('backContacts').addEventListener('click', () => {
+  showScreen('screen-menu');
+});
 document.getElementById('backFinanceIncome').addEventListener('click', () => {
   showScreen('screen-finances-menu');
 });
@@ -1194,6 +1254,12 @@ document.getElementById('backFinanceOverview').addEventListener('click', () => {
 // FINANCES BUTTON
 document.getElementById('btnFinances').addEventListener('click', () => {
   showScreen('screen-finances-menu');
+});
+
+// ===== CONTACTS BUTTON =====
+document.getElementById('btnContacts').addEventListener('click', async () => {
+  showScreen('screen-contacts');
+  await loadContacts();
 });
 
   // BACK - FINANCES MENU

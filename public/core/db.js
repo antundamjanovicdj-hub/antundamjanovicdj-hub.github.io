@@ -2,9 +2,10 @@
 class ObligationDB {
   constructor() {
     this.dbName = 'lifeKompasDB';
-    this.version = 2; // ↑ povećana verzija zbog novog store-a
+    this.version = 3; // ↑ povećana verzija zbog contacts store-a
     this.storeName = 'obligations';
-    this.financeStoreName = 'finances'; // ← novi store
+    this.financeStoreName = 'finances';
+    this.contactsStoreName = 'contacts'; // ← novi store za kontakte
     this.db = null;
   }
 
@@ -40,6 +41,13 @@ class ObligationDB {
           fstore.createIndex('type', 'type', { unique: false });       // income / expense / credit / fixed
           fstore.createIndex('date', 'date', { unique: false });       // ISO date
           fstore.createIndex('category', 'category', { unique: false });
+        }
+
+ // Contacts store (novi)
+        if (!db.objectStoreNames.contains(this.contactsStoreName)) {
+          const cstore = db.createObjectStore(this.contactsStoreName, { keyPath: 'id' });
+          cstore.createIndex('lastName', 'lastName', { unique: false });
+          cstore.createIndex('birthDate', 'birthDate', { unique: false });
         }
       };
     });
@@ -133,6 +141,44 @@ function deleteFinanceItem(id) {
     await obligationDB.init();
     const tx = obligationDB.db.transaction(obligationDB.financeStoreName, 'readwrite');
     const store = tx.objectStore(obligationDB.financeStoreName);
+    const request = store.delete(id);
+
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
+  });
+}
+
+// ===== CONTACTS (IndexedDB) =====
+
+function addContact(item) {
+  return new Promise(async (resolve, reject) => {
+    await obligationDB.init();
+    const tx = obligationDB.db.transaction(obligationDB.contactsStoreName, 'readwrite');
+    const store = tx.objectStore(obligationDB.contactsStoreName);
+    const request = store.put(item);
+
+    request.onsuccess = () => resolve(item.id);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+function getContacts() {
+  return new Promise(async (resolve, reject) => {
+    await obligationDB.init();
+    const tx = obligationDB.db.transaction(obligationDB.contactsStoreName, 'readonly');
+    const store = tx.objectStore(obligationDB.contactsStoreName);
+    const request = store.getAll();
+
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+function deleteContact(id) {
+  return new Promise(async (resolve, reject) => {
+    await obligationDB.init();
+    const tx = obligationDB.db.transaction(obligationDB.contactsStoreName, 'readwrite');
+    const store = tx.objectStore(obligationDB.contactsStoreName);
     const request = store.delete(id);
 
     request.onsuccess = () => resolve();

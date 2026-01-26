@@ -904,3 +904,118 @@ html, body {
 .contact-name {
   font-weight: 700;
 }
+/* ===== CONTACT DETAILS ACTION BUTTONS ===== */
+.contact-details-actions {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 20px 20px 20px;
+  gap: 12px;
+}
+
+.contact-details-actions button {
+  flex: 1;
+  padding: 14px;
+  border-radius: 14px;
+  border: none;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+#btnEditContact {
+  background: #ffcc80;
+  color: #0d3b25;
+}
+
+#btnDeleteContact {
+  background: #ff6b6b;
+  color: white;
+}
+/* ===== CONTACTS ACTIONS ===== */
+
+.contacts-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 10px 20px;
+}
+
+.contacts-actions .menu-item {
+  transform: none;
+  opacity: 1;
+  font-family: 'Caveat', cursive;
+  font-size: 1.3rem;
+
+  width: 85%;
+  max-width: 320px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ===== CONTACTS SEARCH ===== */
+
+.contacts-search {
+  padding: 6px 20px 10px 20px;
+}
+
+.contacts-search input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,0.2);
+  background: rgba(255,255,255,0.9);
+  font-size: 15px;
+}
+
+/* ===== CONTACTS LIST SPACING ===== */
+
+.contacts-list {
+  padding-bottom: 20px;
+}
+/* ===== CENTER TITLE ON CONTACTS SCREEN ===== */
+#screen-contacts .screen-title {
+  text-align: center !important;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #0d3b25;
+}
+.contacts-title-icon {
+  width: 26px;
+  height: 26px;
+}
+
+/* force color emoji rendering (hard override) */
+#screen-contacts .screen-title .emoji {
+  font-family: "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif !important;
+  font-variant-emoji: emoji;
+}
+/* ===== CENTER TITLE ON CONTACT FORM ===== */
+#screen-contact-form .screen-title {
+  text-align: center;
+  width: 100%;
+}
+/* ===== CONTACT FORM – BIGGER INPUTS FOR FINGERS ===== */
+#screen-contact-form .contact-form input {
+  padding: 16px;
+  font-size: 17px;
+  border-radius: 12px;
+}
+/* ===== CONTACT FORM – BIGGER BUTTONS ===== */
+#screen-contact-form #btnPickContactPhoto,
+#screen-contact-form #saveContact {
+  padding: 16px;
+  font-size: 17px;
+  border-radius: 14px;
+}
+/* ===== CONTACT DETAILS SPACING ===== */
+.contact-details-line {
+  display: block;
+  padding: 14px 12px;
+  margin: 6px 0;
+  background: rgba(255,255,255,0.85);
+  border-radius: 10px;
+  font-size: 16px;
+}

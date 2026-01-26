@@ -298,7 +298,10 @@
 <div id="screen-contact-form" class="screen finance-background">
   <button class="back" id="backContactForm">←</button>
 
-  <h2 class="screen-title">👤 Novi kontakt</h2>
+  <h2 class="screen-title">
+  <img src="images/contacts-icon.png" class="contacts-title-icon">
+  Novi kontakt
+</h2>
 
   <div class="contact-form">
 
@@ -310,7 +313,8 @@
 <input type="tel" id="contactPhone" placeholder="Telefon">
 
 <!-- PHOTO PICKER -->
-<input type="file" id="contactPhotoInput" accept="image/*">
+<button id="btnPickContactPhoto">🖼️ Odaberi sliku</button>
+<input type="hidden" id="contactPhotoData">
 
 <button id="saveContact">💾 Spremi kontakt</button>
 
@@ -324,6 +328,12 @@
   <h2 class="screen-title">👤 Kontakt</h2>
 
   <div id="contactDetailsContent" class="contact-details"></div>
+
+  <!-- ACTION BUTTONS -->
+  <div class="contact-details-actions">
+    <button id="btnEditContact">✏️ Uredi kontakt</button>
+    <button id="btnDeleteContact">🗑️ Obriši kontakt</button>
+  </div>
 </div>
 
 </div> <!-- .app -->
@@ -332,14 +342,30 @@
 <div id="screen-contacts" class="screen finance-background">
   <button class="back" id="backContacts">←</button>
 
-  <h2 class="screen-title" id="contactsTitle">👥 Kontakti</h2>
+  <h2 class="screen-title" id="contactsTitle">
+  <img src="images/contacts-icon.png" class="contacts-title-icon">
+  Kontakti
+</h2>
 
-  <button id="btnAddContact" class="btn-add-contact">➕ Dodaj kontakt</button>
+  <!-- ACTION BUTTONS -->
+  <div class="contacts-actions">
+    <button id="btnImportContacts"
+            class="menu-item"
+            onclick="importDeviceContacts()">
+      📥 Uvezi iz imenika
+    </button>
 
+    <button id="btnAddContact" class="menu-item">
+      ➕ Dodaj kontakt
+    </button>
+  </div>
+
+  <!-- SEARCH -->
   <div class="contacts-search">
     <input type="text" id="searchContacts" placeholder="Search...">
   </div>
 
+  <!-- LIST -->
   <div id="contactsList" class="contacts-list"></div>
 </div>
 
@@ -403,16 +429,21 @@ function showScreen(screenId) {
   const screens = document.querySelectorAll('.screen');
   const next = document.getElementById(screenId);
 
-  // potpuno sakrij sve
   screens.forEach(screen => {
     screen.classList.remove('active');
     screen.style.display = 'none';
   });
 
-  // prikaži samo traženi
   if (next) {
     next.classList.add('active');
     next.style.display = 'block';
+  }
+
+  // ===== INIT CONTACTS EVERY TIME SCREEN OPENS =====
+  if (screenId === 'screen-contacts') {
+    if (typeof initContacts === 'function') {
+      loadContacts();
+    }
   }
 }
 
@@ -1024,6 +1055,7 @@ const content = li.querySelector('.shopping-item-content');
 document.addEventListener('DOMContentLoaded', () => {
 
  // ===== CONTACTS INIT =====
+  loadContacts();
   initContacts();
 
 // ===== FORCE START SCREEN =====
@@ -1257,9 +1289,9 @@ document.getElementById('btnFinances').addEventListener('click', () => {
 });
 
 // ===== CONTACTS BUTTON =====
-document.getElementById('btnContacts').addEventListener('click', async () => {
+document.getElementById('btnContacts').addEventListener('click', () => {
   showScreen('screen-contacts');
-  await loadContacts();
+  loadContacts();   // <<< OVO JE KLJUČ
 });
 
   // BACK - FINANCES MENU

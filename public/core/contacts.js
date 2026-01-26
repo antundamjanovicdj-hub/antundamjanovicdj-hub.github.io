@@ -53,7 +53,77 @@ function initContacts() {
   }
 }
 
-// Load from IndexedDB
+// ===== DIRECT ANDROID CONTACT IMPORT =====
+window.importDeviceContacts = async function () {
+
+  if (!window.Capacitor || !Capacitor.Plugins || !Capacitor.Plugins.Contacts) {
+    alert("Import kontakata radi samo u Android aplikaciji");
+    return;
+  }
+
+  try {
+
+    // ===== REQUEST PERMISSION FIRST =====
+const perm = await Capacitor.Plugins.Contacts.requestPermissions();
+
+// ✅ SAFE CHECK (sprječava optBoolean null crash)
+if (!perm || !perm.contacts || perm.contacts !== 'granted') {
+  alert("Dozvola za kontakte nije dana");
+  return;
+}
+
+    // ===== LOAD CONTACTS =====
+const result = await Capacitor.Plugins.Contacts.getContacts({
+  projection: {
+    name: true,
+    phones: true,
+    emails: true,
+    addresses: true
+  }
+});
+
+    if (!result || !result.contacts) {
+      alert("Nema dostupnih kontakata");
+      return;
+    }
+
+    for (const c of result.contacts) {
+
+      const firstName = c.name?.given || '';
+      const lastName = c.name?.family || '';
+
+      const phone = c.phones?.length ? c.phones[0].number : '';
+      const email = c.emails?.length ? c.emails[0].address : '';
+      const address = c.addresses?.length ? c.addresses[0].street : '';
+
+      if (!firstName && !lastName) continue;
+
+      const newContact = {
+        id: Date.now() + Math.floor(Math.random() * 1000),
+        firstName,
+        lastName,
+        birthDate: '',
+        birthdayNotify: false,
+        address,
+        email,
+        phone,
+        photo: ''
+      };
+
+      await addContact(newContact);
+    }
+
+    await loadContacts();
+    alert("Import završen");
+
+  } catch (err) {
+    console.error("CONTACT IMPORT ERROR REAL:", err);
+    alert("Greška: " + (err?.message || err));
+  }
+};
+
+
+// ===== LOAD CONTACTS FROM DB =====
 async function loadContacts() {
   contacts = await getContacts();
   filteredContacts = contacts;
@@ -112,21 +182,24 @@ async function openContactDetails(id) {
   const wrap = document.getElementById('contactDetailsContent');
 
   wrap.innerHTML = `
+  <div data-current-contact-id="${c.id}"></div>
+
   <div style="text-align:center;">
   ${c.photo ? `<img src="${c.photo}" style="width:120px;height:120px;border-radius:50%;object-fit:cover;">` : '👤'}
 </div>
 
-<div><strong>${c.firstName} ${c.lastName}</strong></div>
-  <div>🎂 ${c.birthDate || '-'}</div>
+<div class="contact-details-line"><strong>${c.firstName} ${c.lastName}</strong></div>
 
-  <label style="display:block; margin:8px 0;">
-    <input type="checkbox" id="birthdayNotifyToggle" ${c.birthdayNotify ? 'checked' : ''}>
-    🔔 Rođendanska notifikacija
-  </label>
+<div class="contact-details-line">🎂 ${c.birthDate || '-'}</div>
 
-  <div>📍 <span id="contactAddressLink">${c.address || '-'}</span></div>
-  <div>📧 <span id="contactEmailLink">${c.email || '-'}</span></div>
-  <div>📞 <span id="contactPhoneLink">${c.phone || '-'}</span></div>
+<label class="contact-details-line">
+  <input type="checkbox" id="birthdayNotifyToggle" ${c.birthdayNotify ? 'checked' : ''}>
+  🔔 Rođendanska notifikacija
+</label>
+
+<div class="contact-details-line">📍 <span id="contactAddressLink">${c.address || '-'}</span></div>
+<div class="contact-details-line">📧 <span id="contactEmailLink">${c.email || '-'}</span></div>
+<div class="contact-details-line">📞 <span id="contactPhoneLink">${c.phone || '-'}</span></div>
 `;
 
   // address → Google Maps
@@ -155,10 +228,82 @@ async function openContactDetails(id) {
 
   showScreen('screen-contact-details');
 }
+// ===== DELETE CONTACT =====
+document.getElementById('btnDeleteContact').addEventListener('click', async () => {
+  const wrap = document.getElementById('contactDetailsContent');
+  if (!wrap) return;
+
+  // uzmi ID trenutno otvorenog kontakta
+  const currentId = wrap.querySelector('[data-current-contact-id]')?.dataset.currentContactId;
+  if (!currentId) return;
+
+  if (!confirm("Obrisati kontakt?")) return;
+
+  await deleteContact(Number(currentId));
+  await loadContacts();
+  showScreen('screen-contacts');
+});
+// ===== EDIT CONTACT =====
+document.getElementById('btnEditContact').addEventListener('click', async () => {
+  const wrap = document.getElementById('contactDetailsContent');
+  const currentId = wrap.querySelector('[data-current-contact-id]')?.dataset.currentContactId;
+  if (!currentId) return;
+
+  const all = await getContacts();
+  const c = all.find(x => x.id == currentId);
+  if (!c) return;
+
+  // napuni formu
+  document.getElementById('contactFirstName').value = c.firstName;
+  document.getElementById('contactLastName').value = c.lastName;
+  document.getElementById('contactBirthDate').value = c.birthDate;
+  document.getElementById('contactAddress').value = c.address;
+  document.getElementById('contactEmail').value = c.email;
+  document.getElementById('contactPhone').value = c.phone;
+  document.getElementById('contactPhotoData').value = c.photo || '';
+
+  // zapamti da je edit
+  document.getElementById('saveContact').dataset.editId = c.id;
+
+  showScreen('screen-contact-form');
+});
 
 // ===== OPEN FORM =====
 document.getElementById('btnAddContact').addEventListener('click', () => {
   showScreen('screen-contact-form');
+});
+
+/// ===== PICK PHOTO =====
+document.getElementById('btnPickContactPhoto').addEventListener('click', async () => {
+
+  // Android / Capacitor
+  if (window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.Camera) {
+
+    const image = await Capacitor.Plugins.Camera.getPhoto({
+      quality: 80,
+      allowEditing: false,
+      resultType: "dataUrl",
+      source: "photos"
+    });
+
+    document.getElementById('contactPhotoData').value = image.dataUrl;
+    return;
+  }
+
+  // Web fallback
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = 'image/*';
+  fileInput.onchange = () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      document.getElementById('contactPhotoData').value = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+  fileInput.click();
 });
 
 // ===== BACK FROM FORM =====
@@ -177,21 +322,13 @@ document.getElementById('saveContact').addEventListener('click', async () => {
     return;
   }
 
-  // ===== PHOTO TO BASE64 =====
-const photoInput = document.getElementById('contactPhotoInput');
-let photoBase64 = '';
+  // ===== PHOTO DATA (from gallery or web) =====
+const photoBase64 = document.getElementById('contactPhotoData').value || '';
 
-if (photoInput.files && photoInput.files[0]) {
-  const file = photoInput.files[0];
-  photoBase64 = await new Promise(resolve => {
-    const reader = new FileReader();
-    reader.onload = e => resolve(e.target.result);
-    reader.readAsDataURL(file);
-  });
-}
+const editId = document.getElementById('saveContact').dataset.editId;
 
 const contact = {
-  id: Date.now(),
+  id: editId ? Number(editId) : Date.now(),
   firstName,
   lastName,
   birthDate: formatBirthDateByLang(
@@ -213,7 +350,8 @@ const contact = {
   document.getElementById('contactAddress').value = '';
   document.getElementById('contactEmail').value = '';
   document.getElementById('contactPhone').value = '';
-  document.getElementById('contactPhotoInput').value = '';
+  document.getElementById('contactPhotoData').value = '';
+  document.getElementById('saveContact').removeAttribute('data-edit-id');
 
   await loadContacts();
   showScreen('screen-contacts');

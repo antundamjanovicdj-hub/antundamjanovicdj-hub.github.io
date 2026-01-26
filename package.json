@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/antundamjanovicdj-hub/antundamjanovicdj-hub.github.io#readme",
   "dependencies": {
+    "@capacitor-community/contacts": "file:plugins/contacts",
     "@capacitor-community/image-to-text": "^7.0.0",
     "@capacitor/android": "^8.0.0",
     "@capacitor/camera": "^8.0.0",

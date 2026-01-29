@@ -4,6 +4,12 @@
 
 let contacts = [];
 let filteredContacts = [];
+function getContactMessages() {
+  const lang = (localStorage.getItem('userLang') || 'hr');
+  return (I18N[lang].contacts && I18N[lang].contacts.messages)
+    ? I18N[lang].contacts.messages
+    : I18N.hr.contacts.messages;
+}
 
 // ===== BIRTHDATE FORMATTER =====
 function formatBirthDateByLang(input) {
@@ -68,7 +74,7 @@ const perm = await Capacitor.Plugins.Contacts.requestPermissions();
 
 // ✅ SAFE CHECK (sprječava optBoolean null crash)
 if (!perm || !perm.contacts || perm.contacts !== 'granted') {
-  alert("Dozvola za kontakte nije dana");
+  alert(getContactMessages().noPermission);
   return;
 }
 
@@ -83,7 +89,7 @@ const result = await Capacitor.Plugins.Contacts.getContacts({
 });
 
     if (!result || !result.contacts) {
-      alert("Nema dostupnih kontakata");
+      alert(getContactMessages().noContacts);
       return;
     }
 
@@ -114,11 +120,11 @@ const result = await Capacitor.Plugins.Contacts.getContacts({
     }
 
     await loadContacts();
-    alert("Import završen");
+    alert(getContactMessages().importDone);
 
   } catch (err) {
     console.error("CONTACT IMPORT ERROR REAL:", err);
-    alert("Greška: " + (err?.message || err));
+    alert(getContactMessages().error + ": " + (err?.message || err));
   }
 };
 
@@ -126,9 +132,22 @@ const result = await Capacitor.Plugins.Contacts.getContacts({
 // ===== LOAD CONTACTS FROM DB =====
 async function loadContacts() {
   contacts = await getContacts();
+
+  // ===== SORT ALPHABETICALLY =====
+  contacts.sort((a, b) => {
+    const nameA = `${a.firstName} ${a.lastName}`.toLowerCase();
+    const nameB = `${b.firstName} ${b.lastName}`.toLowerCase();
+    return nameA.localeCompare(nameB);
+  });
+
   filteredContacts = contacts;
   renderContactsList();
 }
+
+// ===== EXPOSE CONTACT FUNCTIONS GLOBALLY =====
+window.loadContacts = loadContacts;
+window.initContacts = initContacts;
+window.openContactDetails = openContactDetails;
 
 // Render list with search
 function renderContactsList() {
@@ -190,17 +209,31 @@ async function openContactDetails(id) {
 
 <div class="contact-details-line"><strong>${c.firstName} ${c.lastName}</strong></div>
 
-<div class="contact-details-line">🎂 ${c.birthDate || '-'}</div>
+<div class="contact-details-line">
+🎂 ${c.birthDate || '-'} ⏰ ${c.birthdayTime || '09:00'}
+</div>
 
 <label class="contact-details-line">
   <input type="checkbox" id="birthdayNotifyToggle" ${c.birthdayNotify ? 'checked' : ''}>
-  🔔 Rođendanska notifikacija
+  🔔 <span id="cdBirthdayNotifyText"></span>
 </label>
 
 <div class="contact-details-line">📍 <span id="contactAddressLink">${c.address || '-'}</span></div>
 <div class="contact-details-line">📧 <span id="contactEmailLink">${c.email || '-'}</span></div>
 <div class="contact-details-line">📞 <span id="contactPhoneLink">${c.phone || '-'}</span></div>
 `;
+
+// ===== FILL I18N TEXT INSIDE DETAILS (dynamic content fix) =====
+const lang = (localStorage.getItem('userLang') || 'hr');
+const cd =
+  (I18N[lang].contacts && I18N[lang].contacts.details)
+    ? I18N[lang].contacts.details
+    : (I18N.en.contacts && I18N.en.contacts.details)
+        ? I18N.en.contacts.details
+        : { birthdayNotify: "" };
+
+const cdTextEl = document.getElementById('cdBirthdayNotifyText');
+if (cdTextEl) cdTextEl.textContent = cd.birthdayNotify;
 
   // address → Google Maps
   document.getElementById('contactAddressLink').addEventListener('click', () => {
@@ -222,9 +255,20 @@ async function openContactDetails(id) {
 
 // ===== BIRTHDAY NOTIFY TOGGLE =====
   document.getElementById('birthdayNotifyToggle').addEventListener('change', async (e) => {
-    c.birthdayNotify = e.target.checked;
-    await addContact(c); // put() update u IndexedDB
-  });
+  c.birthdayNotify = e.target.checked;
+  await addContact(c);
+
+  const m = await import('./notifications.js');
+
+  if (c.birthdayNotify) {
+    const granted = await m.requestNotificationPermission();
+    if (granted) {
+      await m.scheduleBirthdayNotification(c);
+    }
+  } else {
+    await m.cancelBirthdayNotification(c.id);
+  }
+});
 
   showScreen('screen-contact-details');
 }
@@ -237,7 +281,7 @@ document.getElementById('btnDeleteContact').addEventListener('click', async () =
   const currentId = wrap.querySelector('[data-current-contact-id]')?.dataset.currentContactId;
   if (!currentId) return;
 
-  if (!confirm("Obrisati kontakt?")) return;
+  if (!confirm(getContactMessages().deleteConfirm)) return;
 
   await deleteContact(Number(currentId));
   await loadContacts();
@@ -318,7 +362,7 @@ document.getElementById('saveContact').addEventListener('click', async () => {
   const lastName = document.getElementById('contactLastName').value.trim();
 
   if (!firstName || !lastName) {
-    alert('Unesi ime i prezime');
+    alert(getContactMessages().enterName);
     return;
   }
 
@@ -327,14 +371,17 @@ const photoBase64 = document.getElementById('contactPhotoData').value || '';
 
 const editId = document.getElementById('saveContact').dataset.editId;
 
+const birthDateValue = formatBirthDateByLang(
+  document.getElementById('contactBirthDate').value.trim()
+);
+
 const contact = {
   id: editId ? Number(editId) : Date.now(),
   firstName,
   lastName,
-  birthDate: formatBirthDateByLang(
-    document.getElementById('contactBirthDate').value.trim()
-  ),
-  birthdayNotify: false,
+  birthDate: birthDateValue,
+  birthdayTime: document.getElementById('contactBirthdayTime').value || "09:00",
+  birthdayNotify: birthDateValue ? true : false,
   address: document.getElementById('contactAddress').value.trim(),
   email: document.getElementById('contactEmail').value.trim(),
   phone: document.getElementById('contactPhone').value.trim(),
@@ -343,10 +390,24 @@ const contact = {
 
   await addContact(contact);
 
+// ===== AUTO SCHEDULE BIRTHDAY NOTIFICATION ON SAVE =====
+const m = await import('./notifications.js');
+
+if (contact.birthdayNotify) {
+  const granted = await m.requestNotificationPermission();
+  if (granted) {
+    await m.cancelBirthdayNotification(contact.id);
+    await m.scheduleBirthdayNotification(contact);
+  }
+} else {
+  await m.cancelBirthdayNotification(contact.id);
+}
+
   // reset forme
   document.getElementById('contactFirstName').value = '';
   document.getElementById('contactLastName').value = '';
   document.getElementById('contactBirthDate').value = '';
+  document.getElementById('contactBirthdayTime').value = '';
   document.getElementById('contactAddress').value = '';
   document.getElementById('contactEmail').value = '';
   document.getElementById('contactPhone').value = '';

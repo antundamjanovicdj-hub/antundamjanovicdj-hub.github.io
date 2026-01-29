@@ -81,3 +81,65 @@ export async function rescheduleAllObligations(obligations) {
     await scheduleObligationNotification(ob);
   }
 }
+
+// ===== BIRTHDAY NOTIFICATIONS =====
+
+export async function scheduleBirthdayNotification(contact) {
+  if (!LocalNotifications) return;
+  if (!contact.birthDate) return;
+
+  // birthDate format: DD-MM-YYYY or YYYY-MM-DD
+  let parts;
+  if (contact.birthDate.includes('-')) {
+    parts = contact.birthDate.split('-');
+  } else {
+    return;
+  }
+
+  let day, month;
+
+  // ISO format YYYY-MM-DD
+  if (parts[0].length === 4) {
+    day = parts[2];
+    month = parts[1];
+  } 
+  // HR format DD-MM-YYYY
+  else {
+    day = parts[0];
+    month = parts[1];
+  }
+
+  const now = new Date();
+  const time = (contact.birthdayTime || "09:00").split(':');
+const hours = parseInt(time[0],10);
+const minutes = parseInt(time[1],10);
+
+let nextBirthday = new Date(
+  now.getFullYear(),
+  parseInt(month,10)-1,
+  parseInt(day,10),
+  hours, minutes, 0
+);
+
+  if (nextBirthday.getTime() < Date.now()) {
+    nextBirthday.setFullYear(now.getFullYear() + 1);
+  }
+
+  await LocalNotifications.schedule({
+    notifications: [{
+      id: Math.floor(contact.id % 2147483647),
+      title: "🎂 Rođendan",
+      body: `${contact.firstName} ${contact.lastName} danas slavi rođendan!`,
+      schedule: { at: nextBirthday },
+      importance: 5,
+      visibility: 1,
+      extra: { contactId: contact.id }
+    }]
+  });
+}
+
+export async function cancelBirthdayNotification(contactId) {
+  if (!LocalNotifications) return;
+  const intId = Math.floor(contactId % 2147483647);
+  await LocalNotifications.cancel({ notifications: [{ id: intId }] });
+}

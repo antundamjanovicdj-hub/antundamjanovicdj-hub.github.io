@@ -1019,3 +1019,12 @@ html, body {
   border-radius: 10px;
   font-size: 16px;
 }
+/* ===== CONTACT FORM LABEL ===== */
+.contact-form-label {
+  display: block;
+  margin-top: 10px;
+  margin-bottom: 4px;
+  font-weight: 700;
+  color: #0d3b25;
+  font-size: 15px;
+}

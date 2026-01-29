@@ -298,25 +298,29 @@
 <div id="screen-contact-form" class="screen finance-background">
   <button class="back" id="backContactForm">←</button>
 
-  <h2 class="screen-title">
-  <img src="images/contacts-icon.png" class="contacts-title-icon">
-  Novi kontakt
-</h2>
+  <h2 class="screen-title" id="contactFormTitle">
+    <img src="images/contacts-icon.png" class="contacts-title-icon">
+    Novi kontakt
+  </h2>
 
   <div class="contact-form">
 
-    <input type="text" id="contactFirstName" placeholder="Ime">
-<input type="text" id="contactLastName" placeholder="Prezime">
-<input type="text" id="contactBirthDate" placeholder="Datum rođenja">
-<input type="text" id="contactAddress" placeholder="Adresa">
-<input type="email" id="contactEmail" placeholder="E-mail">
-<input type="tel" id="contactPhone" placeholder="Telefon">
+    <input type="text" id="contactFirstName" placeholder="">
+    <input type="text" id="contactLastName" placeholder="">
+    <input type="text" id="contactBirthDate" placeholder="">
 
-<!-- PHOTO PICKER -->
-<button id="btnPickContactPhoto">🖼️ Odaberi sliku</button>
-<input type="hidden" id="contactPhotoData">
+    <label class="contact-form-label" id="contactBirthdayTimeLabel"></label>
+    <input type="time" id="contactBirthdayTime">
 
-<button id="saveContact">💾 Spremi kontakt</button>
+    <input type="text" id="contactAddress" placeholder="">
+    <input type="email" id="contactEmail" placeholder="">
+    <input type="tel" id="contactPhone" placeholder="">
+
+    <!-- PHOTO PICKER -->
+    <button id="btnPickContactPhoto"></button>
+    <input type="hidden" id="contactPhotoData">
+
+    <button id="saveContact"></button>
 
   </div>
 </div>
@@ -325,14 +329,14 @@
 <div id="screen-contact-details" class="screen finance-background">
   <button class="back" id="backContactDetails">←</button>
 
-  <h2 class="screen-title">👤 Kontakt</h2>
+  <h2 class="screen-title" id="contactDetailsTitle">👤 Kontakt</h2>
 
   <div id="contactDetailsContent" class="contact-details"></div>
 
   <!-- ACTION BUTTONS -->
   <div class="contact-details-actions">
-    <button id="btnEditContact">✏️ Uredi kontakt</button>
-    <button id="btnDeleteContact">🗑️ Obriši kontakt</button>
+    <button id="btnEditContact"></button>
+    <button id="btnDeleteContact"></button>
   </div>
 </div>
 
@@ -406,9 +410,12 @@ if (CONFIG.serviceWorkerEnabled) {
   }
 }
 /* ===== HELPERS ===== */
-/* ===== HELPERS ===== */
 function getLang() {
-  return localStorage.getItem('userLang') || 'hr';
+  let lang = localStorage.getItem('userLang') || 'hr';
+  if (!I18N[lang]) {
+    lang = lang.split('-')[0];
+  }
+  return lang;
 }
 
 // ✅ DETEKCIJA TOUCH UREĐAJA (MOBITEL / TABLET)
@@ -439,11 +446,28 @@ function showScreen(screenId) {
     next.style.display = 'block';
   }
 
-  // ===== INIT CONTACTS EVERY TIME SCREEN OPENS =====
+  // ===== INIT CONTACTS + TRANSLATION ONLY WHEN CONTACTS SCREEN =====
   if (screenId === 'screen-contacts') {
     if (typeof initContacts === 'function') {
       loadContacts();
     }
+
+    const lang = getLang();
+    const c = I18N[lang].contacts || I18N.en.contacts;
+
+    const contactsTitle = document.getElementById('contactsTitle');
+    if (contactsTitle && c) {
+      contactsTitle.innerHTML = `<img src="images/contacts-icon.png" class="contacts-title-icon"> ${c.title}`;
+    }
+
+    const btnImport = document.getElementById('btnImportContacts');
+    if (btnImport && c) btnImport.textContent = c.import;
+
+    const btnAddContact = document.getElementById('btnAddContact');
+    if (btnAddContact && c) btnAddContact.textContent = c.add;
+
+    const searchContacts = document.getElementById('searchContacts');
+    if (searchContacts && c) searchContacts.placeholder = c.search;
   }
 }
 
@@ -473,6 +497,112 @@ function setLanguage(lang) {
   document.getElementById('btnFinances').textContent = I18N[lang].menu.finances;
   document.getElementById('btnHealth').textContent = I18N[lang].menu.health;
   document.getElementById('btnDiary').textContent = I18N[lang].menu.diary;
+// ===== CONTACTS SCREEN TEXT =====
+  const c = I18N[lang].contacts || I18N.en.contacts;
+
+  // Title (ikona ostaje, mijenja se samo tekst)
+  const contactsTitle = document.getElementById('contactsTitle');
+  if (contactsTitle && c) {
+    contactsTitle.innerHTML = `<img src="images/contacts-icon.png" class="contacts-title-icon"> ${c.title}`;
+  }
+
+  // Import button
+  const btnImport = document.getElementById('btnImportContacts');
+  if (btnImport && c) {
+    btnImport.textContent = c.import;
+  }
+
+  // Add button
+  const btnAddContact = document.getElementById('btnAddContact');
+  if (btnAddContact && c) {
+    btnAddContact.textContent = c.add;
+  }
+
+  // Search placeholder
+  const searchContacts = document.getElementById('searchContacts');
+  if (searchContacts && c) {
+    searchContacts.placeholder = c.search;
+  }
+
+// ===== CONTACT FORM TEXT =====
+const cf =
+  (I18N[lang].contacts && I18N[lang].contacts.form)
+    ? I18N[lang].contacts.form
+    : (I18N.en.contacts && I18N.en.contacts.form)
+        ? I18N.en.contacts.form
+        : {
+            title: "",
+            firstName: "",
+            lastName: "",
+            birthDate: "",
+            birthdayTime: "",
+            address: "",
+            email: "",
+            phone: "",
+            pickPhoto: "",
+            save: ""
+          };
+
+// ===== CONTACT DETAILS TEXT =====
+const cd =
+  (I18N[lang].contacts && I18N[lang].contacts.details)
+    ? I18N[lang].contacts.details
+    : (I18N.en.contacts && I18N.en.contacts.details)
+        ? I18N.en.contacts.details
+        : {
+            title: "",
+            edit: "",
+            delete: "",
+            birthdayNotify: ""
+          };
+
+// Birthday notify label inside details
+const cdBirthdayNotifyText = document.getElementById('cdBirthdayNotifyText');
+if (cdBirthdayNotifyText) cdBirthdayNotifyText.textContent = cd.birthdayNotify;
+
+// Title
+const contactDetailsTitle = document.getElementById('contactDetailsTitle');
+if (contactDetailsTitle) contactDetailsTitle.textContent = cd.title;
+
+// Buttons
+const btnEditContact = document.getElementById('btnEditContact');
+if (btnEditContact) btnEditContact.textContent = "✏️ " + cd.edit;
+
+const btnDeleteContact = document.getElementById('btnDeleteContact');
+if (btnDeleteContact) btnDeleteContact.textContent = "🗑️ " + cd.delete;
+
+// Title
+const contactFormTitle = document.getElementById('contactFormTitle');
+if (contactFormTitle) {
+  contactFormTitle.innerHTML = `<img src="images/contacts-icon.png" class="contacts-title-icon"> ${cf.title}`;
+}
+
+// Placeholders
+const cfFirst = document.getElementById('contactFirstName');
+const cfLast = document.getElementById('contactLastName');
+const cfBirth = document.getElementById('contactBirthDate');
+const cfAddress = document.getElementById('contactAddress');
+const cfEmail = document.getElementById('contactEmail');
+const cfPhone = document.getElementById('contactPhone');
+
+if (cfFirst) cfFirst.placeholder = cf.firstName;
+if (cfLast) cfLast.placeholder = cf.lastName;
+if (cfBirth) cfBirth.placeholder = cf.birthDate;
+if (cfAddress) cfAddress.placeholder = cf.address;
+if (cfEmail) cfEmail.placeholder = cf.email;
+if (cfPhone) cfPhone.placeholder = cf.phone;
+
+// Birthday time label
+const cfTimeLabel = document.getElementById('contactBirthdayTimeLabel');
+if (cfTimeLabel) cfTimeLabel.textContent = cf.birthdayTime;
+
+// Buttons
+const cfPickPhoto = document.getElementById('btnPickContactPhoto');
+if (cfPickPhoto) cfPickPhoto.textContent = "🖼️ " + cf.pickPhoto;
+
+const cfSave = document.getElementById('saveContact');
+if (cfSave) cfSave.textContent = "💾 " + cf.save;
+
 
   // ===== FINANCES MENU + SCREENS (guarded) =====
   if (I18N[lang].finances) {
@@ -537,6 +667,26 @@ function setLanguage(lang) {
     document.getElementById('btnCalculateMonth').textContent = I18N[lang].finances.overview.calculate;
     const monthLabel = document.getElementById('financeMonthLabel');
 if (monthLabel) monthLabel.textContent = I18N[lang].obligationsView.selectDate || I18N.en.obligationsView.selectDate;
+  }
+
+ // ===== REFRESH CONTACTS TRANSLATION IF SCREEN ALREADY OPEN =====
+  const currentContactsScreen = document.getElementById('screen-contacts');
+  if (currentContactsScreen && currentContactsScreen.classList.contains('active')) {
+    const c = I18N[lang].contacts || I18N.en.contacts;
+
+    const contactsTitle = document.getElementById('contactsTitle');
+    if (contactsTitle && c) {
+      contactsTitle.innerHTML = `<img src="images/contacts-icon.png" class="contacts-title-icon"> ${c.title}`;
+    }
+
+    const btnImport = document.getElementById('btnImportContacts');
+    if (btnImport && c) btnImport.textContent = c.import;
+
+    const btnAddContact = document.getElementById('btnAddContact');
+    if (btnAddContact && c) btnAddContact.textContent = c.add;
+
+    const searchContacts = document.getElementById('searchContacts');
+    if (searchContacts && c) searchContacts.placeholder = c.search;
   }
   showScreen('screen-menu');
 
@@ -1243,13 +1393,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-// JEZICI
+// JEZICI  (safe bind after I18N loaded)
+function bindLangButtons() {
   document.querySelectorAll('.lang-btn').forEach(btn => {
-    btn.addEventListener('click', e => {
-      e.preventDefault();
-      setLanguage(btn.dataset.lang);
-    });
+    btn.onclick = () => {
+      const lang = btn.dataset.lang;
+      if (!window.I18N || !I18N[lang]) {
+        console.log("I18N not ready yet");
+        return;
+      }
+      setLanguage(lang);
+    };
   });
+}
+
+// bind immediately
+bindLangButtons();
 
   // BACK - MENU
   document.getElementById('backMenu').addEventListener('click', () => {
@@ -1291,7 +1450,25 @@ document.getElementById('btnFinances').addEventListener('click', () => {
 // ===== CONTACTS BUTTON =====
 document.getElementById('btnContacts').addEventListener('click', () => {
   showScreen('screen-contacts');
-  loadContacts();   // <<< OVO JE KLJUČ
+  loadContacts();
+
+  // ===== APPLY CONTACTS TRANSLATION ON OPEN =====
+  const lang = getLang();
+  const c = I18N[lang].contacts || I18N.en.contacts;
+
+  const contactsTitle = document.getElementById('contactsTitle');
+  if (contactsTitle && c) {
+    contactsTitle.innerHTML = `<img src="images/contacts-icon.png" class="contacts-title-icon"> ${c.title}`;
+  }
+
+  const btnImport = document.getElementById('btnImportContacts');
+  if (btnImport && c) btnImport.textContent = c.import;
+
+  const btnAddContact = document.getElementById('btnAddContact');
+  if (btnAddContact && c) btnAddContact.textContent = c.add;
+
+  const searchContacts = document.getElementById('searchContacts');
+  if (searchContacts && c) searchContacts.placeholder = c.search;
 });
 
   // BACK - FINANCES MENU
@@ -1952,16 +2129,15 @@ obligationDB.getAll().then(async obligations => {
 });
 
 // ===== HANDLE NOTIFICATION TAP (deep link) =====
-  if (window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.LocalNotifications) {
-    const { LocalNotifications } = Capacitor.Plugins;
+if (window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.LocalNotifications) {
+  const { LocalNotifications } = Capacitor.Plugins;
 
-    LocalNotifications.addListener('localNotificationActionPerformed', (event) => {
-      const data = event?.notification?.extra || {};
-      const rawId = data.obligationId;
+  LocalNotifications.addListener('localNotificationActionPerformed', (event) => {
+    const data = event?.notification?.extra || {};
 
-      if (!rawId) return;
-
-      const id = Number(rawId);
+    // ===== OBLIGATION TAP =====
+    if (data.obligationId) {
+      const id = Number(data.obligationId);
 
       showScreen('screen-obligations-list');
       showListMode();
@@ -1980,16 +2156,32 @@ obligationDB.getAll().then(async obligations => {
             if (card) {
               card.scrollIntoView({ behavior: 'smooth', block: 'center' });
               card.classList.add('highlight');
-
-              setTimeout(() => {
-                card.classList.remove('highlight');
-              }, 2000);
+              setTimeout(() => card.classList.remove('highlight'), 2000);
             }
           });
         });
       });
-    });
-  }
+
+      return;
+    }
+
+    // ===== CONTACT BIRTHDAY TAP =====
+    if (data.contactId) {
+      const id = Number(data.contactId);
+
+      // učitaj kontakte i otvori detalje
+      getContacts().then(all => {
+        const c = all.find(x => Number(x.id) === id);
+        if (!c) return;
+
+        // koristi postojeću funkciju iz contacts.js
+        openContactDetails(id);
+      });
+
+      return;
+    }
+  });
+}
 
   // ===== FINAL FORCE START SCREEN =====
   setTimeout(() => {

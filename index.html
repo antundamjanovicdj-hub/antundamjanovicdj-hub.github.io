@@ -28,6 +28,24 @@
 
 <div class="app">
 
+<!-- STANDARD APP HEADER (UX STEP 1.1) -->
+<div class="app-header">
+  <div class="app-header-left">
+    <button class="back" id="headerBack">←</button>
+  </div>
+
+  <div class="app-header-center" id="headerTitle">
+    LifeKompas
+  </div>
+
+  <div class="app-header-right">
+    <!-- DESNA AKCIJA – UI ONLY -->
+    <button class="header-action hidden" id="headerAction" aria-label="action">
+      ➕
+    </button>
+  </div>
+</div>
+
   <!-- LANGUAGE SCREEN -->
   <div id="screen-lang" class="screen active">
     <div class="lang-title-top">LIFE</div>
@@ -58,7 +76,6 @@
 
   <!-- MAIN MENU -->
   <div id="screen-menu" class="screen menu-background">
-    <button class="back" id="backMenu">←</button>
     <div class="main-menu-buttons">
       <button class="menu-item" id="btnObligations">🧭 Obveze</button>
       <button class="menu-item" id="btnShopping">🛒 Kupovina</button>
@@ -72,7 +89,6 @@
 
 <!-- FINANCES MENU SCREEN -->
 <div id="screen-finances-menu" class="screen finance-background">
-  <button class="back" id="backFinancesMenu">←</button>
   <h2 class="screen-title">💰 Financije</h2>
 
   <div class="main-menu-buttons">
@@ -85,7 +101,6 @@
 </div>
 <!-- FINANCE: INCOME SCREEN -->
 <div id="screen-finance-income" class="screen finance-background">
-  <button class="back" id="backFinanceIncome">←</button>
   <h2 class="screen-title">💵 Unos prihoda</h2>
 
   <div class="finance-form">
@@ -102,7 +117,6 @@
 
 <!-- FINANCE: MONTHLY COSTS SCREEN -->
 <div id="screen-finance-fixed" class="screen finance-background">
-  <button class="back" id="backFinanceFixed">←</button>
   <h2 class="screen-title">📅 Mjesečni troškovi</h2>
 
   <div class="finance-form">
@@ -117,7 +131,6 @@
 
 <!-- FINANCE: CREDITS SCREEN -->
   <div id="screen-finance-credits" class="screen finance-background">
-  <button class="back" id="backFinanceCredits">←</button>
   <h2 class="screen-title">🏦 Krediti</h2>
 
   <div class="finance-form">
@@ -140,7 +153,6 @@
 </div>
 <!-- FINANCE: OTHER COSTS SCREEN -->
 <div id="screen-finance-other" class="screen finance-background">
-  <button class="back" id="backFinanceOther">←</button>
   <h2 class="screen-title">🧾 Ostali troškovi</h2>
 
   <!-- OTHER COST FORM -->
@@ -155,7 +167,6 @@
 </div>
 <!-- FINANCE: COSTS OVERVIEW SCREEN -->
 <div id="screen-finance-overview" class="screen finance-background">
-  <button class="back" id="backFinanceOverview">←</button>
   <h2 class="screen-title">📊 Pregled troškova</h2>
 
   <div class="finance-form">
@@ -169,7 +180,6 @@
 
   <!-- SHOPPING SCREEN -->
   <div id="screen-shopping" class="screen">
-    <button class="back" id="backShopping">←</button>
 
     <h2 class="screen-title" id="shoppingTitle">🛒 Kupovina</h2>
 
@@ -215,7 +225,6 @@
 
   <!-- EKRAN: DODAVANJE/UREĐIVANJE OBVEZE -->
   <div id="screen-add-obligation" class="screen">
-    <button class="back" id="backToAddObligation">←</button>
     <div class="obligation-form">
       <input type="text" id="obligationTitle" placeholder="Naslov obveze" maxlength="100">
       <textarea id="obligationNote" placeholder="Napomena" rows="3"></textarea>
@@ -266,7 +275,7 @@
 
   <!-- EKRAN: PREGLED OBVEZA -->
   <div id="screen-obligations-list" class="screen">
-    <button class="back" id="backToObligationsList">←</button>
+  <div class="calm-surface">
 
     <!-- TOOLBAR -->
     <div class="obligations-toolbar">
@@ -292,11 +301,11 @@
       <div id="dailyOpenWrap"></div>
       <div id="dailyDoneWrap"></div>
     </div>
-  </div>
+  </div> <!-- calm-surface -->
+</div> <!-- /screen-obligations-list -->
 
 <!-- CONTACT FORM SCREEN -->
-<div id="screen-contact-form" class="screen finance-background">
-  <button class="back" id="backContactForm">←</button>
+<div id="screen-contact-form" class="screen">
 
   <h2 class="screen-title" id="contactFormTitle">
     <img src="images/contacts-icon.png" class="contacts-title-icon">
@@ -327,11 +336,12 @@
 
 <!-- CONTACT DETAILS SCREEN -->
 <div id="screen-contact-details" class="screen finance-background">
-  <button class="back" id="backContactDetails">←</button>
 
   <h2 class="screen-title" id="contactDetailsTitle">👤 Kontakt</h2>
 
-  <div id="contactDetailsContent" class="contact-details"></div>
+  <div class="calm-surface">
+    <div id="contactDetailsContent" class="contact-details"></div>
+</div>
 
   <!-- ACTION BUTTONS -->
   <div class="contact-details-actions">
@@ -343,26 +353,16 @@
 </div> <!-- .app -->
 
 <!-- CONTACTS SCREEN -->
-<div id="screen-contacts" class="screen finance-background">
-  <button class="back" id="backContacts">←</button>
-
-  <h2 class="screen-title" id="contactsTitle">
-  <img src="images/contacts-icon.png" class="contacts-title-icon">
-  Kontakti
-</h2>
+<div id="screen-contacts" class="screen">
 
   <!-- ACTION BUTTONS -->
-  <div class="contacts-actions">
-    <button id="btnImportContacts"
-            class="menu-item"
-            onclick="importDeviceContacts()">
-      📥 Uvezi iz imenika
-    </button>
-
-    <button id="btnAddContact" class="menu-item">
-      ➕ Dodaj kontakt
-    </button>
-  </div>
+<div class="contacts-actions">
+  <button id="btnImportContacts"
+          class="menu-item"
+          onclick="importDeviceContacts()">
+    📥 Uvezi iz imenika
+  </button>
+</div>
 
   <!-- SEARCH -->
   <div class="contacts-search">
@@ -385,94 +385,130 @@
 
 <!-- SKRIPTOVE -->
 <script src="core/i18n.js"></script>
-<script src="core/db.js"></script>
-<script src="core/contacts.js"></script>
+<script type="module" src="core/db.js"></script>
+<script type="module" src="core/contacts.js"></script>
+<script type="module" src="core/app-init-main.js"></script>
+<script type="module" src="core/app-init.js"></script>
 
 <script type="module">
-// ===== APP VERSION =====
-const APP_VERSION = "0.1.0";
+import {
+  todayISO,
+  getISODateFromDateTime,
+  getLang
+} from './core/app-init.js';
 
-// ===== BATTERY OPTIMIZATION CHECK =====
-import { checkBatteryOptimization } from './core/battery.js';
-document.getElementById("appVersion").textContent = "v" + APP_VERSION;
-// ===== GLOBAL CONFIG =====
-const CONFIG = {
-  notificationsEnabled: true,
-  serviceWorkerEnabled: true,
-  debug: false
-};
-// ===== INIT SERVICE WORKER (guarded) =====
-if (CONFIG.serviceWorkerEnabled) {
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js')
-      .then(() => console.log("Service Worker registered"))
-      .catch(err => console.log("SW registration error:", err));
+window.todayISO = todayISO;
+window.getISODateFromDateTime = getISODateFromDateTime;
+window.getLang = getLang;
+
+// ===== PRE-BOOT CRASH GUARD =====
+
+const BOOT_FAIL_KEY = 'lifekompas_boot_fail';
+const bootFails = Number(localStorage.getItem(BOOT_FAIL_KEY) || 0);
+
+// ako je app pukao 3x pri startu → safe mode
+if (bootFails >= 3) {
+
+  document.body.style.background = '#0d5e32';
+
+  document.body.innerHTML = `
+    <div style="
+      height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-direction:column;
+      font-family:sans-serif;
+      text-align:center;
+      padding:24px;
+      color:white;
+    ">
+      <h2>LifeKompas Safe Mode</h2>
+      <p>Aplikacija se rušila pri pokretanju.</p>
+
+      <button onclick="
+        localStorage.removeItem('${BOOT_FAIL_KEY}');
+        location.reload();
+      " style="
+        padding:14px 22px;
+        border:none;
+        border-radius:14px;
+        font-size:16px;
+      ">
+        Pokreni ponovo
+      </button>
+    </div>
+  `;
+
+  throw new Error("BOOT BLOCKED");
+}
+
+// povećaj counter — resetiramo ga kad app boot-a
+localStorage.setItem(BOOT_FAIL_KEY, bootFails + 1);
+
+// ===== LIFE KOMPAS CRASH SHIELD (PRO) =====
+
+(function () {
+
+  function saveCrash(type, err) {
+    try {
+      localStorage.setItem(
+        'lifekompas_last_crash',
+        JSON.stringify({
+          type,
+          message: err?.message || String(err),
+          stack: err?.stack || null,
+          time: new Date().toISOString()
+        })
+      );
+    } catch {}
   }
-}
-/* ===== HELPERS ===== */
-function getLang() {
-  let lang = localStorage.getItem('userLang') || 'hr';
-  if (!I18N[lang]) {
-    lang = lang.split('-')[0];
+
+  function showCrashScreen() {
+
+    document.body.innerHTML = '';
+    document.body.style.background = '#0d5e32';
+    document.body.insertAdjacentHTML('afterbegin', `
+      <div style="
+        height:100vh;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        flex-direction:column;
+        font-family:sans-serif;
+        text-align:center;
+        padding:24px;
+        background:#0d5e32;
+        color:white;
+      ">
+        <h2>LifeKompas</h2>
+        <p>Aplikacija je naišla na neočekivanu grešku.</p>
+        <button onclick="location.reload()" style="
+          padding:14px 22px;
+          border:none;
+          border-radius:14px;
+          font-size:16px;
+          cursor:pointer;
+        ">
+          Ponovno pokreni
+        </button>
+      </div>
+    `);
   }
-  return lang;
-}
 
-// ✅ DETEKCIJA TOUCH UREĐAJA (MOBITEL / TABLET)
-const IS_TOUCH_DEVICE =
-  'ontouchstart' in window ||
-  navigator.maxTouchPoints > 0;
-
-function getISODateFromDateTime(dateTimeStr) {
-  if (!dateTimeStr) return null;
-  return String(dateTimeStr).split('T')[0] || null;
-}
-
-function todayISO() {
-  return new Date().toISOString().split('T')[0];
-}
-
-function showScreen(screenId) {
-  const screens = document.querySelectorAll('.screen');
-  const next = document.getElementById(screenId);
-
-  screens.forEach(screen => {
-    screen.classList.remove('active');
-    screen.style.display = 'none';
+  window.addEventListener('error', (event) => {
+    console.error('GLOBAL ERROR:', event.error || event.message);
+    saveCrash('error', event.error || event.message);
+    showCrashScreen();
   });
 
-  if (next) {
-    next.classList.add('active');
-    next.style.display = 'block';
-  }
+  window.addEventListener('unhandledrejection', (event) => {
+    console.error('UNHANDLED PROMISE:', event.reason);
+    saveCrash('promise', event.reason);
+    showCrashScreen();
+  });
 
-  // ===== INIT CONTACTS + TRANSLATION ONLY WHEN CONTACTS SCREEN =====
-  if (screenId === 'screen-contacts') {
-    if (typeof initContacts === 'function') {
-      loadContacts();
-    }
-
-    const lang = getLang();
-    const c = I18N[lang].contacts || I18N.en.contacts;
-
-    const contactsTitle = document.getElementById('contactsTitle');
-    if (contactsTitle && c) {
-      contactsTitle.innerHTML = `<img src="images/contacts-icon.png" class="contacts-title-icon"> ${c.title}`;
-    }
-
-    const btnImport = document.getElementById('btnImportContacts');
-    if (btnImport && c) btnImport.textContent = c.import;
-
-    const btnAddContact = document.getElementById('btnAddContact');
-    if (btnAddContact && c) btnAddContact.textContent = c.add;
-
-    const searchContacts = document.getElementById('searchContacts');
-    if (searchContacts && c) searchContacts.placeholder = c.search;
-  }
-}
-
-// ✅ expose for non-module scripts (contacts.js etc.)
-window.showScreen = showScreen;
+})();
 
 /* ===== SET LANGUAGE + SHOW MENU ===== */
 function setLanguage(lang) {
@@ -690,6 +726,9 @@ if (monthLabel) monthLabel.textContent = I18N[lang].obligationsView.selectDate |
   }
   showScreen('screen-menu');
 
+// UX 1.6 – reset history nakon izbora jezika
+screenHistory.length = 0;
+
   setTimeout(() => {
     document.querySelectorAll('.menu-item').forEach((item, i) => {
       setTimeout(() => item.classList.add('animate'), 150 * i);
@@ -700,6 +739,10 @@ if (monthLabel) monthLabel.textContent = I18N[lang].obligationsView.selectDate |
 /* ===== OTVORI FORMU ZA UREĐIVANJE ===== */
 function openEditForm(ob) {
   showScreen('screen-add-obligation');
+// ✅ ensure i18n on edit as well
+  requestAnimationFrame(() => {
+    applyAddObligationI18N();
+  });
 
   const lang = document.documentElement.getAttribute('lang') || getLang();
 
@@ -731,8 +774,59 @@ if (repeatSelect) {
 
   repeatSelect.querySelector('option[value=""]').textContent = I18N[lang].obligation.repeatNone;
   repeatSelect.querySelector('option[value="daily"]').textContent = I18N[lang].obligation.repeatDaily;
-  repeatSelect.querySelector('option[value="weekly"]').textContent = I18N[lang].obligation.repeatWeekly;
+  repeatSelect.querySelector('option[value="weekly"]').textContent =
+  I18N[lang].obligation.repeatWeekly;
+ }
 }
+
+// ===== APPLY I18N: ADD / EDIT OBLIGATION =====
+function applyAddObligationI18N() {
+  const lang = getLang();
+
+  document.getElementById('obligationTitle').placeholder =
+    I18N[lang].obligation.title;
+
+  document.getElementById('obligationNote').placeholder =
+    I18N[lang].obligation.note;
+
+  document.getElementById('obligationDateTimeLabel').textContent =
+    I18N[lang].obligation.dateTime;
+
+  document.getElementById('reminderLabel').textContent =
+    I18N[lang].obligation.reminder;
+
+  document.getElementById('urgentLabel').textContent =
+    I18N[lang].obligation.urgent;
+
+  document.getElementById('quietHoursLabel').textContent =
+    I18N[lang].obligation.quietHours;
+
+  document.getElementById('repeatLabel').textContent =
+    I18N[lang].obligation.repeat;
+
+  const repeatSelect = document.getElementById('repeatType');
+  repeatSelect.querySelector('option[value=""]').textContent =
+    I18N[lang].obligation.repeatNone;
+  repeatSelect.querySelector('option[value="daily"]').textContent =
+    I18N[lang].obligation.repeatDaily;
+  repeatSelect.querySelector('option[value="weekly"]').textContent =
+    I18N[lang].obligation.repeatWeekly;
+
+  const reminderSelect = document.getElementById('reminderTime');
+  reminderSelect.querySelector('option[value="30"]').textContent =
+    I18N[lang].obligationsList.reminder30;
+  reminderSelect.querySelector('option[value="60"]').textContent =
+    I18N[lang].obligationsList.reminder60;
+  reminderSelect.querySelector('option[value="120"]').textContent =
+    I18N[lang].obligationsList.reminder120;
+  reminderSelect.querySelector('option[value="1440"]').textContent =
+    I18N[lang].obligationsList.reminder1440;
+
+  document.getElementById('saveObligation').textContent =
+    I18N[lang].obligation.save;
+
+  document.getElementById('cancelObligation').textContent =
+    `✖️ ${I18N[lang].obligation.cancel}`;
 }
 
 /* ===== RENDER CARD (reused) ===== */
@@ -754,6 +848,13 @@ function buildObligationCard(ob, lang) {
   const dt = safe.dateTime ? new Date(safe.dateTime) : null;
   const dateStr = dt ? dt.toLocaleDateString((t && t.lang) || 'hr-HR') : '—';
   const timeStr = dt ? dt.toLocaleTimeString((t && t.lang) || 'hr-HR', { hour: '2-digit', minute: '2-digit' }) : '—';
+  const isOverdue =
+  safe.dateTime &&
+  getISODateFromDateTime(safe.dateTime) < todayISO();
+
+  const overdueHint = isOverdue
+  ? `<div style="font-size:12px; opacity:0.6; margin-top:2px;">Zakašnjelo</div>`
+  : '';
 
   let reminderStr = '';
   if (safe.reminder) {
@@ -778,8 +879,17 @@ function buildObligationCard(ob, lang) {
     ? `✅ ${statusDoneText}`
     : `⏳ ${statusActiveText}`;
 
-  const bgColor = safe.status === 'done' ? '#e8f5e9' : '#e3f2fd';
-  const borderColor = safe.status === 'done' ? '#4caf50' : '#2196f3';
+const bgColor = safe.status === 'done'
+  ? '#e8f5e9'
+  : isOverdue
+    ? '#f7f7f7'
+    : '#e3f2fd';
+
+const borderColor = safe.status === 'done'
+  ? '#4caf50'
+  : isOverdue
+    ? '#bbb'
+    : '#2196f3';
 
   const toggleBtnText = safe.status === 'done'
     ? (ol.markActive || '⏳ Active')
@@ -795,8 +905,11 @@ function buildObligationCard(ob, lang) {
       ${safe.note ? `<div class="obligation-note">${safe.note}</div>` : ''}
 
       <div class="obligation-meta">
-        <div class="obligation-date">📅 ${dateStr}</div>
-        <div class="obligation-time">⏰ ${timeStr}</div>
+        <div class="obligation-date">
+  📅 ${dateStr}
+  ${overdueHint}
+</div>
+<div class="obligation-time">⏰ ${timeStr}</div>
         ${reminderStr ? `<div class="obligation-reminder">🔔 ${reminderStr}</div>` : ''}
         <div class="obligation-status">${statusText}</div>
       </div>
@@ -948,102 +1061,6 @@ refreshCurrentObligationsView();
   });
 }
 
-/* ===== DAILY VIEW LOGIC ===== */
-let viewMode = 'list'; // 'list' | 'days'
-let currentDailyDate = todayISO();
-
-function showListMode() {
-  viewMode = 'list';
-
-  const dailyView = document.getElementById('dailyView');
-  const dailyDateBar = document.getElementById('dailyDateBar');
-  const list = document.getElementById('obligationsContainer');
-  const btn = document.getElementById('btnViewByDays');
-
-  if (dailyView) dailyView.classList.add('hidden');
-  if (dailyDateBar) dailyDateBar.classList.add('hidden');
-  if (list) list.classList.remove('hidden');
-
-  const lang = getLang();
-  if (btn) btn.textContent = I18N[lang].obligationsView.byDay;
-}
-
-function showDailyMode() {
-  viewMode = 'days';
-
-  const dailyView = document.getElementById('dailyView');
-  const dailyDateBar = document.getElementById('dailyDateBar');
-  const list = document.getElementById('obligationsContainer');
-  const btn = document.getElementById('btnViewByDays');
-
-  if (list) list.classList.add('hidden');
-  if (dailyView) dailyView.classList.remove('hidden');
-  if (dailyDateBar) dailyDateBar.classList.remove('hidden');
-
-  const lang = getLang();
-  if (btn) btn.textContent = I18N[lang].obligationsView.asList;
-}
-
-function groupObligationsByStatus(items) {
-  return {
-    open: items.filter(i => i.status !== 'done'),
-    done: items.filter(i => i.status === 'done')
-  };
-}
-
-async function loadDailyForDate(isoDate) {
-  currentDailyDate = isoDate;
-
-  const picker = document.getElementById('dailyDatePicker');
-  if (picker && picker.value !== isoDate) picker.value = isoDate;
-
-  const lang = getLang();
-  const all = (await obligationDB.getAll())
-  .filter(o => o.type !== 'shopping');
-
-const filtered = all.filter(o =>
-  getISODateFromDateTime(o.dateTime) === isoDate
-);
-  const groups = groupObligationsByStatus(filtered);
-
-  const openWrap = document.getElementById('dailyOpenWrap');
-  const doneWrap = document.getElementById('dailyDoneWrap');
-  const emptyHtml = `<div class="empty-list">${I18N[lang].obligationsList.noObligations}</div>`;
-
-  if (groups.open.length === 0) {
-    openWrap.innerHTML = `<div class="empty-list">—</div>`;
-  } else {
-    openWrap.innerHTML = `
-      <div style="font-weight:800; margin:8px 0;">Aktivne (${groups.open.length})</div>
-      ${groups.open.map(ob => buildObligationCard(ob, lang)).join('')}
-    `;
-    attachObligationHandlers(openWrap);
-  }
-
-  if (groups.done.length === 0) {
-    doneWrap.innerHTML = `<div class="empty-list">—</div>`;
-  } else {
-    doneWrap.innerHTML = `
-      <div style="font-weight:800; margin:8px 0;">Završene (${groups.done.length})</div>
-      ${groups.done.map(ob => buildObligationCard(ob, lang)).join('')}
-    `;
-    attachObligationHandlers(doneWrap);
-  }
-
-  if (groups.open.length === 0 && groups.done.length === 0) {
-    openWrap.innerHTML = emptyHtml;
-    doneWrap.innerHTML = '';
-  }
-}
-
-function refreshCurrentObligationsView() {
-  if (viewMode === 'days') {
-    loadDailyForDate(currentDailyDate);
-  } else {
-    renderObligationsList();
-  }
-}
-
 /* ===== LIST VIEW RENDER ===== */
 async function renderObligationsList() {
   if (viewMode === 'days') return;
@@ -1051,10 +1068,14 @@ async function renderObligationsList() {
   const container = document.getElementById('obligationsContainer');
   const lang = getLang();
 
-  const obligations = (await obligationDB.getAll())
+  const today = todayISO();
+
+const obligations = (await obligationDB.getAll())
   .filter(o =>
     o.type !== 'shopping' &&
-    o.status !== 'done'
+    o.status !== 'done' &&
+    o.dateTime &&
+    getISODateFromDateTime(o.dateTime) <= today
   );
 
   obligations.sort((a, b) => {
@@ -1064,1129 +1085,81 @@ async function renderObligationsList() {
     return new Date(b.dateTime) - new Date(a.dateTime);
   });
 
-  if (obligations.length === 0) {
-    container.innerHTML = `<div class="empty-list">${I18N[lang].obligationsList.noObligations}</div>`;
-    return;
-  }
-
-  container.innerHTML = obligations.map(ob => buildObligationCard(ob, lang)).join('');
-  attachObligationHandlers(container);
-}
-
-/* ===== SHOPPING (IndexedDB + Archive) ===== */
-let shoppingItems = [];
-let showArchivedShopping = false;
-
-function renderShoppingList() {
-  const list = document.getElementById('shoppingList');
-  const empty = document.getElementById('shoppingEmpty');
-
-  if (!list || !empty) return;
-
-  list.innerHTML = '';
-
-  const visibleItems = showArchivedShopping
-    ? shoppingItems
-    : shoppingItems.filter(item => !item.checked);
-
-  if (visibleItems.length === 0) {
-    empty.style.display = 'block';
-    return;
-  }
-
-  empty.style.display = 'none';
-
-  visibleItems.forEach(item => {
-    const li = document.createElement('li');
-li.className = 'shopping-item';
-
-li.innerHTML = `
-  <div class="shopping-item-delete">🗑️</div>
-  <div class="shopping-item-content">${item.title}</div>
-`;
-
-if (item.checked) li.classList.add('checked');
-
-// tap / click = check
-li.addEventListener('click', () => {
-  item.checked = !item.checked;
-  renderShoppingList();
-  addShoppingItem(item); // ✅ koristi db.js add/put
-});
-
-// ===== MOBILE ONLY: swipe to delete (FINAL) =====
-if (IS_TOUCH_DEVICE) {
-  let startX = 0;
-  let currentX = 0;
-  let swiping = false;
-  const DELETE_THRESHOLD = 120; // px
-
-  li.addEventListener('touchstart', e => {
-    startX = e.touches[0].clientX;
-    currentX = startX;
-    swiping = true;
-  }, { passive: true });
-
-// označi da je swipe započeo (za CSS)
-li.classList.add('swiping');
-// 🔎 MICRO HINT – show on first swipe only
-const hint = document.getElementById('shoppingSwipeHint');
-const hintSeen = localStorage.getItem('shoppingSwipeHintSeen');
-
-if (IS_TOUCH_DEVICE && hint && !hintSeen) {
-  hint.classList.remove('hidden');
-
-  setTimeout(() => {
-    hint.style.opacity = '0';
-    setTimeout(() => {
-      hint.classList.add('hidden');
-      hint.style.opacity = '';
-    }, 300);
-  }, 2500);
-
-  localStorage.setItem('shoppingSwipeHintSeen', '1');
-}
-
-  li.addEventListener('touchmove', e => {
-    if (!swiping) return;
-
-    currentX = e.touches[0].clientX;
-    const diff = currentX - startX;
-
-    if (diff < 0) {
-      const MAX_SWIPE = 84; // px – isto kao širina delete zone
-const limited = Math.max(diff, -MAX_SWIPE);
-li.style.transform = `translateX(${limited}px)`;
-    }
-  }, { passive: true });
-
-  li.addEventListener('touchend', () => {
-    if (!swiping) return;
-    swiping = false;
-  li.classList.remove('swiping');
-
-    const diff = currentX - startX;
-
-    if (diff < -DELETE_THRESHOLD) {
-      // ✅ DELETE
-      shoppingItems = shoppingItems.filter(i => i.id !== item.id);
-      renderShoppingList();
-      deleteShoppingItem(item.id);
-    } else {
-      // ⬅️ SNAP BACK
-      li.style.transition = 'transform 0.15s ease-out';
-      li.style.transform = 'translateX(0)';
-
-      setTimeout(() => {
-        li.style.transition = '';
-      }, 150);
-    }
-  });
-}
-
-// ===== MOBILE: swipe left delete (content only) =====
-const content = li.querySelector('.shopping-item-content');
-
-// swipe disabled for stability
-
-    // DESKTOP: right-click delete
-    li.addEventListener('contextmenu', e => {
-      e.preventDefault();
-      shoppingItems = shoppingItems.filter(i => i.id !== item.id);
-      renderShoppingList();
-      deleteShoppingItem(item.id);
-    });
-
-    list.appendChild(li);
-  });
-}
-
-/* ===== INIT ===== */
-document.addEventListener('DOMContentLoaded', () => {
-
- // ===== CONTACTS INIT =====
-  loadContacts();
-  initContacts();
-
-// ===== FORCE START SCREEN =====
-  showScreen('screen-lang');
-
-  // ===== SAVE INCOME =====
-  document.getElementById('saveIncome').addEventListener('click', async () => {
-  const amount = parseFloat(document.getElementById('incomeAmount').value);
-  const desc = document.getElementById('incomeDesc').value.trim();
-  const date = document.getElementById('incomeDate').value;
-
-  if (!amount || !date) return alert('Unesi iznos i datum');
-
-  const editId = document.getElementById('saveIncome').dataset.editId;
-  const isEdit = !!editId;
-
-  const item = {
-    id: isEdit ? Number(editId) : Date.now(),
-    type: 'income',
-    amount,
-    desc: desc || 'Prihod',
-    date
-  };
-
-  await addFinanceItem(item);
-
-  // reset forme
-  document.getElementById('incomeAmount').value = '';
-  document.getElementById('incomeDesc').value = '';
-  document.getElementById('incomeDate').value = '';
-  document.getElementById('saveIncome').removeAttribute('data-edit-id');
-
-  renderIncomeList();
-});
-
-// ===== RENDER INCOME LIST =====
-  async function renderIncomeList() {
-    const list = document.getElementById('incomeList');
-    if (!list) return;
-
-    const items = await getFinanceItems();
-    const incomes = items.filter(i => i.type === 'income');
-
-    incomes.sort((a, b) => b.id - a.id);
-
-    if (incomes.length === 0) {
-      list.innerHTML = '<div class="empty-list">Nema prihoda</div>';
-      return;
-    }
-
-    list.innerHTML = incomes.map(i => `
-  <div class="finance-item" data-id="${i.id}" style="position:relative;">
-
-    <div><strong>${i.amount} €</strong> – ${i.desc}</div>
-    <div>${new Date(i.date).toLocaleDateString('hr-HR')}</div>
-
-    <button class="finance-edit" data-id="${i.id}">✏️</button>
-
-    <button class="finance-delete" data-id="${i.id}"
-      style="position:absolute; bottom:6px; right:6px; border:none; background:none; font-size:18px;">
-      🗑️
-    </button>
-
-  </div>
-`).join('');
-
-    // --- DELETE ---
-    list.querySelectorAll('.finance-delete').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const id = Number(btn.dataset.id);
-        await deleteFinanceItem(id);
-        renderIncomeList();
-      });
-    });
-
-    // --- EDIT ---
-    list.querySelectorAll('.finance-edit').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const id = Number(btn.dataset.id);
-        const items = await getFinanceItems();
-        const item = items.find(x => x.id === id);
-        if (!item) return;
-
-        document.getElementById('incomeAmount').value = item.amount;
-        document.getElementById('incomeDesc').value = item.desc;
-        document.getElementById('incomeDate').value = item.date;
-
-        document.getElementById('saveIncome').dataset.editId = id;
-      });
-    });
-  }
-
-  // ===== SAVE FIXED =====
-  document.getElementById('saveFixed').addEventListener('click', async () => {
-  const desc = document.getElementById('fixedDesc').value.trim();
-  const amount = parseFloat(document.getElementById('fixedAmount').value);
-
-  if (!desc || !amount) return alert('Unesi naziv i iznos');
-
-  const editId = document.getElementById('saveFixed').dataset.editId;
-  const isEdit = !!editId;
-
-  const item = {
-    id: isEdit ? Number(editId) : Date.now(),
-    type: 'fixed',
-    desc,
-    amount
-  };
-
-  await addFinanceItem(item);
-
-  document.getElementById('fixedDesc').value = '';
-  document.getElementById('fixedAmount').value = '';
-  document.getElementById('saveFixed').removeAttribute('data-edit-id');
-
-  renderFixedList();
-});
-
-  // ===== SAVE CREDIT =====
-  document.getElementById('saveCredit').addEventListener('click', async () => {
-  const desc = document.getElementById('creditDesc').value.trim();
-  const amount = parseFloat(document.getElementById('creditAmount').value);
-  const start = document.getElementById('creditStart').value;
-  const end = document.getElementById('creditEnd').value;
-  const lastPaid = document.getElementById('creditLastPaid').value;
-
-  if (!desc || !amount || !start || !end) {
-    return alert('Unesi sve podatke kredita');
-  }
-
-  const editId = document.getElementById('saveCredit').dataset.editId;
-  const isEdit = !!editId;
-
-  const item = {
-    id: isEdit ? Number(editId) : Date.now(),
-    type: 'credit',
-    desc,
-    amount,
-    start,
-    end,
-    lastPaid: lastPaid || null
-  };
-
-  await addFinanceItem(item);
-
-  document.getElementById('creditDesc').value = '';
-  document.getElementById('creditAmount').value = '';
-  document.getElementById('creditStart').value = '';
-  document.getElementById('creditEnd').value = '';
-  document.getElementById('creditLastPaid').value = '';
-  document.getElementById('saveCredit').removeAttribute('data-edit-id');
-
-  renderCreditList();
-});
-
-  // ===== BATTERY OPTIMIZATION =====
-  checkBatteryOptimization();
-
-  // ===== QUIET HOURS =====
-  const quietStartInput = document.getElementById('quietStart');
-  const quietEndInput = document.getElementById('quietEnd');
-
-  if (quietStartInput && quietEndInput) {
-    quietStartInput.value = localStorage.getItem('quietStart') || '22:00';
-    quietEndInput.value = localStorage.getItem('quietEnd') || '07:00';
-
-    quietStartInput.addEventListener('change', () => {
-      localStorage.setItem('quietStart', quietStartInput.value);
-    });
-
-    quietEndInput.addEventListener('change', () => {
-      localStorage.setItem('quietEnd', quietEndInput.value);
-    });
-  }
-
-  // ===== SERVICE WORKER SNOOZE =====
-  navigator.serviceWorker?.addEventListener('message', e => {
-    if (e.data?.type === 'SNOOZE') {
-      import('./core/notifications.js').then(({ snoozeObligation }) => {
-        obligationDB.getAll().then(items => {
-          const ob = items.find(o => o.id === e.data.obligationId);
-          if (ob) snoozeObligation(ob, e.data.minutes);
-        });
-      });
-    }
-  });
-
-// JEZICI  (safe bind after I18N loaded)
-function bindLangButtons() {
-  document.querySelectorAll('.lang-btn').forEach(btn => {
-    btn.onclick = () => {
-      const lang = btn.dataset.lang;
-      if (!window.I18N || !I18N[lang]) {
-        console.log("I18N not ready yet");
-        return;
-      }
-      setLanguage(lang);
-    };
-  });
-}
-
-// bind immediately
-bindLangButtons();
-
-  // BACK - MENU
-  document.getElementById('backMenu').addEventListener('click', () => {
-    showScreen('screen-lang');
-    document.querySelectorAll('.menu-item')
-      .forEach(item => item.classList.remove('animate'));
-  });
-
-  // BACK - SHOPPING
-  document.getElementById('backShopping').addEventListener('click', () => {
-    showScreen('screen-menu');
-  });
-// BACK - CONTACTS
-document.getElementById('backContacts').addEventListener('click', () => {
-  showScreen('screen-menu');
-});
-document.getElementById('backFinanceIncome').addEventListener('click', () => {
-  showScreen('screen-finances-menu');
-});
-document.getElementById('backFinanceFixed').addEventListener('click', () => {
-  showScreen('screen-finances-menu');
-});
-document.getElementById('backFinanceCredits').addEventListener('click', () => {
-  showScreen('screen-finances-menu');
-});
-document.getElementById('backFinanceOther').addEventListener('click', () => {
-  showScreen('screen-finances-menu');
-});
-document.getElementById('backFinanceOverview').addEventListener('click', () => {
-  showScreen('screen-finances-menu');
-});
-
-  // SHOPPING BUTTON (open + load + focus)
-// FINANCES BUTTON
-document.getElementById('btnFinances').addEventListener('click', () => {
-  showScreen('screen-finances-menu');
-});
-
-// ===== CONTACTS BUTTON =====
-document.getElementById('btnContacts').addEventListener('click', () => {
-  showScreen('screen-contacts');
-  loadContacts();
-
-  // ===== APPLY CONTACTS TRANSLATION ON OPEN =====
-  const lang = getLang();
-  const c = I18N[lang].contacts || I18N.en.contacts;
-
-  const contactsTitle = document.getElementById('contactsTitle');
-  if (contactsTitle && c) {
-    contactsTitle.innerHTML = `<img src="images/contacts-icon.png" class="contacts-title-icon"> ${c.title}`;
-  }
-
-  const btnImport = document.getElementById('btnImportContacts');
-  if (btnImport && c) btnImport.textContent = c.import;
-
-  const btnAddContact = document.getElementById('btnAddContact');
-  if (btnAddContact && c) btnAddContact.textContent = c.add;
-
-  const searchContacts = document.getElementById('searchContacts');
-  if (searchContacts && c) searchContacts.placeholder = c.search;
-});
-
-  // BACK - FINANCES MENU
-const backFin = document.getElementById('backFinancesMenu');
-if (backFin) {
-  backFin.addEventListener('click', () => showScreen('screen-menu'));
-}
-
-
-// ===== FINANCES: FIXED EXPENSES =====
-
-async function renderFixedList() {
-  const list = document.getElementById('fixedList');
-  if (!list) return;
-
-  const items = await getFinanceItems();
-  const fixed = items.filter(i => i.type === 'fixed');
-
-  fixed.sort((a, b) => b.id - a.id);
-
-  if (fixed.length === 0) {
-    list.innerHTML = '<div class="empty-list">Nema fiksnih troškova</div>';
-    return;
-  }
-
-  list.innerHTML = fixed.map(i => `
-  <div class="finance-item" data-id="${i.id}" style="position:relative;">
-
-    <div><strong>${i.amount} €</strong> – ${i.desc}</div>
-
-    <button class="finance-edit-fixed" data-id="${i.id}">✏️</button>
-
-    <button class="finance-delete-fixed" data-id="${i.id}"
-      style="position:absolute; bottom:6px; right:6px; border:none; background:none; font-size:18px;">
-      🗑️
-    </button>
-
-  </div>
-`).join('');
-
-  // --- DELETE ---
-  list.querySelectorAll('.finance-delete-fixed').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const id = Number(btn.dataset.id);
-      await deleteFinanceItem(id);
-      renderFixedList();
-    });
-  });
-
-  // --- EDIT ---
-  list.querySelectorAll('.finance-edit-fixed').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const id = Number(btn.dataset.id);
-      const items = await getFinanceItems();
-      const item = items.find(x => x.id === id);
-      if (!item) return;
-
-      document.getElementById('fixedDesc').value = item.desc;
-      document.getElementById('fixedAmount').value = item.amount;
-
-      document.getElementById('saveFixed').dataset.editId = id;
-    });
-  });
-}
-// ===== FINANCES: CREDITS =====
-
-async function renderCreditList() {
-  const list = document.getElementById('creditList');
-  if (!list) return;
-
-  const items = await getFinanceItems();
-  const credits = items.filter(i => i.type === 'credit');
-
-  credits.sort((a, b) => b.id - a.id);
-
-  if (credits.length === 0) {
-    list.innerHTML = '<div class="empty-list">Nema kredita</div>';
-    return;
-  }
-
-  list.innerHTML = credits.map(c => `
-  <div class="finance-item" data-id="${c.id}" style="position:relative;">
-
-    <div><strong>${c.amount} €</strong> – ${c.desc}</div>
-    <div>Početak: ${new Date(c.start).toLocaleDateString('hr-HR')}</div>
-    <div>Završetak: ${new Date(c.end).toLocaleDateString('hr-HR')}</div>
-    <div>Zadnja uplata: ${c.lastPaid ? new Date(c.lastPaid).toLocaleDateString('hr-HR') : '-'}</div>
-
-    <button class="finance-edit-credit" data-id="${c.id}">✏️</button>
-
-    <button class="finance-delete-credit" data-id="${c.id}"
-      style="position:absolute; bottom:6px; right:6px; border:none; background:none; font-size:18px;">
-      🗑️
-    </button>
-
-  </div>
-`).join('');
-
-  // --- DELETE ---
-  list.querySelectorAll('.finance-delete-credit').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const id = Number(btn.dataset.id);
-      await deleteFinanceItem(id);
-      renderCreditList();
-    });
-  });
-
-  // --- EDIT ---
-  list.querySelectorAll('.finance-edit-credit').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const id = Number(btn.dataset.id);
-      const items = await getFinanceItems();
-      const item = items.find(x => x.id === id);
-      if (!item) return;
-
-      document.getElementById('creditDesc').value = item.desc;
-      document.getElementById('creditAmount').value = item.amount;
-      document.getElementById('creditStart').value = item.start;
-      document.getElementById('creditEnd').value = item.end;
-      document.getElementById('creditLastPaid').value = item.lastPaid || '';
-
-      document.getElementById('saveCredit').dataset.editId = id;
-    });
-  });
-}
-// ===== FINANCES: MONTHLY CALCULATION =====
-
-async function calculateMonth() {
-  const monthInput = document.getElementById('financeMonth').value;
-  if (!monthInput) return alert('Odaberi mjesec');
-
-  const [year, month] = monthInput.split('-');
-  const items = await getFinanceItems();
-
-  // --- INCOME ---
-  const incomes = items.filter(i =>
-    i.type === 'income' &&
-    i.date &&
-    i.date.startsWith(`${year}-${month}`)
-  );
-  const totalIncome = incomes.reduce((sum, i) => sum + Number(i.amount), 0);
-
-  // --- FIXED ---
-  const fixed = items.filter(i => i.type === 'fixed');
-  const totalFixed = fixed.reduce((sum, i) => sum + Number(i.amount), 0);
-
-  // --- CREDITS ---
-  const credits = items.filter(i => i.type === 'credit');
-  let activeCredits = [];
-  let totalCredits = 0;
-
-  credits.forEach(c => {
-    if (!c.start || !c.end) return;
-
-    const startMonth = c.start.slice(0,7);
-    const endMonth = c.end.slice(0,7);
-
-    if (monthInput >= startMonth && monthInput <= endMonth) {
-      totalCredits += Number(c.amount);
-      activeCredits.push(c);
-    }
-  });
-
-  // --- OTHER COSTS ---
-  const otherCosts = items.filter(i =>
-    i.type === 'otherCost' &&
-    i.date &&
-    i.date.startsWith(`${year}-${month}`)
-  );
-  const totalOther = otherCosts.reduce((sum, i) => sum + Number(i.amount), 0);
-
-  // --- FINAL ---
-  const result = totalIncome - totalFixed - totalCredits - totalOther;
-
-  const out = document.getElementById('monthResult');
-const lang = document.documentElement.getAttribute('lang') || getLang();
-
-let html = `
-  <div class="finance-item"><strong>${I18N[lang].finances.overview.sumIncome}:</strong> ${totalIncome.toFixed(2)} €</div>
-  <div class="finance-item"><strong>${I18N[lang].finances.overview.sumFixed}:</strong> ${totalFixed.toFixed(2)} €</div>
-  <div class="finance-item"><strong>${I18N[lang].finances.overview.sumCredits}:</strong> ${totalCredits.toFixed(2)} €</div>
-  <div class="finance-item"><strong>${I18N[lang].finances.overview.sumOther}:</strong> ${totalOther.toFixed(2)} €</div>
-  <div class="finance-item" style="font-weight:800;">
-    ${I18N[lang].finances.overview.sumResult}: ${result.toFixed(2)} €
-  </div>
-  <hr>
-`;
-
-  // ===== INCOME LIST =====
-  if (incomes.length > 0) {
-    html += `<div class="finance-item" style="text-align:center; font-weight:800;">${I18N[lang].finances.overview.listIncome}</div>`;
-    incomes.forEach(i => {
-      html += `<div class="finance-item">💵 ${i.desc} — ${Number(i.amount).toFixed(2)} €</div>`;
-    });
-  }
-
-  // ===== FIXED LIST =====
-  if (fixed.length > 0) {
-    html += `<div class="finance-item" style="text-align:center; font-weight:800;">${I18N[lang].finances.overview.listFixed}</div>`;
-    fixed.forEach(f => {
-      html += `<div class="finance-item">📅 ${f.desc} — ${Number(f.amount).toFixed(2)} €</div>`;
-    });
-  }
-
-  // ===== CREDIT LIST =====
-  if (activeCredits.length > 0) {
-    html += `<div class="finance-item" style="text-align:center; font-weight:800;">${I18N[lang].finances.overview.listCredits}</div>`;
-    activeCredits.forEach(c => {
-      html += `<div class="finance-item">🏦 ${c.desc} — ${Number(c.amount).toFixed(2)} €</div>`;
-    });
-  }
-
-  // ===== OTHER COSTS LIST =====
-  if (otherCosts.length > 0) {
-    html += `<div class="finance-item" style="text-align:center; font-weight:800;">${I18N[lang].finances.overview.listOther}</div>`;
-    otherCosts.forEach(o => {
-      html += `<div class="finance-item">🛒 ${o.desc} — ${Number(o.amount).toFixed(2)} €</div>`;
-    });
-  }
-
-  out.innerHTML = html;
-}
-
-// ===== CONNECT MONTH CALCULATE BUTTON =====
-document.getElementById('btnCalculateMonth')
-  .addEventListener('click', calculateMonth);
-
-  
-// ===== OTHER COSTS =====
-
-async function renderOtherList() {
-  const list = document.getElementById('otherList');
-  if (!list) return;
-
-  const items = (await getFinanceItems()).filter(i => i.type === 'otherCost');
-
-  if (items.length === 0) {
-    list.innerHTML = '<div class="empty-list">Nema troškova</div>';
-    return;
-  }
-
-  list.innerHTML = items.map(i => `
-  <div class="finance-item" data-id="${i.id}" style="position:relative;">
-
-    <div><strong>${i.desc}</strong></div>
-    <div>€ ${Number(i.amount).toFixed(2)}</div>
-    <div>${i.date ? new Date(i.date).toLocaleDateString('hr-HR') : ''}</div>
-
-    <button class="finance-edit-other" data-id="${i.id}">✏️</button>
-
-    <button class="finance-delete-other" data-id="${i.id}"
-      style="position:absolute; bottom:6px; right:6px; border:none; background:none; font-size:18px;">
-      🗑️
-    </button>
-
-  </div>
-`).join('');
-
-  // --- DELETE ---
-  list.querySelectorAll('.finance-delete-other').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const id = Number(btn.dataset.id);
-      await deleteFinanceItem(id);
-      renderOtherList();
-    });
-  });
-
-  // --- EDIT ---
-  list.querySelectorAll('.finance-edit-other').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const id = Number(btn.dataset.id);
-      const items = await getFinanceItems();
-      const item = items.find(x => x.id === id);
-      if (!item) return;
-
-      document.getElementById('otherDesc').value = item.desc;
-      document.getElementById('otherAmount').value = item.amount;
-
-      document.getElementById('saveOther').dataset.editId = id;
-    });
-  });
-}
-
-document.getElementById('saveOther').addEventListener('click', async () => {
-  const desc = document.getElementById('otherDesc').value.trim();
-  const amount = document.getElementById('otherAmount').value;
-  const date = new Date().toISOString().split('T')[0];
-
-  if (!desc || !amount) return;
-
-  const editId = document.getElementById('saveOther').dataset.editId;
-  const isEdit = !!editId;
-
-  const item = {
-    id: isEdit ? Number(editId) : Date.now(),
-    type: 'otherCost',
-    desc,
-    amount,
-    date,
-    createdAt: Date.now()
-  };
-
-  await addFinanceItem(item);
-
-  document.getElementById('otherDesc').value = '';
-  document.getElementById('otherAmount').value = '';
-  document.getElementById('saveOther').removeAttribute('data-edit-id');
-
-  renderOtherList();
-});
-
-// CALCULATE MONTH BUTTON
-const calcBtn = document.getElementById('calcMonth');
-if (calcBtn) {
-  calcBtn.addEventListener('click', calculateMonth);
-}
-
-  document.getElementById('btnShopping').addEventListener('click', async () => {
-    const lang = getLang();
-
-    showScreen('screen-shopping');
-
-    document.getElementById('shoppingTitle').textContent = I18N[lang].shopping.title;
-    document.getElementById('shoppingInput').placeholder = I18N[lang].shopping.placeholder;
-    document.getElementById('shoppingEmptyTitle').textContent = I18N[lang].shopping.emptyTitle;
-    document.getElementById('shoppingEmptySub').textContent = I18N[lang].shopping.emptySub;
-
-// --- SCAN RECEIPT BUTTON ---
-const scanBtnText = document.getElementById('btnScanReceipt');
-if (scanBtnText && I18N[lang].shopping.scanReceipt) {
-  scanBtnText.textContent = "➕ " + I18N[lang].shopping.scanReceipt;
-}
-
-    const toggleBtn = document.getElementById('toggleArchive');
-    toggleBtn.textContent = showArchivedShopping
-      ? I18N[lang].shopping.hideArchive
-      : I18N[lang].shopping.showArchive;
-
-    shoppingItems = await getShoppingItems();
-
-// ✅ zadrži redoslijed unosa
-shoppingItems.sort((a, b) => a.createdAt - b.createdAt);
-
-renderShoppingList();
-
-    setTimeout(() => document.getElementById('shoppingInput').focus(), 0);
-  });
-
-// ===== ENTER RECEIPT AMOUNT BUTTON =====
-const scanBtn = document.getElementById('btnScanReceipt');
-
-if (scanBtn && !scanBtn.dataset.bound) {
-  scanBtn.dataset.bound = "1";
-
-  scanBtn.addEventListener('click', async () => {
-
-    const userAmount = prompt("Upiši iznos računa (€):");
-    if (userAmount === null) return;
-
-    const amount = Number(userAmount.replace(',', '.'));
-    if (!amount || isNaN(amount)) {
-      alert("Neispravan iznos");
-      return;
-    }
-
-    // ===== SPREMI U OSTALI TROŠKOVI =====
-    const item = {
-      id: Date.now(),
-      type: 'otherCost',
-      desc: "Račun",
-      amount: amount,
-      date: new Date().toISOString().split('T')[0],
-      createdAt: Date.now()
-    };
-
-    await addFinanceItem(item);
-
-    alert("Račun spremljen: " + amount.toFixed(2) + " €");
-  });
-}
-// ===== FINANCES MENU BUTTON LINKS =====
-
-document.getElementById('btnIncomeScreen').addEventListener('click', async () => {
-  showScreen('screen-finance-income');
-  await renderIncomeList();
-});
-
-document.getElementById('btnMonthlyCostsScreen').addEventListener('click', async () => {
-  showScreen('screen-finance-fixed');
-  await renderFixedList();
-});
-
-document.getElementById('btnCreditsScreen').addEventListener('click', async () => {
-  showScreen('screen-finance-credits');
-  await renderCreditList();
-});
-
-document.getElementById('btnOtherCostsScreen').addEventListener('click', async () => {
-  showScreen('screen-finance-other');
-  await renderOtherList();
-});
-document.getElementById('btnCostsOverview').addEventListener('click', () => {
-  const lang = getLang();
-  document.documentElement.setAttribute('lang', lang);
-  showScreen('screen-finance-overview');
-});
-
-  // SHOPPING INPUT - Enter to add item
-  const shoppingInput = document.getElementById('shoppingInput');
-  if (shoppingInput) {
-    shoppingInput.addEventListener('keydown', e => {
-      if (e.key !== 'Enter') return;
-
-      const title = shoppingInput.value.trim();
-      if (!title) return;
-
-      const item = {
-        id: crypto.randomUUID(),
-        title,
-        checked: false,
-        createdAt: Date.now()
-      };
-
-      shoppingItems.push(item);
-      renderShoppingList();
-      addShoppingItem(item);
-
-      shoppingInput.value = '';
-      shoppingInput.focus();
-    });
-  }
-
-  // ARCHIVE TOGGLE
-  const toggleArchiveBtn = document.getElementById('toggleArchive');
-  if (toggleArchiveBtn) {
-    toggleArchiveBtn.addEventListener('click', () => {
-      showArchivedShopping = !showArchivedShopping;
-
-      const lang = getLang();
-      toggleArchiveBtn.textContent = showArchivedShopping
-        ? I18N[lang].shopping.hideArchive
-        : I18N[lang].shopping.showArchive;
-
-      renderShoppingList();
-    });
-  }
-
-  // POPUP OBVEZE (open)
-  document.getElementById('btnObligations').addEventListener('click', () => {
-    const popup = document.getElementById('obligationsPopup');
-    const lang = getLang();
-
-    document.getElementById('btnViewByDays').textContent = I18N[lang].obligationsView.byDay;
-    document.getElementById('btnAddObligation').textContent = I18N[lang].menu.addObligation;
-    document.getElementById('btnViewObligations').textContent = I18N[lang].menu.viewObligations;
-
-    popup.style.display = 'block';
-    setTimeout(() => popup.classList.add('animate'), 10);
-  });
-
-  // ZATVORI POPUP
-  document.addEventListener('click', (e) => {
-    const popup = document.getElementById('obligationsPopup');
-    const btn = document.getElementById('btnObligations');
-    if (popup.style.display === 'block' && !popup.contains(e.target) && e.target !== btn) {
-      popup.classList.remove('animate');
-      setTimeout(() => popup.style.display = 'none', 300);
-    }
-  });
-
-  // FORMA ZA DODAVANJE
-  document.getElementById('btnAddObligation').addEventListener('click', () => {
-    const popup = document.getElementById('obligationsPopup');
-    popup.classList.remove('animate');
-    setTimeout(() => popup.style.display = 'none', 300);
-
-    showScreen('screen-add-obligation');
-
-    const lang = getLang();
-    document.getElementById('obligationTitle').placeholder = I18N[lang].obligation.title;
-    document.getElementById('obligationNote').placeholder = I18N[lang].obligation.note;
-    document.getElementById('obligationDateTimeLabel').textContent = I18N[lang].obligation.dateTime;
-    document.getElementById('reminderLabel').textContent = I18N[lang].obligation.reminder;
-    const reminderSelect = document.getElementById('reminderTime');
-reminderSelect.querySelector('option[value="30"]').textContent = I18N[lang].obligationsList.reminder30;
-reminderSelect.querySelector('option[value="60"]').textContent = I18N[lang].obligationsList.reminder60;
-reminderSelect.querySelector('option[value="120"]').textContent = I18N[lang].obligationsList.reminder120;
-reminderSelect.querySelector('option[value="1440"]').textContent = I18N[lang].obligationsList.reminder1440;
-    document.getElementById('urgentLabel').textContent = I18N[lang].obligation.urgent;
-document.getElementById('quietHoursLabel').textContent = I18N[lang].obligation.quietHours;
-    document.getElementById('saveObligation').textContent = I18N[lang].obligation.save;
-document.getElementById('quietHoursLabel').textContent = I18N[lang].obligation.quietHours;
-document.getElementById('repeatLabel').textContent = I18N[lang].obligation.repeat;
-
-const repeatSelect = document.getElementById('repeatType');
-repeatSelect.querySelector('option[value=""]').textContent = I18N[lang].obligation.repeatNone;
-repeatSelect.querySelector('option[value="daily"]').textContent = I18N[lang].obligation.repeatDaily;
-repeatSelect.querySelector('option[value="weekly"]').textContent = I18N[lang].obligation.repeatWeekly;
-    document.getElementById('cancelObligation').textContent = `✖️ ${I18N[lang].obligation.cancel}`;
-    document.getElementById('saveObligation').removeAttribute('data-edit-id');
-  });
-
-  // BACK IZ FORME
-  document.getElementById('backToAddObligation').addEventListener('click', () => {
-    showScreen('screen-menu');
-  });
-
-  // PODSJETNIK
-  document.getElementById('enableReminder').addEventListener('change', (e) => {
-    document.getElementById('reminderOptions').classList.toggle('hidden', !e.target.checked);
-  });
-
-  // SPREMI ILI AŽURIRAJ
-  document.getElementById('saveObligation').addEventListener('click', async () => {
-  const title = document.getElementById('obligationTitle').value.trim();
-  if (!title) {
-  alert(I18N[getLang()].popup.newObligationTitle);
+const todayItems = obligations.filter(o =>
+  getISODateFromDateTime(o.dateTime) === today
+);
+
+const overdueItems = obligations.filter(o =>
+  getISODateFromDateTime(o.dateTime) < today
+);
+
+if (todayItems.length === 0 && overdueItems.length === 0) {
+  container.innerHTML = `
+    <div class="empty-list">
+      <div style="font-size:26px; margin-bottom:8px;">🌱</div>
+
+      <div style="font-weight:800; font-size:16px;">
+        ${I18N[lang].obligationsList.noObligations}
+      </div>
+
+      <div style="opacity:0.7; font-size:14px; margin-top:6px;">
+        Nema obveza za danas. Sve je mirno i pod kontrolom.
+      </div>
+
+      <div style="margin-top:14px; font-size:14px; opacity:0.85;">
+        ➕ Dodaj novu obvezu kad budeš spreman.
+      </div>
+    </div>
+  `;
   return;
 }
 
-  const editIdStr = document.getElementById('saveObligation').dataset.editId;
-  const isEdit = !!editIdStr;
-  const editId = isEdit ? parseInt(editIdStr, 10) : null;
-  const lang = getLang();
+let html = '';
 
-  let existing = null;
-  if (isEdit) {
-    const all = await obligationDB.getAll();
-    existing = all.find(o => o.id === editId) || null;
-  }
-
-  const obligation = {
-    id: isEdit ? editId : Date.now(),
-    type: 'obligation',
-    title: title,
-    note: document.getElementById('obligationNote').value,
-    dateTime: document.getElementById('obligationDateTime').value,
-    urgent: document.getElementById('urgentObligation')?.checked || false,
-    reminder: document.getElementById('enableReminder').checked
-      ? document.getElementById('reminderTime').value
-      : null,
-    repeat: document.getElementById('repeatType')?.value || null,
-    customRepeat: isEdit ? (existing?.customRepeat || null) : null,
-    repeatPaused: isEdit ? (existing?.repeatPaused || false) : false,
-    skipNextRepeat: isEdit ? (existing?.skipNextRepeat || false) : false,
-    status: isEdit ? (existing?.status || 'active') : 'active',
-    createdAt: isEdit ? (existing?.createdAt || new Date().toISOString()) : new Date().toISOString(),
-    lang: lang
-  };
-
-  // SPREMI U DB
-  await obligationDB.add(obligation);
-
-  // ===== AUTOMATSKA DOZVOLA + ZAKAZIVANJE =====
-  const m = await import('./core/notifications.js');
-
-  if (obligation.reminder) {
-    const granted = await m.requestNotificationPermission();
-    if (!granted) {
-      alert(I18N[getLang()].popup.newObligationSaved);
-      showScreen('screen-menu');
-      return;
-    }
-  }
-
-  if (isEdit) {
-    await m.rescheduleObligationNotification(obligation);
-  } else {
-    await m.scheduleObligationNotification(obligation);
-  }
-
-  alert(
-  isEdit
-    ? I18N[getLang()].popup.newObligationSaved
-    : I18N[getLang()].popup.newObligationSaved
+const todayDate = new Date().toLocaleDateString(
+  (I18N[lang] && I18N[lang].lang) || 'hr-HR',
+  { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' }
 );
 
-  // RESET FORME
-  document.getElementById('obligationTitle').value = '';
-  document.getElementById('obligationNote').value = '';
-  document.getElementById('obligationDateTime').value = '';
-  document.getElementById('enableReminder').checked = false;
-  document.getElementById('reminderOptions').classList.add('hidden');
-  const repeatSelect = document.getElementById('repeatType');
-  if (repeatSelect) repeatSelect.value = '';
-  document.getElementById('saveObligation').removeAttribute('data-edit-id');
+html += `
+  <div class="obligations-date">
+    Danas · ${todayDate}
+  </div>
+`;
 
-  if (isEdit) {
-    showScreen('screen-obligations-list');
-    refreshCurrentObligationsView();
-  } else {
-    showScreen('screen-menu');
-  }
-});
-
-  // ODUSTANI
-  document.getElementById('cancelObligation').addEventListener('click', () => {
-    const isEdit = !!document.getElementById('saveObligation').dataset.editId;
-    document.getElementById('saveObligation').removeAttribute('data-edit-id');
-
-    if (isEdit) {
-      showScreen('screen-obligations-list');
-      refreshCurrentObligationsView();
-    } else {
-      showScreen('screen-menu');
-    }
-  });
-
-  // PREGLED OBVEZA
-  document.getElementById('btnViewObligations').addEventListener('click', () => {
-    const popup = document.getElementById('obligationsPopup');
-    popup.classList.remove('animate');
-    setTimeout(() => popup.style.display = 'none', 300);
-
-    showScreen('screen-obligations-list');
-    showListMode();
-    renderObligationsList();
-  });
-
-  // BACK IZ LISTE
-  document.getElementById('backToObligationsList').addEventListener('click', () => {
-    showScreen('screen-menu');
-  });
-
-  // DATE PICKER
-  const dailyDatePicker = document.getElementById('dailyDatePicker');
-  if (dailyDatePicker) {
-    dailyDatePicker.value = todayISO();
-    currentDailyDate = dailyDatePicker.value;
-
-    dailyDatePicker.addEventListener('change', () => {
-      if (viewMode !== 'days') return;
-      loadDailyForDate(dailyDatePicker.value);
-    });
-  }
-
-  // TOGGLE LIST/DAY VIEW
-  const btnViewByDays = document.getElementById('btnViewByDays');
-  if (btnViewByDays) {
-    btnViewByDays.addEventListener('click', async () => {
-      if (viewMode === 'list') {
-        showDailyMode();
-        await loadDailyForDate(currentDailyDate || todayISO());
-      } else {
-        showListMode();
-        await renderObligationsList();
-      }
-    });
-  }
-
-  // PROVJERA
-obligationDB.getAll().then(async obligations => {
-  console.log('Učitane obveze iz IndexedDB:', obligations);
-
-  // ===== RESCHEDULE ALL FUTURE NOTIFICATIONS =====
-  const m = await import('./core/notifications.js');
-  await m.rescheduleAllObligations(obligations);
-});
-
-// ===== HANDLE NOTIFICATION TAP (deep link) =====
-if (window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.LocalNotifications) {
-  const { LocalNotifications } = Capacitor.Plugins;
-
-  LocalNotifications.addListener('localNotificationActionPerformed', (event) => {
-    const data = event?.notification?.extra || {};
-
-    // ===== OBLIGATION TAP =====
-    if (data.obligationId) {
-      const id = Number(data.obligationId);
-
-      showScreen('screen-obligations-list');
-      showListMode();
-      renderObligationsList();
-
-      obligationDB.getAll().then(items => {
-        const ob = items.find(o => Number(o.id) === id);
-        if (!ob) return;
-
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            const card = document.querySelector(
-              `.obligation-card[data-id="${ob.id}"]`
-            );
-
-            if (card) {
-              card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-              card.classList.add('highlight');
-              setTimeout(() => card.classList.remove('highlight'), 2000);
-            }
-          });
-        });
-      });
-
-      return;
-    }
-
-    // ===== CONTACT BIRTHDAY TAP =====
-    if (data.contactId) {
-      const id = Number(data.contactId);
-
-      // učitaj kontakte i otvori detalje
-      getContacts().then(all => {
-        const c = all.find(x => Number(x.id) === id);
-        if (!c) return;
-
-        // koristi postojeću funkciju iz contacts.js
-        openContactDetails(id);
-      });
-
-      return;
-    }
-  });
+if (todayItems.length > 0) {
+  html += `
+    <div class="obligations-section-title">Danas</div>
+    ${todayItems.map(ob => buildObligationCard(ob, lang)).join('')}
+  `;
 }
 
-  // ===== FINAL FORCE START SCREEN =====
-  setTimeout(() => {
-    showScreen('screen-lang');
-  }, 0);
+if (overdueItems.length > 0) {
+  html += `
+    <div class="obligations-section-title overdue">
+  Zakašnjelo
+</div>
+    ${overdueItems.map(ob => buildObligationCard(ob, lang)).join('')}
+  `;
+}
+
+container.innerHTML = html;
+attachObligationHandlers(container);
+}
+
+/* ===== SHOPPING (IndexedDB + Archive) ===== */
+/* ===== INIT ===== */
+/* ===== LANGUAGE BUTTON ENGINE ===== */
+document.addEventListener('DOMContentLoaded', () => {
+
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const lang = btn.dataset.lang;
+      if (!lang) return;
+
+      setLanguage(lang);
+    });
+  });
 
 });
 </script>

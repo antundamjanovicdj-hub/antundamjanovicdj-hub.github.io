@@ -90,29 +90,29 @@ class ObligationDB {
   }
 }
 
-const obligationDB = new ObligationDB();
+export const obligationDB = new ObligationDB();
 // ===== SHOPPING (IndexedDB) =====
 
-function addShoppingItem(item) {
+export function addShoppingItem(item) {
   item.type = 'shopping';
   return obligationDB.add(item);
 }
 
-function getShoppingItems() {
+export function getShoppingItems() {
   return obligationDB.getAll().then(items =>
     items.filter(item => item.type === 'shopping')
   );
 }
 
-function updateShoppingItem(item) {
+export function updateShoppingItem(item) {
   return obligationDB.put(item);
 }
-function deleteShoppingItem(id) {
+export function deleteShoppingItem(id) {
   return obligationDB.delete(id);
 }
 // ===== FINANCES (IndexedDB) =====
 
-function addFinanceItem(item) {
+export function addFinanceItem(item) {
   return new Promise(async (resolve, reject) => {
     await obligationDB.init();
     const tx = obligationDB.db.transaction(obligationDB.financeStoreName, 'readwrite');
@@ -124,7 +124,7 @@ function addFinanceItem(item) {
   });
 }
 
-function getFinanceItems() {
+export function getFinanceItems() {
   return new Promise(async (resolve, reject) => {
     await obligationDB.init();
     const tx = obligationDB.db.transaction(obligationDB.financeStoreName, 'readonly');
@@ -136,7 +136,7 @@ function getFinanceItems() {
   });
 }
 
-function deleteFinanceItem(id) {
+export function deleteFinanceItem(id) {
   return new Promise(async (resolve, reject) => {
     await obligationDB.init();
     const tx = obligationDB.db.transaction(obligationDB.financeStoreName, 'readwrite');
@@ -150,7 +150,7 @@ function deleteFinanceItem(id) {
 
 // ===== CONTACTS (IndexedDB) =====
 
-function addContact(item) {
+export function addContact(item) {
   return new Promise(async (resolve, reject) => {
     await obligationDB.init();
     const tx = obligationDB.db.transaction(obligationDB.contactsStoreName, 'readwrite');
@@ -162,7 +162,7 @@ function addContact(item) {
   });
 }
 
-function getContacts() {
+export function getContacts() {
   return new Promise(async (resolve, reject) => {
     await obligationDB.init();
     const tx = obligationDB.db.transaction(obligationDB.contactsStoreName, 'readonly');
@@ -174,7 +174,7 @@ function getContacts() {
   });
 }
 
-function deleteContact(id) {
+export function deleteContact(id) {
   return new Promise(async (resolve, reject) => {
     await obligationDB.init();
     const tx = obligationDB.db.transaction(obligationDB.contactsStoreName, 'readwrite');

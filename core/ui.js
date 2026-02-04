@@ -5,19 +5,6 @@ function formatDate(dateString) {
   return new Date(dateString).toLocaleDateString(undefined, options);
 }
 
-function showScreen(screenId) {
-  console.log("🎯 showScreen:", screenId);
-  document.querySelectorAll(".screen").forEach(el => {
-    el.classList.remove("active");
-  });
-  const screen = document.getElementById(screenId);
-  if (screen) {
-    screen.classList.add("active");
-  }
-}
-
-// ✅ IZLOŽI GLOBALNO
-window.showScreen = showScreen;
 window.formatDate = formatDate;
 
 // ✅ DINAMIČKA PROMJENA JEZIKA BEZ RELOADA — KOMPATIBILNO

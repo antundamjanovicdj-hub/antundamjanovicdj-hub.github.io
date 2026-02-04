@@ -14,18 +14,6 @@ window.AppState = AppState;
 
 let tasksCtrl = null;
 
-// ✅ SIGURNA showScreen FUNKCIJA — BEZ OVISNOSTI O UI.JS
-function showScreen(screenId) {
-  // Ukloni .active sa SVIH ekrana
-  document.querySelectorAll('.screen').forEach(el => {
-    el.classList.remove('active');
-  });
-  // Dodaj .active SAMO ciljanom
-  const target = document.getElementById(screenId);
-  if (target) {
-    target.classList.add('active');
-  }
-}
 
 document.addEventListener("DOMContentLoaded", () => {
   const T = window.I18N;

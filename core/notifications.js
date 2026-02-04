@@ -1,10 +1,10 @@
 // ===== CAPACITOR GUARD =====
 let LocalNotifications = null;
+const IS_CAPACITOR =
+  !!(window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.LocalNotifications);
 
-if (window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.LocalNotifications) {
+if (IS_CAPACITOR) {
   LocalNotifications = Capacitor.Plugins.LocalNotifications;
-} else {
-  console.log("Capacitor not available - notifications disabled in browser");
 }
 
 // ===== PERMISSION =====

@@ -2,6 +2,12 @@
 
 // ===== CONTACTS MODULE =====
 
+import {
+  getContacts,
+  addContact,
+  deleteContact
+} from './db.js';
+
 let contacts = [];
 let filteredContacts = [];
 function getContactMessages() {
@@ -156,10 +162,35 @@ function renderContactsList() {
 
   list.innerHTML = '';
 
+  // ===== PRAZNO STANJE =====
+  if (!filteredContacts || filteredContacts.length === 0) {
+    const lang = localStorage.getItem('userLang') || 'hr';
+
+    list.innerHTML = `
+      <div class="empty-list">
+        <div style="font-size:26px; margin-bottom:8px;">👥</div>
+
+        <div style="font-weight:800; font-size:16px;">
+          ${I18N[lang]?.contacts?.emptyTitle || 'Nema kontakata'}
+        </div>
+
+        <div style="opacity:0.7; font-size:14px; margin-top:6px;">
+          ${I18N[lang]?.contacts?.emptySub || 'Dodaj prvi kontakt kako bi započeo.'}
+        </div>
+
+        <div style="margin-top:14px; font-size:14px; opacity:0.85;">
+          ➕ Dodaj kontakt pomoću gumba gore.
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  // ===== LISTA KONTAKATA =====
   filteredContacts.forEach(c => {
     const card = document.createElement('div');
     card.className = 'contact-card';
-    card.dataset.id = c.id;
+    card.dataset.id = String(c.id);
 
     card.innerHTML = `
       <div class="contact-card-inner">
@@ -271,11 +302,14 @@ if (cdTextEl) cdTextEl.textContent = cd.birthdayNotify;
 });
 
   showScreen('screen-contact-details');
-}
+} // <-- KRAJ openContactDetails()
+
 // ===== DELETE CONTACT =====
-document.getElementById('btnDeleteContact').addEventListener('click', async () => {
-  const wrap = document.getElementById('contactDetailsContent');
-  if (!wrap) return;
+const btnDeleteContact = document.getElementById('btnDeleteContact');
+if (btnDeleteContact) {
+  btnDeleteContact.addEventListener('click', async () => {
+    const wrap = document.getElementById('contactDetailsContent');
+    if (!wrap) return;
 
   // uzmi ID trenutno otvorenog kontakta
   const currentId = wrap.querySelector('[data-current-contact-id]')?.dataset.currentContactId;
@@ -286,10 +320,13 @@ document.getElementById('btnDeleteContact').addEventListener('click', async () =
   await deleteContact(Number(currentId));
   await loadContacts();
   showScreen('screen-contacts');
-});
+  });
+}
 // ===== EDIT CONTACT =====
-document.getElementById('btnEditContact').addEventListener('click', async () => {
-  const wrap = document.getElementById('contactDetailsContent');
+const btnEditContact = document.getElementById('btnEditContact');
+if (btnEditContact) {
+  btnEditContact.addEventListener('click', async () => {
+    const wrap = document.getElementById('contactDetailsContent');
   const currentId = wrap.querySelector('[data-current-contact-id]')?.dataset.currentContactId;
   if (!currentId) return;
 
@@ -310,110 +347,120 @@ document.getElementById('btnEditContact').addEventListener('click', async () => 
   document.getElementById('saveContact').dataset.editId = c.id;
 
   showScreen('screen-contact-form');
-});
-
-// ===== OPEN FORM =====
-document.getElementById('btnAddContact').addEventListener('click', () => {
-  showScreen('screen-contact-form');
-});
-
-/// ===== PICK PHOTO =====
-document.getElementById('btnPickContactPhoto').addEventListener('click', async () => {
-
-  // Android / Capacitor
-  if (window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.Camera) {
-
-    const image = await Capacitor.Plugins.Camera.getPhoto({
-      quality: 80,
-      allowEditing: false,
-      resultType: "dataUrl",
-      source: "photos"
-    });
-
-    document.getElementById('contactPhotoData').value = image.dataUrl;
-    return;
-  }
-
-  // Web fallback
-  const fileInput = document.createElement('input');
-  fileInput.type = 'file';
-  fileInput.accept = 'image/*';
-  fileInput.onchange = () => {
-    const file = fileInput.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = e => {
-      document.getElementById('contactPhotoData').value = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  };
-  fileInput.click();
-});
-
-// ===== BACK FROM FORM =====
-document.getElementById('backContactForm').addEventListener('click', () => {
-  showScreen('screen-contacts');
-});
-
-// ===== SAVE CONTACT =====
-document.getElementById('saveContact').addEventListener('click', async () => {
-
-  const firstName = document.getElementById('contactFirstName').value.trim();
-  const lastName = document.getElementById('contactLastName').value.trim();
-
-  if (!firstName || !lastName) {
-    alert(getContactMessages().enterName);
-    return;
-  }
-
-  // ===== PHOTO DATA (from gallery or web) =====
-const photoBase64 = document.getElementById('contactPhotoData').value || '';
-
-const editId = document.getElementById('saveContact').dataset.editId;
-
-const birthDateValue = formatBirthDateByLang(
-  document.getElementById('contactBirthDate').value.trim()
-);
-
-const contact = {
-  id: editId ? Number(editId) : Date.now(),
-  firstName,
-  lastName,
-  birthDate: birthDateValue,
-  birthdayTime: document.getElementById('contactBirthdayTime').value || "09:00",
-  birthdayNotify: birthDateValue ? true : false,
-  address: document.getElementById('contactAddress').value.trim(),
-  email: document.getElementById('contactEmail').value.trim(),
-  phone: document.getElementById('contactPhone').value.trim(),
-  photo: photoBase64
-};
-
-  await addContact(contact);
-
-// ===== AUTO SCHEDULE BIRTHDAY NOTIFICATION ON SAVE =====
-const m = await import('./notifications.js');
-
-if (contact.birthdayNotify) {
-  const granted = await m.requestNotificationPermission();
-  if (granted) {
-    await m.cancelBirthdayNotification(contact.id);
-    await m.scheduleBirthdayNotification(contact);
-  }
-} else {
-  await m.cancelBirthdayNotification(contact.id);
+ });
 }
 
-  // reset forme
-  document.getElementById('contactFirstName').value = '';
-  document.getElementById('contactLastName').value = '';
-  document.getElementById('contactBirthDate').value = '';
-  document.getElementById('contactBirthdayTime').value = '';
-  document.getElementById('contactAddress').value = '';
-  document.getElementById('contactEmail').value = '';
-  document.getElementById('contactPhone').value = '';
-  document.getElementById('contactPhotoData').value = '';
-  document.getElementById('saveContact').removeAttribute('data-edit-id');
+// ===== OPEN FORM =====
+const btnAddContact = document.getElementById('btnAddContact');
+if (btnAddContact) {
+  btnAddContact.addEventListener('click', () => {
+    showScreen('screen-contact-form');
+  });
+}
 
-  await loadContacts();
-  showScreen('screen-contacts');
-});
+// ===== PICK PHOTO =====
+const btnPickContactPhoto = document.getElementById('btnPickContactPhoto');
+if (btnPickContactPhoto) {
+  btnPickContactPhoto.addEventListener('click', async () => {
+
+    // Android / Capacitor
+    if (window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.Camera) {
+      const image = await Capacitor.Plugins.Camera.getPhoto({
+        quality: 80,
+        allowEditing: false,
+        resultType: "dataUrl",
+        source: "photos"
+      });
+
+      document.getElementById('contactPhotoData').value = image.dataUrl;
+      return;
+    }
+
+    // Web fallback
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    fileInput.onchange = () => {
+      const file = fileInput.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        document.getElementById('contactPhotoData').value = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    };
+    fileInput.click();
+  });
+}
+
+// ===== BACK FROM FORM =====
+const backContactForm = document.getElementById('backContactForm');
+if (backContactForm) {
+  backContactForm.addEventListener('click', () => {
+    showScreen('screen-contacts');
+  });
+}
+
+// ===== SAVE CONTACT =====
+const saveContactBtn = document.getElementById('saveContact');
+if (saveContactBtn) {
+  saveContactBtn.addEventListener('click', async () => {
+
+    const firstName = document.getElementById('contactFirstName').value.trim();
+    const lastName = document.getElementById('contactLastName').value.trim();
+
+    if (!firstName || !lastName) {
+      alert(getContactMessages().enterName);
+      return;
+    }
+
+    const photoBase64 = document.getElementById('contactPhotoData').value || '';
+
+    const editId = document.getElementById('saveContact').dataset.editId;
+
+    const birthDateValue = formatBirthDateByLang(
+      document.getElementById('contactBirthDate').value.trim()
+    );
+
+    const contact = {
+      id: editId ? Number(editId) : Date.now(),
+      firstName,
+      lastName,
+      birthDate: birthDateValue,
+      birthdayTime: document.getElementById('contactBirthdayTime').value || "09:00",
+      birthdayNotify: birthDateValue ? true : false,
+      address: document.getElementById('contactAddress').value.trim(),
+      email: document.getElementById('contactEmail').value.trim(),
+      phone: document.getElementById('contactPhone').value.trim(),
+      photo: photoBase64
+    };
+
+    await addContact(contact);
+
+    const m = await import('./notifications.js');
+
+    if (contact.birthdayNotify) {
+      const granted = await m.requestNotificationPermission();
+      if (granted) {
+        await m.cancelBirthdayNotification(contact.id);
+        await m.scheduleBirthdayNotification(contact);
+      }
+    } else {
+      await m.cancelBirthdayNotification(contact.id);
+    }
+
+    document.getElementById('contactFirstName').value = '';
+    document.getElementById('contactLastName').value = '';
+    document.getElementById('contactBirthDate').value = '';
+    document.getElementById('contactBirthdayTime').value = '';
+    document.getElementById('contactAddress').value = '';
+    document.getElementById('contactEmail').value = '';
+    document.getElementById('contactPhone').value = '';
+    document.getElementById('contactPhotoData').value = '';
+    document.getElementById('saveContact').removeAttribute('data-edit-id');
+
+    await loadContacts();
+    showScreen('screen-contacts');
+
+  });
+}

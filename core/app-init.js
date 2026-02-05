@@ -59,7 +59,7 @@ export function todayISO() {
   return new Date().toISOString().split('T')[0];
 }
 let navigationLock = false;
-function showScreen(screenId) {
+function legacy_showScreen(screenId) {
 
   if (navigationLock) return;
   navigationLock = true;
@@ -774,7 +774,7 @@ const SCREEN_TITLES = {
 
 // ✅ expose for non-module scripts (contacts.js etc.)
 // ===== GLOBAL ENGINE EXPORT =====
-window.showScreen = showScreen;
+window.legacy_showScreen = legacy_showScreen;
 window.renderObligationsList = renderObligationsList;
 window.refreshCurrentObligationsView = refreshCurrentObligationsView;
 window.showListMode = showListMode;

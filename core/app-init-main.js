@@ -9,9 +9,22 @@ import {
 
 import { getContacts } from './db.js';
 
-document.addEventListener('DOMContentLoaded', () => {
+export function initApp() {
+
+// ===== INIT GUARD =====
+if (window.__LIFEKOMPAS_INIT__) {
+  console.warn('[LifeKompas] initApp already executed');
+  return;
+}
+window.__LIFEKOMPAS_INIT__ = true;
 
 try {
+
+  // ===== EVENT BIND GUARD =====
+if (window.__LIFEKOMPAS_EVENTS_BOUND__) {
+  console.warn('[LifeKompas] Events already bound');
+} else {
+  window.__LIFEKOMPAS_EVENTS_BOUND__ = true;
 
 // ===== CRITICAL GLOBAL STATE =====
 window.screenHistory = [];
@@ -20,17 +33,31 @@ window.showArchivedShopping = false;
 window.viewMode = 'list';
 window.currentDailyDate = null;
 
-// ===== GLOBAL APP STATE (CRITICAL) =====
+// ===== GLOBAL APP STATE (SINGLE SOURCE OF TRUTH) =====
 window.AppState = {
 
-  screenHistory: [],
-  shoppingItems: [],
-  showArchivedShopping: false,
+  navigation: {
+    history: []
+  },
 
-  viewMode: 'list',
-  currentDailyDate: null
+  shopping: {
+    items: [],
+    showArchived: false
+  },
+
+  obligations: {
+    viewMode: 'list',
+    currentDailyDate: null
+  }
 
 };
+
+// ===== LEGACY SAFE ALIASES (do not remove yet) =====
+window.screenHistory = window.AppState.navigation.history;
+window.shoppingItems = window.AppState.shopping.items;
+window.showArchivedShopping = window.AppState.shopping.showArchived;
+window.viewMode = window.AppState.obligations.viewMode;
+window.currentDailyDate = window.AppState.obligations.currentDailyDate;
 
 // ===== NAVIGATION STATE =====
 window.screenHistory = [];
@@ -1312,6 +1339,7 @@ if (DEV_FORCE_SCREEN) {
     renderObligationsList();
   }, 0);
 }
+} // ← EVENT GUARD END
 
 } catch (err) {
 
@@ -1344,4 +1372,4 @@ if (DEV_FORCE_SCREEN) {
   `;
 }
 
-});
+}

@@ -2,3 +2,13 @@ node_modules/
 android/
 capacitor.config.ts
 gradle.proporties
+# Android signing
+*.jks
+*.keystore
+*.pem
+*.p12
+key.properties
+# 🔐 Signing keys
+*.jks
+*.keystore
+key.properties

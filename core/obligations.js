@@ -6,7 +6,7 @@
 // ---- TEMP SAFE WRAPPERS ----
 // These wrappers allow us to import this module later without breaking existing behavior.
 
-import { getISODateFromDateTime, todayISO, getLang } from './app-init.js';
+import { getISODateFromDateTime, todayISO } from './app-init.js';
 
 export function attachObligationHandlers(container) {
   if (typeof window.attachObligationHandlers === 'function') {

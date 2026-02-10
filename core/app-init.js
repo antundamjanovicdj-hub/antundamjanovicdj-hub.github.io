@@ -18,6 +18,9 @@ import {
   updateShoppingItem,
   deleteShoppingItem
 } from './db.js';
+
+// ZERO-RISK SHADOW IMPORT (obligations module)
+import './obligations.js';
 window.checkBatteryOptimization = checkBatteryOptimization;
 document.getElementById("appVersion").textContent = "v" + APP_VERSION;
 // ===== GLOBAL CONFIG =====

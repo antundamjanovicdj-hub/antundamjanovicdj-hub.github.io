@@ -56,22 +56,46 @@ window.addEventListener('unhandledrejection', (event) => {
 
 // ===== ENGINE LIFECYCLE =====
 
+const waitForDomReady = () =>
+  new Promise((resolve) => {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', resolve, { once: true });
+    } else {
+      resolve();
+    }
+  });
+
+// double-rAF = "next paint" (fixes blank-until-click)
+const waitForNextPaint = () =>
+  new Promise((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(resolve));
+  });
+
 async function boot() {
 
   console.log('[LifeKompas] Boot pipeline start');
+
+  // ✅ ensure DOM exists before init touches screens
+  await waitForDomReady();
 
   // CORE
   await import('./app-init.js');
 
   // FEATURE MODULES
-await import('./contacts.js');
+  await import('./contacts.js');
 
-// INLINE MIGRATION (mora prije init)
-await import('./boot-inline.js');
+  // INLINE MIGRATION (mora prije init)
+  await import('./boot-inline.js');
 
-// APP INIT (controlled start)
-const { initApp } = await import('./app-init-main.js');
-initApp();
+  // APP INIT (controlled start)
+  const { initApp } = await import('./app-init-main.js');
+
+setTimeout(() => {
+  initApp();
+}, 0);
+
+  // ✅ force first real paint (prevents "blank until tap")
+  await waitForNextPaint();
 
   // DEVICE LAYER
   const { checkBatteryOptimization } = await import('./battery.js');
@@ -84,4 +108,4 @@ initApp();
   console.log('[LifeKompas] Boot pipeline complete');
 }
 
-boot();
+window.addEventListener('DOMContentLoaded', boot);

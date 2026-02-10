@@ -30,8 +30,6 @@ if (window.__LIFEKOMPAS_EVENTS_BOUND__) {
 window.screenHistory = [];
 window.shoppingItems = [];
 window.showArchivedShopping = false;
-window.viewMode = 'list';
-window.currentDailyDate = null;
 
 // ===== GLOBAL APP STATE (SINGLE SOURCE OF TRUTH) =====
 window.AppState = {
@@ -48,7 +46,7 @@ window.AppState = {
   obligations: {
     viewMode: 'list',
     currentDailyDate: null
-  }
+}
 
 };
 
@@ -56,8 +54,6 @@ window.AppState = {
 window.screenHistory = window.AppState.navigation.history;
 window.shoppingItems = window.AppState.shopping.items;
 window.showArchivedShopping = window.AppState.shopping.showArchived;
-window.viewMode = window.AppState.obligations.viewMode;
-window.currentDailyDate = window.AppState.obligations.currentDailyDate;
 
 // ===== NAVIGATION STATE =====
 window.screenHistory = [];
@@ -74,10 +70,39 @@ window.showScreen = function (screenId) {
 
   // TRUE screen engine
   document.querySelectorAll('.screen')
-    .forEach(s => s.classList.remove('active'));
+    .forEach(s => {
+      s.classList.remove('active');
+      s.style.display = 'none'; // 🔥 KRITIČNO
+    });
 
   const target = document.getElementById(screenId);
-  if (target) target.classList.add('active');
+if (target) {
+  target.classList.add('active');
+  target.style.display = 'block'; // 🔥 KRITIČNO
+}
+
+// ===== MENU ANIMATION FIX =====
+if (screenId === 'screen-menu') {
+
+  const items = document.querySelectorAll('.menu-item');
+
+  requestAnimationFrame(() => {
+    items.forEach((el) => {
+  el.classList.remove('animate'); // reset
+});
+
+requestAnimationFrame(() => {
+
+  items.forEach((el, i) => {
+    setTimeout(() => {
+      el.classList.add('animate');
+    }, i * 60);
+  });
+
+});
+  });
+
+}
 
   const isRoot =
     screenId === 'screen-lang' ||
@@ -146,10 +171,6 @@ case 'screen-finances-menu':
     screenHistory.push('screen-obligations-list');
     showScreen('screen-add-obligation');
 
-    requestAnimationFrame(() => {
-      applyAddObligationI18N();
-    });
-
     document
       .getElementById('saveObligation')
       .removeAttribute('data-edit-id');
@@ -157,13 +178,15 @@ case 'screen-finances-menu':
   break;
 
     case 'screen-add-obligation':
-  // i18n se primjenjuje centralno
+
+  // i18n safe call (engine guard)
   applyAddObligationI18N();
 
   // sigurnost: novi unos
   document
     .getElementById('saveObligation')
     .removeAttribute('data-edit-id');
+
   break;
 
     case 'screen-shopping':
@@ -212,6 +235,35 @@ if (headerBack) {
     }
   });
 }
+
+// ===== ENGINE GLOBAL CLICK DELEGATION =====
+document.addEventListener('click', async (e) => {
+
+  const toggleBtn = e.target.closest('#btnViewByDays');
+  if (!toggleBtn) return;
+
+  const mode = window.AppState.obligations.viewMode;
+
+  if (mode === 'list') {
+
+    window.AppState.obligations.viewMode = 'days';
+
+    showDailyMode();
+
+    await loadDailyForDate(
+      window.AppState.obligations.currentDailyDate || todayISO()
+    );
+
+  } else {
+
+    window.AppState.obligations.viewMode = 'list';
+
+    showListMode();
+
+    await renderObligationsList();
+  }
+
+});
 
  // ===== CONTACTS INIT =====
   if (typeof loadContacts === 'function') {
@@ -930,8 +982,8 @@ if (calcBtn) {
 
     document.getElementById('shoppingTitle').textContent = I18N[lang].shopping.title;
     document.getElementById('shoppingInput').placeholder = I18N[lang].shopping.placeholder;
-    document.getElementById('shoppingEmptyTitle').textContent = I18N[lang].shopping.emptyTitle;
-    document.getElementById('shoppingEmptySub').textContent = I18N[lang].shopping.emptySub;
+    safeText('shoppingEmptyTitle', I18N[lang].shopping.emptyTitle);
+safeText('shoppingEmptySub', I18N[lang].shopping.emptySub);
 
 // --- SCAN RECEIPT BUTTON ---
 const scanBtnText = document.getElementById('btnScanReceipt');
@@ -1031,29 +1083,36 @@ document.getElementById('btnCostsOverview').addEventListener('click', () => {
 });
 
   // SHOPPING INPUT - Enter to add item
-  const shoppingInput = document.getElementById('shoppingInput');
-  if (shoppingInput) {
-    shoppingInput.addEventListener('keydown', e => {
-      if (e.key !== 'Enter') return;
+    const shoppingInput = document.getElementById('shoppingInput');
+    if (shoppingInput) {
+      shoppingInput.addEventListener('keydown', async e => {
+  if (e.key !== 'Enter') return;
 
-      const title = shoppingInput.value.trim();
-      if (!title) return;
+  const title = shoppingInput.value.trim();
+  if (!title) return;
 
-      const item = {
-        id: crypto.randomUUID(),
-        title,
-        checked: false,
-        createdAt: Date.now()
-      };
+  const item = {
+    id: crypto.randomUUID(),
+    title,
+    checked: false,
+    createdAt: Date.now()
+  };
 
-      shoppingItems.push(item);
-      renderShoppingList();
-      addShoppingItem(item);
+  // ✅ prvo DB
+  await addShoppingItem(item);
 
-      shoppingInput.value = '';
-      shoppingInput.focus();
-    });
-  }
+  // ✅ zatim reload state iz DB (source of truth)
+  shoppingItems = await getShoppingItems();
+
+  // zadrži redoslijed
+  shoppingItems.sort((a, b) => a.createdAt - b.createdAt);
+
+  renderShoppingList();
+
+  shoppingInput.value = '';
+  shoppingInput.focus();
+});
+    }
 
   // ARCHIVE TOGGLE
   const toggleArchiveBtn = document.getElementById('toggleArchive');
@@ -1072,19 +1131,108 @@ document.getElementById('btnCostsOverview').addEventListener('click', () => {
 
   // OBVEZE → DIREKTNO PREGLED (bez popupa)
 document.getElementById('btnObligations').addEventListener('click', () => {
-  // UX 1.7 – Obveze su glavni ekran
+
   screenHistory.push('screen-menu');
 
   showScreen('screen-obligations-list');
-
-  // ⚠️ FORCE HEADER REFRESH (➕ handler)
-  window.showScreen('screen-obligations-list');
 
   showListMode();
   renderObligationsList();
 });
 
   // ZATVORI POPUP – NOP (popup više nije u upotrebi)
+
+  // ===== SAFE TEXT HELPER =====
+function safeText(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
+
+  // ===== APPLY ADD OBLIGATION I18N =====
+function applyAddObligationI18N() {
+
+  const lang = getLang();
+  const t = I18N[lang]?.obligation || I18N.en.obligation;
+
+  // labels
+  const reminderLabel = document.getElementById('reminderLabel');
+  if (reminderLabel) reminderLabel.textContent = t.reminder;
+
+  const urgentLabel = document.getElementById('urgentLabel');
+  if (urgentLabel) urgentLabel.textContent = t.urgent;
+
+  const repeatLabel = document.getElementById('repeatLabel');
+  if (repeatLabel) repeatLabel.textContent = t.repeat;
+
+  const quietHoursLabel = document.getElementById('quietHoursLabel');
+  if (quietHoursLabel) quietHoursLabel.textContent = t.quietHours;
+
+
+  // reminder options
+  const reminderSelect = document.getElementById('reminderTime');
+  if (reminderSelect) {
+
+    const options = reminderSelect.querySelectorAll('option');
+
+    if (options[0]) options[0].textContent = "30 min";
+    if (options[1]) options[1].textContent = "1 h";
+    if (options[2]) options[2].textContent = "2 h";
+    if (options[3]) options[3].textContent = "1 dan";
+  }
+
+
+  // repeat options
+  const repeatType = document.getElementById('repeatType');
+  if (repeatType) {
+
+    const options = repeatType.querySelectorAll('option');
+
+    if (options[0]) options[0].textContent = t.repeatNone;
+    if (options[1]) options[1].textContent = t.repeatDaily;
+    if (options[2]) options[2].textContent = t.repeatWeekly;
+  }
+}
+
+  // ===== OPEN EDIT FORM (ENGINE SAFE) =====
+window.openEditForm = function(ob) {
+
+  screenHistory.push('screen-obligations-list');
+
+  showScreen('screen-add-obligation');
+
+  document.getElementById('obligationTitle').value = ob.title || '';
+  document.getElementById('obligationNote').value = ob.note || '';
+  document.getElementById('obligationDateTime').value = ob.dateTime || '';
+
+  const urgent = document.getElementById('urgentObligation');
+  if (urgent) urgent.checked = !!ob.urgent;
+
+  const enableReminder = document.getElementById('enableReminder');
+  const reminderOptions = document.getElementById('reminderOptions');
+
+  if (enableReminder) {
+    enableReminder.checked = !!ob.reminder;
+  }
+
+  if (reminderOptions) {
+    reminderOptions.classList.toggle('hidden', !ob.reminder);
+  }
+
+  const reminderTime = document.getElementById('reminderTime');
+  if (reminderTime && ob.reminder) {
+    reminderTime.value = ob.reminder;
+  }
+
+  const repeatType = document.getElementById('repeatType');
+  if (repeatType && ob.repeat) {
+    repeatType.value = ob.repeat;
+  }
+
+  document
+    .getElementById('saveObligation')
+    .dataset.editId = ob.id;
+}
+
 
   // FORMA ZA DODAVANJE
   document.getElementById('btnAddObligation').addEventListener('click', () => {
@@ -1243,26 +1391,20 @@ if (backToObligationsList) {
   const dailyDatePicker = document.getElementById('dailyDatePicker');
   if (dailyDatePicker) {
     dailyDatePicker.value = todayISO();
-    currentDailyDate = dailyDatePicker.value;
 
-    dailyDatePicker.addEventListener('change', () => {
-      if (viewMode !== 'days') return;
-      loadDailyForDate(dailyDatePicker.value);
-    });
-  }
+window.AppState.obligations.currentDailyDate =
+  dailyDatePicker.value;
 
-  // TOGGLE LIST/DAY VIEW
-  const btnViewByDays = document.getElementById('btnViewByDays');
-  if (btnViewByDays) {
-    btnViewByDays.addEventListener('click', async () => {
-      if (viewMode === 'list') {
-        showDailyMode();
-        await loadDailyForDate(currentDailyDate || todayISO());
-      } else {
-        showListMode();
-        await renderObligationsList();
-      }
-    });
+dailyDatePicker.addEventListener('change', () => {
+
+  window.AppState.obligations.currentDailyDate =
+    dailyDatePicker.value;
+
+  loadDailyForDate(
+    window.AppState.obligations.currentDailyDate
+  );
+
+});
   }
 
   // PROVJERA

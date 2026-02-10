@@ -105,7 +105,7 @@ export function getShoppingItems() {
 }
 
 export function updateShoppingItem(item) {
-  return obligationDB.put(item);
+  return obligationDB.add(item);
 }
 export function deleteShoppingItem(id) {
   return obligationDB.delete(id);

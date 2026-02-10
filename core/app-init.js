@@ -36,7 +36,6 @@ if (CONFIG.serviceWorkerEnabled) {
 }
 /* ===== HELPERS ===== */
 export function getLang() {
-window.getLang = getLang;
   let lang = localStorage.getItem('userLang') || 'hr';
   if (!I18N[lang]) {
     lang = lang.split('-')[0];
@@ -50,7 +49,6 @@ const IS_TOUCH_DEVICE =
   navigator.maxTouchPoints > 0;
 
 export function getISODateFromDateTime(dateTimeStr) {
-window.getISODateFromDateTime = getISODateFromDateTime;
   if (!dateTimeStr) return null;
   return String(dateTimeStr).split('T')[0] || null;
 }
@@ -78,6 +76,21 @@ function legacy_showScreen(screenId) {
     navigationLock = false;
   });
   }
+
+  // ===== FORCE MENU ITEMS VISIBLE (fix blank menu) =====
+if (screenId === 'screen-menu') {
+  const items = document.querySelectorAll('#screen-menu .menu-item');
+  items.forEach(el => {
+    el.classList.remove('animate');
+    // force reflow
+    void el.offsetWidth;
+    el.classList.add('animate');
+    // safety: if CSS hides them
+    el.style.opacity = '';
+    el.style.transform = '';
+  });
+}
+
 
   // ===== HEADER TITLE =====
   const headerTitle = document.getElementById('headerTitle');
@@ -174,67 +187,100 @@ if (screenId === 'screen-contact-form') {
    /* =====================================================
    SHOPPING ENGINE
    ===================================================== */
-
-   /* ===== SHOPPING (IndexedDB + Archive) ===== */
-let shoppingItems = [];
+   let shoppingItems = [];
 let showArchivedShopping = false;
 
-function renderShoppingList() {
-  getShoppingItems().then(items => {
-  shoppingItems = items;
-});
+function ensureShoppingArchiveButton() {
+
+  const btn = document.getElementById('toggleArchive');
+
+  // ako gumb ne postoji — ne radimo ništa
+  if (!btn) return;
+
+  // sprječava dupli listener
+  if (btn.dataset.bound === '1') {
+    btn.textContent = showArchivedShopping
+      ? 'Sakrij arhivu'
+      : 'Prikaži arhivu';
+    return;
+  }
+
+  btn.dataset.bound = '1';
+
+  btn.textContent = showArchivedShopping
+    ? 'Sakrij arhivu'
+    : 'Prikaži arhivu';
+
+  btn.addEventListener('click', () => {
+
+    showArchivedShopping = !showArchivedShopping;
+
+    btn.textContent = showArchivedShopping
+      ? 'Sakrij arhivu'
+      : 'Prikaži arhivu';
+
+    renderShoppingList();
+  });
+}
+
+   /* ===== SHOPPING (IndexedDB + Archive) ===== */
+async function renderShoppingList() {
+
+  shoppingItems = await getShoppingItems();
+
   const list = document.getElementById('shoppingList');
   const empty = document.getElementById('shoppingEmpty');
 
   if (!list || !empty) return;
 
+  ensureShoppingArchiveButton();
+
   list.innerHTML = '';
 
   const visibleItems = showArchivedShopping
-    ? shoppingItems
+    ? shoppingItems.filter(item => item.checked)
     : shoppingItems.filter(item => !item.checked);
 
   if (visibleItems.length === 0) {
-  empty.innerHTML = `
-    <div style="font-size:26px; margin-bottom:8px;">🛒</div>
+    empty.innerHTML = `
+      <div style="font-size:26px; margin-bottom:8px;">🛒</div>
 
-    <div style="font-weight:800; font-size:16px;">
-      Nema stavki
-    </div>
+      <div style="font-weight:800; font-size:16px;">
+        Nema stavki
+      </div>
 
-    <div style="opacity:0.7; font-size:14px; margin-top:6px;">
-      Popis je trenutačno prazan.
-    </div>
+      <div style="opacity:0.7; font-size:14px; margin-top:6px;">
+        Popis je trenutačno prazan.
+      </div>
 
-    <div style="margin-top:14px; font-size:14px; opacity:0.85;">
-      • Enter – brzo dodavanje stavke
-    </div>
-  `;
+      <div style="margin-top:14px; font-size:14px; opacity:0.85;">
+        • Enter – brzo dodavanje stavke
+      </div>
+    `;
 
-  empty.style.display = 'block';
-  return;
-}
+    empty.style.display = 'block';
+    return;
+  }
 
-empty.style.display = 'none';
+  empty.style.display = 'none';
 
   visibleItems.forEach(item => {
     const li = document.createElement('li');
-li.className = 'shopping-item';
+    li.className = 'shopping-item';
 
-li.innerHTML = `
-  <div class="shopping-item-delete">🗑️</div>
-  <div class="shopping-item-content">${item.title}</div>
-`;
-const swipeContent = li.querySelector('.shopping-item-content');
+    li.innerHTML = `
+      <div class="shopping-item-delete">🗑️</div>
+      <div class="shopping-item-content">${item.title}</div>
+    `;
+    const swipeContent = li.querySelector('.shopping-item-content');
 
-if (item.checked) li.classList.add('checked');
+    if (item.checked) li.classList.add('checked');
 
-// tap / click = check
-li.addEventListener('click', () => {
-  item.checked = !item.checked;
-  renderShoppingList();
-  addShoppingItem(item); // ✅ koristi db.js add/put
-});
+    li.addEventListener('click', async () => {
+      item.checked = !item.checked;
+      await updateShoppingItem(item); // 🔥 važnije od add
+      renderShoppingList();
+    });
 
 // ===== MOBILE ONLY: swipe to delete (FINAL) =====
 if (IS_TOUCH_DEVICE) {
@@ -310,18 +356,15 @@ if (diff < -DELETE_THRESHOLD || velocity > 0.6) {
       deleteShoppingItem(item.id);
     } else {
       // ⬅️ SNAP BACK
-      content.style.transition = 'transform 0.15s ease-out';
-      content.style.transform = 'translateX(0)';
+      swipeContent.style.transition = 'transform 0.15s ease-out';
+      swipeContent.style.transform = 'translateX(0)';
 
       setTimeout(() => {
-        swipeContent.style.transition
-      }, 150);
+  swipeContent.style.transition = '';
+    }, 150);
     }
   });
 }
-
-// ===== MOBILE: swipe left delete (content only) =====
-const content = li.querySelector('.shopping-item-content');
 
 // swipe disabled for stability
 
@@ -334,7 +377,7 @@ const content = li.querySelector('.shopping-item-content');
     });
 
     list.appendChild(li);
-  });
+});
 }
 
 /* ===== RENDER CARD (reused) ===== */
@@ -457,7 +500,7 @@ function attachObligationHandlers(container) {
 await obligationDB.add(obligation);
 
 if (newStatus === 'done') {
-  import('./core/notifications.js').then(async ({
+  import('./notifications.js').then(async ({
     cancelObligationNotification,
     scheduleObligationNotification
   }) => {
@@ -560,7 +603,7 @@ refreshCurrentObligationsView();
 
       await obligationDB.delete(id);
 
-      import('./core/notifications.js').then(({ cancelObligationNotification }) => {
+      import('./notifications.js').then(({ cancelObligationNotification }) => {
         cancelObligationNotification(id);
       });
 
@@ -771,6 +814,22 @@ const SCREEN_TITLES = {
   'screen-menu':             () => 'LifeKompas',
   'screen-lang':             () => 'LifeKompas'
 };
+
+const btnShoppingArchive = document.getElementById('btnShoppingArchive');
+
+if (btnShoppingArchive) {
+  btnShoppingArchive.addEventListener('click', () => {
+
+    showArchivedShopping = !showArchivedShopping;
+
+    btnShoppingArchive.textContent =
+      showArchivedShopping
+        ? 'Sakrij arhivu'
+        : 'Prikaži arhivu';
+
+    renderShoppingList();
+  });
+}
 
 // ✅ expose for non-module scripts (contacts.js etc.)
 // ===== GLOBAL ENGINE EXPORT =====

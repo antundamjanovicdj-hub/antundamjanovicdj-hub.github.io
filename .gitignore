@@ -1,14 +1,20 @@
 node_modules/
-android/
-capacitor.config.ts
-gradle.proporties
-# Android signing
+public/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Capacitor / Android
+gradle.properties
 *.jks
 *.keystore
 *.pem
 *.p12
 key.properties
-# 🔐 Signing keys
-*.jks
-*.keystore
-key.properties
+
+# Future builds
+dist/
+build/
+
+capacitor.config.*

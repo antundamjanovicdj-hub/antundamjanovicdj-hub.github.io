@@ -4,10 +4,11 @@
   "description": "",
   "main": "service-worker.js",
   "scripts": {
-    "sync:web": "xcopy styles public\\styles /E /I /Y && xcopy core public\\core /E /I /Y && xcopy images public\\images /E /I /Y && xcopy modules public\\modules /E /I /Y && copy index.html public\\ && copy manifest-v2.json public\\ && copy icon-192.png public\\ && copy icon-512.png public\\ && copy sw.js public\\",
-    "sync:android": "npm run sync:web && npx cap sync android",
-    "run:android": "npm run sync:android && npx cap run android --target=ZY32FTP5ST"
-  },
+  "clean:public": "node -e \"const fs=require('fs'); const p='public'; if(!fs.existsSync(p)) process.exit(0); for (const f of fs.readdirSync(p)) { fs.rmSync(p+'/'+f, { recursive:true, force:true }); }\"",
+  "sync:web": "npm run clean:public && xcopy styles public\\styles /E /I /Y && xcopy core public\\core /E /I /Y && xcopy images public\\images /E /I /Y && xcopy modules public\\modules /E /I /Y && copy index.html public\\ && copy manifest-v2.json public\\ && copy icon-192.png public\\ && copy icon-512.png public\\ && copy sw.js public\\",
+  "sync:android": "npm run sync:web && npx cap sync android",
+  "run:android": "npm run sync:android && npx cap run android --target=ZY32FTP5ST"
+},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/antundamjanovicdj-hub/antundamjanovicdj-hub.github.io.git"
@@ -30,6 +31,7 @@
     "@capacitor/local-notifications": "^8.0.0"
   },
   "devDependencies": {
-    "@capacitor/assets": "^3.0.5"
+    "@capacitor/assets": "^3.0.5",
+    "stylelint-config-standard": "^40.0.0"
   }
 }

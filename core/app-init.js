@@ -840,3 +840,7 @@ window.showListMode = showListMode;
 window.renderShoppingList = renderShoppingList;
 window.showDailyMode = showDailyMode;
 window.loadDailyForDate = loadDailyForDate;
+
+// ZERO-RISK: obligations internal helpers bridge
+window.buildObligationCard = buildObligationCard;
+window.attachObligationHandlers = attachObligationHandlers;

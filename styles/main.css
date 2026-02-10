@@ -25,12 +25,14 @@ html, body {
 /* ===== EKRANI (FINAL) ===== */
  .screen {
   display: none;
-  width:100%;
-  height:100%;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;   /* ✅ omogućava scroll */
 }
 
 .screen.active {
   display: block;
+}
 
 /* ===== POZADINA — SLIKA NA SVIM EKRANIMA ===== */
 #screen-lang,

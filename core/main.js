@@ -7,7 +7,7 @@ console.log('[LifeKompas] MAIN ENGINE START');
 const BOOT_FAIL_KEY = 'lifekompas_boot_fail';
 const bootFails = Number(localStorage.getItem(BOOT_FAIL_KEY) || 0);
 
-if (bootFails >= 3) {
+if (false && bootFails >= 3) {
 
   document.body.style.background = '#0d5e32';
 
@@ -83,6 +83,7 @@ async function boot() {
 
   // FEATURE MODULES
   await import('./contacts.js');
+  await import('./obligations.js');
 
   // INLINE MIGRATION (mora prije init)
   await import('./boot-inline.js');

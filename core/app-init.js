@@ -19,6 +19,7 @@ import {
   deleteShoppingItem
 } from './db.js';
 import { buildObligationCard } from './obligations.js';
+import { attachObligationHandlers } from "./obligations.js";
 
 // ZERO-RISK SHADOW IMPORT (obligations module)
 window.checkBatteryOptimization = checkBatteryOptimization;
@@ -60,6 +61,20 @@ export function todayISO() {
   return new Date().toISOString().split('T')[0];
 }
 let navigationLock = false;
+/*
+  ⚠️ NAVIGATION ENGINE (FROZEN)
+
+  This is the active screen engine.
+  Do NOT refactor yet.
+
+  Preconditions before refactor:
+  ✔ obligations fully extracted
+  ✔ shopping stabilized
+  ✔ contacts stable
+  ✔ header behavior finalized
+
+  Refactor will be ONE controlled operation.
+*/
 function legacy_showScreen(screenId) {
 
   if (navigationLock) return;
@@ -186,6 +201,20 @@ if (screenId === 'screen-contact-form') {
 /* =====================================================
    OBLIGATIONS ENGINE
    ===================================================== */
+   /*
+  ⚠️ EXTRACTION FREEZE (IMPORTANT)
+
+  Obligations engine is currently STABLE and owned by app-init.js.
+
+  Do NOT partially move logic to obligations.js.
+  Do NOT refactor inside extraction.
+  Do NOT split functions.
+
+  Next allowed step:
+  👉 FULL ENGINE MIGRATION (one controlled operation)
+
+  Until then — engine is FROZEN.
+*/
 
    /* =====================================================
    SHOPPING ENGINE
@@ -383,138 +412,6 @@ if (diff < -DELETE_THRESHOLD || velocity > 0.6) {
 });
 }
 
-/* ===== RENDER CARD (reused) ===== */
-
-
-function attachObligationHandlers(container) {
-  // PROMJENA STATUSA
-  container.querySelectorAll('.obligation-toggle-status').forEach(btn => {
-    btn.addEventListener('click', async (e) => {
-      e.stopPropagation();
-      const id = parseInt(btn.dataset.id, 10);
-      const currentStatus = btn.dataset.status;
-      const newStatus = currentStatus === 'done' ? 'active' : 'done';
-
-      const obligations = await obligationDB.getAll();
-      const obligation = obligations.find(o => o.id === id);
-      if (!obligation) return;
-
-      obligation.status = newStatus;
-await obligationDB.add(obligation);
-
-if (newStatus === 'done') {
-  import('./notifications.js').then(async ({
-    cancelObligationNotification,
-    scheduleObligationNotification
-  }) => {
-    cancelObligationNotification(id);
-
-    if (
-  obligation.repeat &&
-  obligation.dateTime &&
-  !obligation.repeatPaused
-) {
-if (obligation.skipNextRepeat) {
-  obligation.skipNextRepeat = false;
-  await obligationDB.add(obligation);
-  return;
-}
-      const baseDate = new Date(obligation.dateTime);
-      const nextDate = new Date(baseDate);
-if (obligation.repeat === 'custom' && obligation.customRepeat) {
-  const { unit, every } = obligation.customRepeat;
-  const baseDate = new Date(obligation.dateTime);
-  const nextDate = new Date(baseDate);
-
-  if (unit === 'day') nextDate.setDate(baseDate.getDate() + every);
-  if (unit === 'week') nextDate.setDate(baseDate.getDate() + every * 7);
-  if (unit === 'month') nextDate.setMonth(baseDate.getMonth() + every);
-
-  const nextObligation = {
-    ...obligation,
-    id: Date.now(),
-    status: 'active',
-    dateTime: nextDate.toISOString().slice(0, 16),
-    createdAt: new Date().toISOString()
-  };
-
-  await obligationDB.add(nextObligation);
-  await scheduleObligationNotification(nextObligation);
-  return;
-}
-
-      if (obligation.repeat === 'daily') {
-  nextDate.setDate(baseDate.getDate() + 1);
-}
-
-if (obligation.repeat === 'weekly') {
-  nextDate.setDate(baseDate.getDate() + 7);
-}
-
-if (obligation.repeat === 'monthly') {
-  const year = baseDate.getFullYear();
-  const month = baseDate.getMonth() + 1; // next month
-  const day = baseDate.getDate();
-
-  // zadnji dan ciljanog mjeseca
-  const lastDayOfTargetMonth = new Date(year, month + 1, 0).getDate();
-
-  nextDate.setFullYear(year);
-  nextDate.setMonth(month);
-  nextDate.setDate(Math.min(day, lastDayOfTargetMonth));
-}
-
-      const nextObligation = {
-        ...obligation,
-        id: Date.now(),
-        status: 'active',
-        dateTime: nextDate.toISOString().slice(0, 16),
-        createdAt: new Date().toISOString()
-      };
-
-      await obligationDB.add(nextObligation);
-      await scheduleObligationNotification(nextObligation);
-    }
-  });
-}
-
-refreshCurrentObligationsView();
-    });
-  });
-
-  // UREĐIVANJE
-  container.querySelectorAll('.obligation-edit').forEach(btn => {
-    btn.addEventListener('click', async (e) => {
-      e.stopPropagation();
-      const id = parseInt(btn.dataset.id, 10);
-      const obligations = await obligationDB.getAll();
-      const ob = obligations.find(o => o.id === id);
-      if (ob) openEditForm(ob);
-    });
-  });
-
-  // BRISANJE
-  container.querySelectorAll('.obligation-delete').forEach(btn => {
-    btn.addEventListener('click', async (e) => {
-      e.stopPropagation();
-      const id = parseInt(btn.dataset.id, 10);
-      const langNow = getLang();
-
-      if (!confirm(I18N[langNow].obligationsList.deleteConfirm || 'Obrisati obvezu?')) {
-        return;
-      }
-
-      await obligationDB.delete(id);
-
-      import('./notifications.js').then(({ cancelObligationNotification }) => {
-        cancelObligationNotification(id);
-      });
-
-      refreshCurrentObligationsView();
-    });
-  });
-}
-
 /* ===== LIST VIEW RENDER ===== */
 async function renderObligationsList() {
   if (viewMode === 'days') return;
@@ -523,7 +420,10 @@ async function renderObligationsList() {
   const lang = getLang();
 
   const today = todayISO();
-
+// ⚠️ PERFORMANCE NOTE:
+// Currently doing FULL DB read.
+// Acceptable while dataset is small.
+// Future optimization: indexed queries or in-memory cache.
 const obligations = (await obligationDB.getAll())
   .filter(o =>
     o.type !== 'shopping' &&
@@ -651,6 +551,10 @@ async function loadDailyForDate(isoDate) {
   if (picker && picker.value !== isoDate) picker.value = isoDate;
 
   const lang = getLang();
+  // ⚠️ PERFORMANCE NOTE:
+// Currently doing FULL DB read.
+// Acceptable while dataset is small.
+// Future optimization: indexed queries or in-memory cache.
   const all = (await obligationDB.getAll())
   .filter(o => o.type !== 'shopping');
 
@@ -733,16 +637,64 @@ if (btnShoppingArchive) {
     renderShoppingList();
   });
 }
+function openEditObligation(id) {
 
+  obligationDB.getAll().then(obligations => {
+
+    const obligation = obligations.find(o => o.id === id);
+    if (!obligation) return;
+
+    legacy_showScreen('screen-add-obligation');
+
+    const title = document.getElementById('obligationTitle');
+    if (title) title.value = obligation.title || '';
+
+    const note = document.getElementById('obligationNote');
+    if (note) note.value = obligation.note || '';
+
+    const date = document.getElementById('obligationDateTime');
+    if (date) date.value = obligation.dateTime || '';
+
+    window.__editingObligationId = id;
+
+  });
+
+}
+
+// expose to handlers
+window.openEditObligation = openEditObligation;
+/*
+  =====================================================
+  ENGINE HOST BOUNDARY (ZERO-RISK PHASE)
+
+  app-init.js currently owns the runtime engines.
+
+  DO NOT move these to modules yet.
+  DO NOT duplicate entry points.
+  DO NOT call engines from multiple layers.
+
+  Obligations migration will happen in a controlled phase.
+  =====================================================
+*/
 // ✅ expose for non-module scripts (contacts.js etc.)
-// ===== GLOBAL ENGINE EXPORT =====
-window.legacy_showScreen = legacy_showScreen;
-window.renderObligationsList = renderObligationsList;
-window.refreshCurrentObligationsView = refreshCurrentObligationsView;
-window.showListMode = showListMode;
-window.renderShoppingList = renderShoppingList;
-window.showDailyMode = showDailyMode;
-window.loadDailyForDate = loadDailyForDate;
+// ===== GLOBAL ENGINE EXPORT (LOCKED + SAFE) =====
+(function lockEngineExports() {
+  const defs = {
 
-// ZERO-RISK: obligations internal helpers bridge
-window.attachObligationHandlers = attachObligationHandlers;
+    legacy_showScreen: { value: legacy_showScreen, writable: false, configurable: true },
+    renderObligationsList: { value: renderObligationsList, writable: false, configurable: true },
+    refreshCurrentObligationsView: { value: refreshCurrentObligationsView, writable: false, configurable: true },
+    showListMode: { value: showListMode, writable: false, configurable: true },
+    renderShoppingList: { value: renderShoppingList, writable: false, configurable: true },
+    showDailyMode: { value: showDailyMode, writable: false, configurable: true },
+    loadDailyForDate: { value: loadDailyForDate, writable: false, configurable: true },
+
+  };
+
+  for (const key in defs) {
+    // only define if not already defined (prevents redefine errors)
+    if (!Object.getOwnPropertyDescriptor(window, key)) {
+      Object.defineProperty(window, key, defs[key]);
+    }
+  }
+})();

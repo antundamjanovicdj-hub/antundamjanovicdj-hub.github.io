@@ -124,7 +124,8 @@ const I18N = {
     obligationsList: {
       title: "Moje obveze",
       total: "Ukupno",
-      noObligations: "Nema obveza",
+      emptyTitle: "Još nema obveza",
+      emptySub: "Dodaj prvu obvezu i rastereti glavu. LifeKompas će pamtiti umjesto tebe.",
       delete: "Izbriši",
       deleteConfirm: "Obrisati obvezu?",
       edit: "Uredi",
@@ -285,7 +286,8 @@ const I18N = {
     obligationsList: {
       title: "My obligations",
       total: "Total",
-      noObligations: "No obligations",
+      emptyTitle: "No obligations yet",
+      emptySub: "Add your first obligation and clear your mind. LifeKompas will remember for you.",
       delete: "Delete",
       deleteConfirm: "Delete this obligation?",
       edit: "Edit",

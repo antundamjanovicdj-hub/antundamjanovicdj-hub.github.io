@@ -532,11 +532,11 @@ if (todayItems.length === 0 && overdueItems.length === 0 && upcomingItems.length
       <div style="font-size:26px; margin-bottom:8px;">🌱</div>
 
       <div style="font-weight:800; font-size:16px;">
-        ${I18N[lang].obligationsList.noObligations}
+        ${I18N[lang].obligationsList.emptyTitle}
       </div>
 
       <div style="opacity:0.7; font-size:14px; margin-top:6px;">
-        Nema obveza za danas. Sve je mirno i pod kontrolom.
+        ${I18N[lang].obligationsList.emptySub}
       </div>
 
       <div style="margin-top:14px; font-size:14px; opacity:0.85;">
@@ -653,7 +653,16 @@ const filtered = all.filter(o =>
 
   const openWrap = document.getElementById('dailyOpenWrap');
   const doneWrap = document.getElementById('dailyDoneWrap');
-  const emptyHtml = `<div class="empty-list">${I18N[lang].obligationsList.noObligations}</div>`;
+  const emptyHtml = `
+  <div class="empty-list">
+    <div style="font-weight:800;">
+      ${I18N[lang].obligationsList.emptyTitle}
+    </div>
+    <div style="opacity:0.7;">
+      ${I18N[lang].obligationsList.emptySub}
+    </div>
+  </div>
+`;
 
   if (groups.open.length === 0) {
     openWrap.innerHTML = `<div class="empty-list">—</div>`;

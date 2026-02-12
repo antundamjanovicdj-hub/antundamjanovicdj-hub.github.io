@@ -1134,11 +1134,12 @@ backdrop-filter: blur(10px);
   line-height: 1.45;
 }
 
-/* prazna lista */
+/* EMPTY STATE — calm spacing */
 .empty-list {
-  padding: 10px 12px;
-  opacity: 0.6;
-  font-style: italic;
+  padding: 28px 18px;
+  text-align: center;
+  opacity: 0.75;
+  font-style: normal;
 }
 .finance-date-label {
   display: block;

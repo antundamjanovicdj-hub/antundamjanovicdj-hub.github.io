@@ -2,7 +2,11 @@
 class ObligationDB {
   constructor() {
     this.dbName = 'lifeKompasDB';
-    this.version = 3; // ↑ povećana verzija zbog contacts store-a
+    this.version = 3; 
+// 🔒 DB VERSION LOCK
+// Production users exist.
+// DO NOT bump without a migration strategy.
+// Breaking this rule = potential user data loss.
     this.storeName = 'obligations';
     this.financeStoreName = 'finances';
     this.contactsStoreName = 'contacts'; // ← novi store za kontakte

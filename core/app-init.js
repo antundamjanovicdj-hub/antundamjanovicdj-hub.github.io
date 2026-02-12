@@ -1,8 +1,84 @@
+// ===== GLOBAL ERROR GUARD (STABILIZATION WALL) =====
+
+window.addEventListener('error', (e) => {
+  console.error('GLOBAL ERROR:', e.error);
+});
+
+window.addEventListener('unhandledrejection', (e) => {
+  console.error('UNHANDLED PROMISE:', e.reason);
+});
+
+/* =====================================================
+   CLICK GUARD — prevents multi-tap chaos
+   ===================================================== */
+
+let clickLocked = false;
+
+document.addEventListener('click', (e) => {
+
+  if (clickLocked) {
+    e.stopImmediatePropagation();
+    e.preventDefault();
+    return;
+  }
+
+  clickLocked = true;
+
+  setTimeout(() => {
+    clickLocked = false;
+  }, 350); // sweet spot
+});
+
+/*
+=====================================================
+ENGINE HOST FILE
+
+app-init.js je GLAVNI runtime host.
+
+DO NOT:
+- premještati engine logiku u druge init fajlove
+- duplicirati navigation
+- stvarati drugi entry point
+
+NEXT PHASE:
+👉 controlled engine consolidation
+(ne prije stabilizacijskog sprinta)
+=====================================================
+*/
 // core/app-init.js
 // LifeKompas INIT EXTRACTION – STEP 1 (scaffold)
 // Namjerno prazno: u sljedećem koraku selimo veliki dio koda iz index.html ovdje.
 
 console.log('[LifeKompas] app-init.js loaded');
+
+/* =====================================================
+   GLOBAL ERROR GUARD — LIFEOMPAS CORE SAFETY NET
+   Must stay at INIT level.
+   ===================================================== */
+
+window.addEventListener('error', (event) => {
+
+  console.error('[GLOBAL ERROR]', event.error);
+
+  // fallback — nikad blank screen
+  const active = document.querySelector('.screen.active');
+
+  if (!active) {
+    const menu = document.getElementById('screen-menu');
+    if (menu) {
+      menu.classList.add('active');
+      menu.style.display = 'block';
+    }
+  }
+
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+
+  console.error('[UNHANDLED PROMISE]', event.reason);
+
+});
+
 // ===== APP VERSION =====
 const APP_VERSION = "0.1.0";
 
@@ -428,15 +504,14 @@ const obligations = (await obligationDB.getAll())
   .filter(o =>
     o.type !== 'shopping' &&
     o.status !== 'done' &&
-    o.dateTime &&
-    getISODateFromDateTime(o.dateTime) <= today
+    o.dateTime
   );
 
   obligations.sort((a, b) => {
     if (a.status !== b.status) return a.status === 'active' ? -1 : 1;
     if (!a.dateTime) return 1;
     if (!b.dateTime) return -1;
-    return new Date(b.dateTime) - new Date(a.dateTime);
+    return new Date(a.dateTime) - new Date(b.dateTime);
   });
 
 const todayItems = obligations.filter(o =>
@@ -447,7 +522,11 @@ const overdueItems = obligations.filter(o =>
   getISODateFromDateTime(o.dateTime) < today
 );
 
-if (todayItems.length === 0 && overdueItems.length === 0) {
+const upcomingItems = obligations.filter(o =>
+  getISODateFromDateTime(o.dateTime) > today
+);
+
+if (todayItems.length === 0 && overdueItems.length === 0 && upcomingItems.length === 0) {
   container.innerHTML = `
     <div class="empty-list">
       <div style="font-size:26px; margin-bottom:8px;">🌱</div>
@@ -494,6 +573,15 @@ if (overdueItems.length > 0) {
   Zakašnjelo
 </div>
     ${overdueItems.map(ob => buildObligationCard(ob, lang)).join('')}
+  `;
+}
+
+if (upcomingItems.length > 0) {
+  html += `
+    <div class="obligations-section-title">
+      📅 Nadolazeće (${upcomingItems.length})
+    </div>
+    ${upcomingItems.map(ob => buildObligationCard(ob, lang)).join('')}
   `;
 }
 
@@ -644,7 +732,13 @@ function openEditObligation(id) {
     const obligation = obligations.find(o => o.id === id);
     if (!obligation) return;
 
-    legacy_showScreen('screen-add-obligation');
+    screenHistory.push('screen-obligations-list');
+    showScreen('screen-add-obligation');
+
+    const saveBtn = document.getElementById('saveObligation');
+    if (saveBtn) {
+    saveBtn.dataset.editId = id;
+   }
 
     const title = document.getElementById('obligationTitle');
     if (title) title.value = obligation.title || '';

@@ -1,3 +1,46 @@
+/*
+=====================================================
+
+⚠️ LIFEOMPAS CORE FREEZE LINE
+
+Everything inside this file is considered STABLE CORE.
+
+DO NOT:
+- refactor casually
+- move logic between init files
+- duplicate navigation
+- split engine pieces
+
+ALLOWED:
+✅ bug fixes  
+✅ controlled extractions  
+✅ performance improvements  
+
+NEXT MAJOR STEP:
+👉 full engine modularization (ONE operation — not incremental)
+
+Until then — treat this file as SYSTEM CODE.
+
+=====================================================
+*/
+/*
+=====================================================
+
+⚠️ NAVIGATION OWNERSHIP
+
+showScreen() is owned by the ENGINE HOST.
+
+Feature files SHOULD NOT navigate directly unless:
+✅ triggered by user interaction
+✅ flow is obvious and isolated
+
+Avoid deep navigation chains from feature modules.
+
+Future plan:
+👉 central navigation controller
+
+=====================================================
+*/
 import {
   obligationDB,
   addFinanceItem,
@@ -67,6 +110,8 @@ const headerBack = document.getElementById('headerBack');
 // jednostavna povijest ekrana
 
 window.showScreen = function (screenId) {
+
+  console.log('[NAV]', screenId);
 
   // TRUE screen engine
   document.querySelectorAll('.screen')
@@ -174,6 +219,8 @@ case 'screen-finances-menu':
     document
       .getElementById('saveObligation')
       .removeAttribute('data-edit-id');
+
+      window.__editingObligationId = null;
   };
   break;
 
@@ -186,6 +233,7 @@ case 'screen-finances-menu':
   document
     .getElementById('saveObligation')
     .removeAttribute('data-edit-id');
+    window.__editingObligationId = null;
 
   break;
 
@@ -1174,10 +1222,12 @@ function applyAddObligationI18N() {
 
     const options = reminderSelect.querySelectorAll('option');
 
-    if (options[0]) options[0].textContent = "30 min";
-    if (options[1]) options[1].textContent = "1 h";
-    if (options[2]) options[2].textContent = "2 h";
-    if (options[3]) options[3].textContent = "1 dan";
+    if (options[0]) options[0].textContent = "U trenutku";
+    if (options[1]) options[1].textContent = "15 min";
+    if (options[2]) options[2].textContent = "30 min";
+    if (options[3]) options[3].textContent = "1 h";
+    if (options[4]) options[4].textContent = "2 h";
+    if (options[5]) options[5].textContent = "1 dan";
   }
 
 
@@ -1197,7 +1247,6 @@ function applyAddObligationI18N() {
 window.openEditForm = function(ob) {
 
   screenHistory.push('screen-obligations-list');
-
   showScreen('screen-add-obligation');
 
   document.getElementById('obligationTitle').value = ob.title || '';

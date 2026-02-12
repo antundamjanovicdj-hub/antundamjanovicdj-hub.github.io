@@ -322,6 +322,7 @@ const I18N = {
       save: "Save entry"
     }
   },
+
   de: {
     contacts: {
       title: "Kontakte",
@@ -1597,6 +1598,8 @@ const I18N = {
     }
   }
 };
+
+window.I18N = I18N;
 
 // Postavke jezika
 I18N.hr.lang = 'hr-HR';

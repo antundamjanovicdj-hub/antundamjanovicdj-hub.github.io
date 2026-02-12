@@ -43,6 +43,39 @@ function formatBirthDateByLang(input) {
   }
 }
 
+// ===== FILL CONTACT FORM I18N =====
+function fillContactFormI18N() {
+
+  console.log("fillContactFormI18N RUNNING");
+
+  const lang = localStorage.getItem('userLang') || 'hr';
+
+  const t =
+    (I18N[lang].contacts && I18N[lang].contacts.form)
+      ? I18N[lang].contacts.form
+      : I18N.hr.contacts.form;
+
+  // placeholders
+  document.getElementById('contactFirstName')?.setAttribute('placeholder', t.firstName || '');
+  document.getElementById('contactLastName')?.setAttribute('placeholder', t.lastName || '');
+  document.getElementById('contactBirthDate')?.setAttribute('placeholder', t.birthDate || '');
+  document.getElementById('contactBirthdayTime')?.setAttribute('placeholder', t.birthdayTime || '');
+  document.getElementById('contactAddress')?.setAttribute('placeholder', t.address || '');
+  document.getElementById('contactEmail')?.setAttribute('placeholder', t.email || '');
+  document.getElementById('contactPhone')?.setAttribute('placeholder', t.phone || '');
+
+  // buttons
+  const saveBtn = document.getElementById('saveContact');
+  if (saveBtn && t.save) {
+    saveBtn.textContent = t.save;
+  }
+
+  const pickPhoto = document.getElementById('btnPickContactPhoto');
+  if (pickPhoto && t.pickPhoto) {
+  pickPhoto.textContent = t.pickPhoto;
+}
+}
+
 // Init
 function initContacts() {
   loadContacts();
@@ -354,7 +387,25 @@ if (btnEditContact) {
 const btnAddContact = document.getElementById('btnAddContact');
 if (btnAddContact) {
   btnAddContact.addEventListener('click', () => {
+
+    // HARD RESET FORM (prevents edit ghost bug)
+    document.getElementById('contactFirstName').value = '';
+    document.getElementById('contactLastName').value = '';
+    document.getElementById('contactBirthDate').value = '';
+    document.getElementById('contactBirthdayTime').value = '';
+    document.getElementById('contactAddress').value = '';
+    document.getElementById('contactEmail').value = '';
+    document.getElementById('contactPhone').value = '';
+    document.getElementById('contactPhotoData').value = '';
+
+    document.getElementById('saveContact')?.removeAttribute('data-edit-id');
+
     showScreen('screen-contact-form');
+
+// wait one frame so DOM is guaranteed ready
+requestAnimationFrame(() => {
+  fillContactFormI18N();
+});
   });
 }
 
@@ -464,3 +515,9 @@ if (saveContactBtn) {
 
   });
 }
+// APPLY I18N WHEN CONTACT FORM SCREEN IS SHOWN
+document.addEventListener('screenShown', (e) => {
+  if (e.detail === 'screen-contact-form') {
+    fillContactFormI18N();
+  }
+});

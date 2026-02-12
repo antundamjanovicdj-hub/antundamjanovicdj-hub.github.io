@@ -262,6 +262,12 @@ case 'screen-finances-menu':
       // ➕ skriven
       break;
   }
+
+  // 🔥 SCREEN LIFECYCLE EVENT
+  document.dispatchEvent(
+    new CustomEvent('screenShown', { detail: screenId })
+  );
+
 };
 
 // klik na BACK

@@ -4,11 +4,11 @@
   "description": "",
   "main": "service-worker.js",
   "scripts": {
-    "sync:web": "rm -rf public && mkdir public && rsync -av --exclude='public' ./ ./public",
-    "sync:android": "npm run sync:web && npx cap sync android",
-    "run:android": "npm run sync:android && npx cap run android",
-    "watch:web": "chokidar \"**/*\" --ignore \"public/**\" -c \"npm run sync:web\" --initial"
-  },
+  "sync:web": "rm -rf public && mkdir public && rsync -av --exclude=node_modules --exclude=android --exclude=ios --exclude=.git --exclude=public --exclude=assets ./ public/",
+  "sync:android": "npm run sync:web && npx cap sync android",
+  "run:android": "npm run sync:android && npx cap run android",
+  "watch:web": "chokidar \"**/*\" --ignore \"public/**\" -c \"npm run sync:web\" --initial"
+},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/antundamjanovicdj-hub/antundamjanovicdj-hub.github.io.git"

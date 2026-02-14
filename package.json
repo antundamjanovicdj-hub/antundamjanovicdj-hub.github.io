@@ -7,7 +7,7 @@
     "sync:web": "rm -rf public && mkdir public && rsync -av --exclude='public' ./ ./public",
     "sync:android": "npm run sync:web && npx cap sync android",
     "run:android": "npm run sync:android && npx cap run android",
-    "watch:web": "chokidar \"**/*\" -c \"npm run sync:web\" --initial"
+    "watch:web": "chokidar \"**/*\" --ignore \"public/**\" -c \"npm run sync:web\" --initial"
   },
   "repository": {
     "type": "git",
@@ -28,6 +28,7 @@
     "@capacitor/camera": "^8.0.0",
     "@capacitor/cli": "^8.0.0",
     "@capacitor/core": "^8.0.0",
+    "@capacitor/ios": "^8.1.0",
     "@capacitor/local-notifications": "^8.0.0"
   },
   "devDependencies": {

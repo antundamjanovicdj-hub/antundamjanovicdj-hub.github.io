@@ -4,6 +4,10 @@
 
 :root {
 
+  /* ===== SAFE AREA ===== */
+  --safe-top: env(safe-area-inset-top);
+  --safe-bottom: env(safe-area-inset-bottom);
+
   /* ===== SPACING SYSTEM ===== */
   --space-xs: 8px;
   --space-s: 12px;
@@ -11,7 +15,7 @@
   --space-l: 20px;
   --space-xl: 24px;
 
-  --header-height: 60px;
+  --header-height: calc(60px + var(--safe-top));
 
 }
 * {
@@ -32,23 +36,25 @@ html, body {
 
 .app {
   width: 100%;
-  height: 100%;
-  position: fixed;   /* ⬅️ KLJUČNO */
-  inset: 0;          /* ⬅️ zaključa na viewport */
-  overflow: hidden;  /* ⬅️ nema pull/peek efekta */
+  min-height: 100dvh;
+  position: relative;
+
+  overflow: hidden; /* 🔥 app ne scrolla */
 }
 
 /* ===== EKRANI (FINAL) ===== */
  .screen {
   display: none;
-  position: absolute;
-  inset: 0;
+
+  position: relative;
 
   width: 100%;
-  height: 100%;
+  height: calc(100dvh - var(--header-height));
+
+  margin-top: var(--header-height);
 
   overflow-y: auto;
-  padding-top: var(--header-height);
+  overflow-x: hidden;
 
   -webkit-overflow-scrolling: touch;
 }

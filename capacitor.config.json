@@ -3,6 +3,11 @@
   "appName": "LifeKompas",
   "webDir": "public",
   "bundledWebRuntime": false,
+
+  "ios": {
+    "contentInset": "never"
+  },
+  
   "plugins": {
     "SplashScreen": {
       "launchShowDuration": 2000,

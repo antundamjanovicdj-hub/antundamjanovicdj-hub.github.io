@@ -8,6 +8,8 @@ import {
   deleteContact
 } from './db.js';
 
+const ContactsPlugin = window.Capacitor?.Plugins?.Contacts;
+
 let contacts = [];
 let filteredContacts = [];
 function getContactMessages() {
@@ -101,24 +103,22 @@ function initContacts() {
 // ===== DIRECT ANDROID CONTACT IMPORT =====
 window.importDeviceContacts = async function () {
 
-  if (!window.Capacitor || !Capacitor.Plugins || !Capacitor.Plugins.Contacts) {
-    alert("Import kontakata radi samo u Android aplikaciji");
-    return;
-  }
-
-  try {
-
-    // ===== REQUEST PERMISSION FIRST =====
-const perm = await Capacitor.Plugins.Contacts.requestPermissions();
-
-// ✅ SAFE CHECK (sprječava optBoolean null crash)
-if (!perm || !perm.contacts || perm.contacts !== 'granted') {
-  alert(getContactMessages().noPermission);
+  if (!ContactsPlugin) {
+  alert(getContactMessages().notSupported || "Uvoz kontakata nije podržan na ovom uređaju.");
   return;
 }
 
+  try {
+
+  const perm = await ContactsPlugin.requestPermissions();
+
+  if (!perm?.contacts || perm.contacts !== 'granted') {
+    alert(getContactMessages().noPermission);
+    return;
+  }
+
     // ===== LOAD CONTACTS =====
-const result = await Capacitor.Plugins.Contacts.getContacts({
+const result = await ContactsPlugin.getContacts({
   projection: {
     name: true,
     phones: true,
@@ -179,8 +179,14 @@ async function loadContacts() {
     return nameA.localeCompare(nameB);
   });
 
-  filteredContacts = contacts;
-  renderContactsList();
+  const search = document.getElementById('searchContacts');
+const q = search?.value?.toLowerCase() || '';
+
+filteredContacts = contacts.filter(c =>
+  (`${c.firstName} ${c.lastName}`).toLowerCase().includes(q)
+);
+
+renderContactsList();
 }
 
 // ===== EXPOSE CONTACT FUNCTIONS GLOBALLY =====
@@ -200,7 +206,7 @@ function renderContactsList() {
     const lang = localStorage.getItem('userLang') || 'hr';
 
     list.innerHTML = `
-      <div class="empty-list">
+      <div class="empty-list glass">
         <div style="font-size:26px; margin-bottom:8px;">👥</div>
 
         <div style="font-weight:800; font-size:16px;">
@@ -222,7 +228,7 @@ function renderContactsList() {
   // ===== LISTA KONTAKATA =====
   filteredContacts.forEach(c => {
     const card = document.createElement('div');
-    card.className = 'contact-card';
+    card.className = 'contact-card glass';
     card.dataset.id = String(c.id);
 
     card.innerHTML = `
@@ -298,6 +304,22 @@ const cd =
 
 const cdTextEl = document.getElementById('cdBirthdayNotifyText');
 if (cdTextEl) cdTextEl.textContent = cd.birthdayNotify;
+
+// ===== BUTTON TEXT (I18N FIX) =====
+requestAnimationFrame(() => {
+
+  const btnEdit = document.getElementById('btnEditContact');
+  const btnDelete = document.getElementById('btnDeleteContact');
+
+  if (btnEdit) {
+    btnEdit.textContent = cd.edit || 'Uredi';
+  }
+
+  if (btnDelete) {
+    btnDelete.textContent = cd.delete || 'Izbriši';
+  }
+
+});
 
   // address → Google Maps
   document.getElementById('contactAddressLink').addEventListener('click', () => {

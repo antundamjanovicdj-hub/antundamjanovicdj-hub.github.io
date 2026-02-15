@@ -5,9 +5,10 @@
   "bundledWebRuntime": false,
 
   "ios": {
-    "contentInset": "never"
-  },
-  
+  "contentInset": "never",
+  "useSwiftPackageManager": false
+},
+
   "plugins": {
     "SplashScreen": {
       "launchShowDuration": 2000,

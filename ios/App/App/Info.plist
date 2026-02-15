@@ -3,7 +3,19 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
-	<string>en</string>
+<string>en</string>
+
+<key>NSCameraUsageDescription</key>
+<string>LifeKompas allows you to take photos for contact profiles.</string>
+
+<key>NSPhotoLibraryUsageDescription</key>
+<string>LifeKompas needs access to your photo library so you can add profile pictures to your contacts.</string>
+
+<key>NSPhotoLibraryAddUsageDescription</key>
+<string>LifeKompas saves contact photos to your library when you choose them.</string>
+
+<key>NSContactsUsageDescription</key>
+<string>LifeKompas needs access to your contacts so you can import and manage them.</string>
 	<key>CFBundleDisplayName</key>
 	<string>LifeKompas</string>
 	<key>CFBundleExecutable</key>
@@ -45,11 +57,6 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
-	<key>NSContactsUsageDescription</key>
-	<string></string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>LifeKompas saves contact photos to your photo library</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>LifeKompas acceses your photo library so you can choose contact photos</string>
+	
 </dict>
 </plist>

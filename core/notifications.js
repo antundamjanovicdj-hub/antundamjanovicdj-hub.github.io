@@ -126,16 +126,24 @@ let nextBirthday = new Date(
   }
 
   await LocalNotifications.schedule({
-    notifications: [{
-      id: Math.floor(contact.id % 2147483647),
-      title: "🎂 Rođendan",
-      body: `${contact.firstName} ${contact.lastName} danas slavi rođendan!`,
-      schedule: { at: nextBirthday },
-      importance: 5,
-      visibility: 1,
-      extra: { contactId: contact.id }
-    }]
-  });
+  notifications: [{
+    id: Math.floor(contact.id % 2147483647),
+    title: "🎂 Rođendan",
+    body: `${contact.firstName} ${contact.lastName} danas slavi rođendan!`,
+    schedule: {
+      on: {
+        month: parseInt(month,10),
+        day: parseInt(day,10),
+        hour: hours,
+        minute: minutes
+      },
+      repeats: true
+    },
+    importance: 5,
+    visibility: 1,
+    extra: { contactId: contact.id }
+  }]
+});
 }
 
 export async function cancelBirthdayNotification(contactId) {

@@ -3,19 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
-<string>en</string>
-
-<key>NSCameraUsageDescription</key>
-<string>LifeKompas allows you to take photos for contact profiles.</string>
-
-<key>NSPhotoLibraryUsageDescription</key>
-<string>LifeKompas needs access to your photo library so you can add profile pictures to your contacts.</string>
-
-<key>NSPhotoLibraryAddUsageDescription</key>
-<string>LifeKompas saves contact photos to your library when you choose them.</string>
-
-<key>NSContactsUsageDescription</key>
-<string>LifeKompas needs access to your contacts so you can import and manage them.</string>
+	<string>en</string>
 	<key>CFBundleDisplayName</key>
 	<string>LifeKompas</string>
 	<key>CFBundleExecutable</key>
@@ -34,6 +22,14 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>LifeKompas treba pristup kameri kako bi mogao dodati fotografiju kontaktu.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>LifeKompas treba pristup tvojim kontaktima kako bi mogao uvesti osobe koje želiš imati na jednom sigurnom mjestu.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>LifeKompas treba pristup galeriji kako bi mogao dodati fotografiju kontaktu.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>LifeKompas treba pristup galeriji kako bi mogao dodati fotografiju kontaktu.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
@@ -57,6 +53,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
-	
 </dict>
 </plist>

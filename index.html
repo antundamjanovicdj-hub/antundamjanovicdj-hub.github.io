@@ -356,8 +356,7 @@
   <!-- ACTION BUTTONS -->
 <div class="contacts-actions">
   <button id="btnImportContacts"
-          class="menu-item"
-          onclick="importDeviceContacts()">
+        class="menu-item">
     📥 Uvezi iz imenika
   </button>
 </div>
@@ -369,6 +368,28 @@
 
   <!-- LIST -->
   <div id="contactsList" class="contacts-list"></div>
+</div>
+
+<!-- LOADING SCREEN -->
+<div id="screen-loading" class="screen">
+  <div style="
+    height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    gap:16px;
+    text-align:center;
+    padding:20px;
+  ">
+    <div style="font-size:22px; font-weight:600;">
+      LifeKompas radi za tebe…
+    </div>
+
+    <div style="opacity:0.7;">
+      Uvoz kontakata je u tijeku
+    </div>
+  </div>
 </div>
 
 <!-- APP VERSION -->

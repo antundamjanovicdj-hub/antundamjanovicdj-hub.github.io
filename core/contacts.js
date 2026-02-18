@@ -80,6 +80,7 @@ function fillContactFormI18N() {
 
 // Init
 function initContacts() {
+   console.log("INIT CONTACTS RUN");
   loadContacts();
   setupContactsEvents();
 
@@ -98,17 +99,60 @@ function initContacts() {
       showScreen('screen-contacts');
     });
   }
+
+  // 🔒 LOCK IMPORT BUTTON
+  const importBtn = document.getElementById('btnImportContacts');
+
+  if (importBtn) {
+
+    importBtn.addEventListener('click', async () => {
+
+      if (importBtn.disabled) return;
+
+      importBtn.disabled = true;
+      importBtn.textContent = "Uvozim...";
+
+try {
+
+  await window.importDeviceContacts();
+
+} finally {
+
+  importBtn.disabled = false;
+  importBtn.textContent = "📥 Uvezi iz imenika";
+
+      }
+
+    });
+
+  }
+
 }
 
 // ===== DIRECT ANDROID CONTACT IMPORT =====
 window.importDeviceContacts = async function () {
 
+  // prvo provjeri podršku
   if (!ContactsPlugin) {
-  alert(getContactMessages().notSupported || "Uvoz kontakata nije podržan na ovom uređaju.");
-  return;
-}
+    alert(getContactMessages().notSupported || "Uvoz kontakata nije podržan na ovom uređaju.");
+    return;
+  }
+
+  // tek onda objasni dozvolu
+  const proceed = confirm(
+    "LifeKompas treba pristup tvojim kontaktima kako bi mogao uvesti osobe koje želiš imati na jednom sigurnom mjestu.\n\nDozvolu možeš promijeniti u bilo kojem trenutku u Settings."
+  );
+
+  if (!proceed) return;
 
   try {
+
+  let loadingShown = false;
+
+const loadingTimer = setTimeout(() => {
+  showScreen('screen-loading');
+  loadingShown = true;
+}, 300);
 
   const perm = await ContactsPlugin.requestPermissions();
 
@@ -132,41 +176,58 @@ const result = await ContactsPlugin.getContacts({
       return;
     }
 
-    for (const c of result.contacts) {
+  // povuci postojeće kontakte jednom (performance + trust)
+const existingContacts = await getContacts();
 
-      const firstName = c.name?.given || '';
-      const lastName = c.name?.family || '';
+for (const c of result.contacts) {
 
-      const phone = c.phones?.length ? c.phones[0].number : '';
-      const email = c.emails?.length ? c.emails[0].address : '';
-      const address = c.addresses?.length ? c.addresses[0].street : '';
+  const firstName = c.name?.given || '';
+  const lastName = c.name?.family || '';
 
-      if (!firstName && !lastName) continue;
+  const rawPhone = c.phones?.length ? c.phones[0].number : '';
 
-      const newContact = {
-        id: Date.now() + Math.floor(Math.random() * 1000),
-        firstName,
-        lastName,
-        birthDate: '',
-        birthdayNotify: false,
-        address,
-        email,
-        phone,
-        photo: ''
-      };
+// normalize phone (removes spaces, dashes, brackets…)
+const phone = rawPhone.replace(/[^\d+]/g, '');
+  const email = c.emails?.length ? c.emails[0].address : '';
+  const address = c.addresses?.length ? c.addresses[0].street : '';
 
-      await addContact(newContact);
-    }
+  if (!firstName && !lastName) continue;
 
-    await loadContacts();
-    alert(getContactMessages().importDone);
+  // 🔥 DUPLICATE CHECK
+  const alreadyExists = existingContacts.some(ec =>
+    (phone && ec.phone === phone) ||
+    (email && ec.email === email)
+  );
 
-  } catch (err) {
-    console.error("CONTACT IMPORT ERROR REAL:", err);
-    alert(getContactMessages().error + ": " + (err?.message || err));
-  }
+  if (alreadyExists) continue;
+
+  const newContact = {
+    id: Date.now() + Math.floor(Math.random() * 1000),
+    firstName,
+    lastName,
+    birthDate: '',
+    birthdayNotify: false,
+    address,
+    email,
+    phone,
+    photo: ''
+  };
+
+  await addContact(newContact);
+}
+clearTimeout(loadingTimer);
+
+await loadContacts();
+
+if (loadingShown) {
+  showScreen('screen-contacts');
+}
+
+} catch (err) {
+  console.error("CONTACT IMPORT ERROR REAL:", err);
+  alert(getContactMessages().error + ": " + (err?.message || err));
+}
 };
-
 
 // ===== LOAD CONTACTS FROM DB =====
 async function loadContacts() {
@@ -393,6 +454,7 @@ if (btnEditContact) {
   document.getElementById('contactFirstName').value = c.firstName;
   document.getElementById('contactLastName').value = c.lastName;
   document.getElementById('contactBirthDate').value = c.birthDate;
+  document.getElementById('contactBirthdayTime').value = c.birthdayTime || "09:00";
   document.getElementById('contactAddress').value = c.address;
   document.getElementById('contactEmail').value = c.email;
   document.getElementById('contactPhone').value = c.phone;

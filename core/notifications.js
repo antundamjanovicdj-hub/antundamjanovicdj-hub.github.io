@@ -7,6 +7,9 @@ if (IS_CAPACITOR) {
   LocalNotifications = Capacitor.Plugins.LocalNotifications;
 }
 
+  // Clear delivered notifications when app becomes active (Android badge fix)
+  // Badge clearing removed – let Android handle notification lifecycle
+
 // ===== PERMISSION =====
 export async function requestNotificationPermission() {
   if (!LocalNotifications) return false;
@@ -131,14 +134,8 @@ let nextBirthday = new Date(
     title: "🎂 Rođendan",
     body: `${contact.firstName} ${contact.lastName} danas slavi rođendan!`,
     schedule: {
-      on: {
-        month: parseInt(month,10),
-        day: parseInt(day,10),
-        hour: hours,
-        minute: minutes
-      },
-      repeats: true
-    },
+  at: nextBirthday
+},
     importance: 5,
     visibility: 1,
     extra: { contactId: contact.id }

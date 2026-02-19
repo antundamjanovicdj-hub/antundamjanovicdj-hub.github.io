@@ -23,11 +23,11 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>LifeKompas treba pristup kameri kako bi mogao dodati fotografiju kontaktu.</string>
+	<string>LifeKompas koristi kameru samo ako želiš dodati fotografiju kontaktu. Fotografija ostaje na ovom uređaju.</string>
 	<key>NSContactsUsageDescription</key>
-	<string>LifeKompas treba pristup tvojim kontaktima kako bi mogao uvesti osobe koje želiš imati na jednom sigurnom mjestu.</string>
+	<string>LifeKompas pristupa kontaktima samo ako želiš uvesti podatke iz imenika. Podaci ostaju privatni na ovom uređaju.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>LifeKompas treba pristup galeriji kako bi mogao dodati fotografiju kontaktu.</string>
+	<string>LifeKompas koristi galeriju samo ako želiš odabrati sliku kontakta. Fotografija ostaje na ovom uređaju.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>LifeKompas treba pristup galeriji kako bi mogao dodati fotografiju kontaktu.</string>
 	<key>UILaunchStoryboardName</key>

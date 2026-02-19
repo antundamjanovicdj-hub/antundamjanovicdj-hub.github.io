@@ -402,19 +402,39 @@ requestAnimationFrame(() => {
 
 // ===== BIRTHDAY NOTIFY TOGGLE =====
   document.getElementById('birthdayNotifyToggle').addEventListener('change', async (e) => {
-  c.birthdayNotify = e.target.checked;
-  await addContact(c);
 
   const m = await import('./notifications.js');
 
-  if (c.birthdayNotify) {
-    const granted = await m.requestNotificationPermission();
-    if (granted) {
-      await m.scheduleBirthdayNotification(c);
+  if (e.target.checked) {
+
+    const confirmed = confirm(
+      getContactMessages().notificationPermissionExplanation ||
+      "LifeKompas can remind you about birthdays. Notifications stay private and are only used for reminders you create."
+    );
+
+    if (!confirmed) {
+      e.target.checked = false;
+      return;
     }
+
+    const granted = await m.requestNotificationPermission();
+    if (!granted) {
+      e.target.checked = false;
+      return;
+    }
+
+    c.birthdayNotify = true;
+    await addContact(c);
+    await m.scheduleBirthdayNotification(c);
+
   } else {
+
+    c.birthdayNotify = false;
+    await addContact(c);
     await m.cancelBirthdayNotification(c.id);
+
   }
+
 });
 
   showScreen('screen-contact-details');
@@ -433,9 +453,14 @@ if (btnDeleteContact) {
 
   if (!confirm(getContactMessages().deleteConfirm)) return;
 
-  await deleteContact(Number(currentId));
-  await loadContacts();
-  showScreen('screen-contacts');
+  const m = await import('./notifications.js');
+
+// Cancel scheduled birthday notification before deleting contact
+await m.cancelBirthdayNotification(Number(currentId));
+
+await deleteContact(Number(currentId));
+await loadContacts();
+showScreen('screen-contacts');
   });
 }
 // ===== EDIT CONTACT =====
@@ -455,6 +480,10 @@ if (btnEditContact) {
   document.getElementById('contactLastName').value = c.lastName;
   document.getElementById('contactBirthDate').value = c.birthDate;
   document.getElementById('contactBirthdayTime').value = c.birthdayTime || "09:00";
+  const birthdayCheckbox = document.getElementById('contactBirthdayNotify');
+if (birthdayCheckbox) {
+  birthdayCheckbox.checked = !!c.birthdayNotify;
+}
   document.getElementById('contactAddress').value = c.address;
   document.getElementById('contactEmail').value = c.email;
   document.getElementById('contactPhone').value = c.phone;
@@ -476,7 +505,7 @@ if (btnAddContact) {
     document.getElementById('contactFirstName').value = '';
     document.getElementById('contactLastName').value = '';
     document.getElementById('contactBirthDate').value = '';
-    document.getElementById('contactBirthdayTime').value = '';
+    document.getElementById('contactBirthdayTime').value = '09:00';
     document.getElementById('contactAddress').value = '';
     document.getElementById('contactEmail').value = '';
     document.getElementById('contactPhone').value = '';
@@ -486,8 +515,15 @@ if (btnAddContact) {
 
     showScreen('screen-contact-form');
 
-// wait one frame so DOM is guaranteed ready
+// Force default birthday time after screen becomes active (iOS WebKit reset fix)
 requestAnimationFrame(() => {
+  const birthdayTimeInput = document.getElementById('contactBirthdayTime');
+  if (birthdayTimeInput) {
+    birthdayTimeInput.type = 'text';
+    birthdayTimeInput.value = '09:00';
+    birthdayTimeInput.type = 'time';
+  }
+
   fillContactFormI18N();
 });
   });
@@ -499,17 +535,30 @@ if (btnPickContactPhoto) {
   btnPickContactPhoto.addEventListener('click', async () => {
 
     // Android / Capacitor
-    if (window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.Camera) {
-      const image = await Capacitor.Plugins.Camera.getPhoto({
-        quality: 80,
-        allowEditing: false,
-        resultType: "dataUrl",
-        source: "photos"
-      });
+if (window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.Camera) {
 
-      document.getElementById('contactPhotoData').value = image.dataUrl;
-      return;
-    }
+  const confirmed = confirm(
+    getContactMessages().photoPermissionExplanation ||
+    "LifeKompas needs access to your photos so you can add a profile image. The photo stays only on your device."
+  );
+
+  if (!confirmed) return;
+
+  try {
+    const image = await Capacitor.Plugins.Camera.getPhoto({
+      quality: 80,
+      allowEditing: false,
+      resultType: "dataUrl",
+      source: "photos"
+    });
+
+    document.getElementById('contactPhotoData').value = image.dataUrl;
+  } catch (err) {
+    console.warn("Camera permission denied or cancelled", err);
+  }
+
+  return;
+}
 
     // Web fallback
     const fileInput = document.createElement('input');
@@ -563,7 +612,7 @@ if (saveContactBtn) {
       lastName,
       birthDate: birthDateValue,
       birthdayTime: document.getElementById('contactBirthdayTime').value || "09:00",
-      birthdayNotify: birthDateValue ? true : false,
+      birthdayNotify: document.getElementById('contactBirthdayNotify')?.checked || false,
       address: document.getElementById('contactAddress').value.trim(),
       email: document.getElementById('contactEmail').value.trim(),
       phone: document.getElementById('contactPhone').value.trim(),
@@ -575,19 +624,31 @@ if (saveContactBtn) {
     const m = await import('./notifications.js');
 
     if (contact.birthdayNotify) {
-      const granted = await m.requestNotificationPermission();
-      if (granted) {
-        await m.cancelBirthdayNotification(contact.id);
-        await m.scheduleBirthdayNotification(contact);
-      }
-    } else {
+
+  const confirmed = confirm(
+    getContactMessages().notificationPermissionExplanation ||
+    "LifeKompas can remind you about birthdays. Notifications stay private and are only used for reminders you create."
+  );
+
+  if (!confirmed) {
+    contact.birthdayNotify = false;
+    await m.cancelBirthdayNotification(contact.id);
+  } else {
+    const granted = await m.requestNotificationPermission();
+    if (granted) {
       await m.cancelBirthdayNotification(contact.id);
+      await m.scheduleBirthdayNotification(contact);
     }
+  }
+
+} else {
+  await m.cancelBirthdayNotification(contact.id);
+}
 
     document.getElementById('contactFirstName').value = '';
     document.getElementById('contactLastName').value = '';
     document.getElementById('contactBirthDate').value = '';
-    document.getElementById('contactBirthdayTime').value = '';
+    document.getElementById('contactBirthdayTime').value = '09:00';
     document.getElementById('contactAddress').value = '';
     document.getElementById('contactEmail').value = '';
     document.getElementById('contactPhone').value = '';
@@ -601,7 +662,28 @@ if (saveContactBtn) {
 }
 // APPLY I18N WHEN CONTACT FORM SCREEN IS SHOWN
 document.addEventListener('screenShown', (e) => {
+
   if (e.detail === 'screen-contact-form') {
     fillContactFormI18N();
+
+    const saveBtn = document.getElementById('saveContact');
+    const isEdit = saveBtn?.dataset.editId;
+
+    if (!isEdit) {
+      const birthdayTimeInput = document.getElementById('contactBirthdayTime');
+      if (birthdayTimeInput) {
+        birthdayTimeInput.value = '09:00';
+      }
+    }
   }
+
+  if (e.detail === 'screen-contacts') {
+    const searchInput = document.getElementById('searchContacts');
+    if (searchInput) {
+      searchInput.value = '';
+    }
+
+    loadContacts();
+  }
+
 });

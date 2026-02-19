@@ -30,7 +30,9 @@ const I18N = {
         noContacts: "Nema dostupnih kontakata",
         error: "Greška",
         deleteConfirm: "Obrisati kontakt?",
-        enterName: "Unesi ime i prezime"
+        enterName: "Unesi ime i prezime",
+photoPermissionExplanation: "LifeKompas treba pristup fotografijama kako bi mogao dodati sliku kontakta. Fotografija ostaje samo na ovom uređaju.",
+notificationPermissionExplanation: "LifeKompas te može podsjetiti na rođendane. Notifikacije su privatne i koriste se samo za podsjetnike koje ti uključiš."
       }
     },
     menu: {

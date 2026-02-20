@@ -997,18 +997,50 @@ backdrop-filter: blur(10px);
   align-self: flex-start;
 }
 .archive-toggle {
-  margin: 8px 0 12px;
-  background: none;
-  border: none;
+  padding: 14px 16px;
 
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.18);
+
+  background: rgba(255,255,255,0.12);
   color: #ffffff;
-  opacity: 0.95;
 
   font-size: 15px;
   font-weight: 700;
+  text-align: center;
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  box-shadow:
+    0 8px 22px rgba(0,0,0,0.32),
+    inset 0 1px 0 rgba(255,255,255,0.08);
 
   cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
 }
+
+.shopping-actions {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin: 16px 0;
+}
+
+.shopping-actions .archive-toggle {
+  width: 45%;
+  max-width: 200px;
+}
+
+.archive-toggle:hover {
+  background: rgba(255,255,255,0.18);
+  transform: scale(1.02);
+}
+
+.archive-toggle:active {
+  transform: scale(0.97);
+}
+
 .archive-top-left {
   align-self: flex-start;
   margin: 6px 0 6px 12px;

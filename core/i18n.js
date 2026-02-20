@@ -50,7 +50,7 @@ notificationPermissionExplanation: "LifeKompas te može podsjetiti na rođendane
       placeholder: "Dodaj stavku i stisni Enter",
       emptyTitle: "Nema stavki",
       emptySub: "Dodaj prvu stavku gore.",
-      scanReceipt: "Unesi iznos računa",
+      scanReceipt: "Unesi račun",
       showArchive: "Prikaži arhivu",
       hideArchive: "Sakrij arhivu"
     },

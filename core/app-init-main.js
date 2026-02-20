@@ -126,6 +126,35 @@ if (target) {
   target.style.display = 'block'; // 🔥 KRITIČNO
 }
 
+// ===== HEADER TITLE =====
+const headerTitle = document.getElementById('headerTitle');
+
+if (headerTitle) {
+
+  const titles = {
+    'screen-menu': 'LifeKompas',
+    'screen-lang': 'LifeKompas',
+
+    'screen-obligations-list': 'Obveze',
+    'screen-add-obligation': 'Nova obveza',
+
+    'screen-shopping': 'Kupovina',
+
+    'screen-contacts': 'Kontakti',
+    'screen-contact-form': 'Novi kontakt',
+    'screen-contact-details': 'Detalji kontakta',
+
+    'screen-finances-menu': 'Financije',
+    'screen-finance-income': 'Prihodi',
+    'screen-finance-fixed': 'Fiksni troškovi',
+    'screen-finance-credits': 'Krediti',
+    'screen-finance-other': 'Ostalo',
+    'screen-finance-overview': 'Pregled'
+  };
+
+  headerTitle.textContent = titles[screenId] || 'LifeKompas';
+}
+
 // ===== MENU ANIMATION FIX =====
 if (screenId === 'screen-menu') {
 

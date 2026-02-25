@@ -2,10 +2,12 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+    <key>CAPACITOR_DEBUG</key>
+	<string>$(CAPACITOR_DEBUG)</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>LifeKompas</string>
+        <string>LifeKompas</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -22,14 +24,6 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>NSCameraUsageDescription</key>
-	<string>LifeKompas koristi kameru samo ako želiš dodati fotografiju kontaktu. Fotografija ostaje na ovom uređaju.</string>
-	<key>NSContactsUsageDescription</key>
-	<string>LifeKompas pristupa kontaktima samo ako želiš uvesti podatke iz imenika. Podaci ostaju privatni na ovom uređaju.</string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>LifeKompas koristi galeriju samo ako želiš odabrati sliku kontakta. Fotografija ostaje na ovom uređaju.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>LifeKompas treba pristup galeriji kako bi mogao dodati fotografiju kontaktu.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

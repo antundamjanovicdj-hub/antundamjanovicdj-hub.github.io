@@ -15,6 +15,7 @@ window.addEventListener('unhandledrejection', (e) => {
 let clickLocked = false;
 
 document.addEventListener('click', (e) => {
+  if (e.target.closest('#lkTesterBtn')) return;
 
   if (clickLocked) {
     e.stopImmediatePropagation();
@@ -50,6 +51,64 @@ NEXT PHASE:
 // Namjerno prazno: u sljedećem koraku selimo veliki dio koda iz index.html ovdje.
 
 console.log('[LifeKompas] app-init.js loaded');
+// ===== LIFEKOMPAS TESTER MODE (PROMPT FIRST, THEN RETRY FIREBASE) =====
+setTimeout(() => {
+
+  // 1) PROMPT + SAVE (ne ovisi o Capacitoru)
+  let testerName = localStorage.getItem('lkTesterName');
+
+  if (!testerName) {
+    testerName = prompt("LifeKompas tester ime (Antun, Ruža, Mama...)");
+    if (!testerName) testerName = "unknown";
+    localStorage.setItem('lkTesterName', testerName);
+  }
+
+  console.log("🧪 Tester name:", testerName);
+
+  // 2) FIREBASE PROPERTY (retry dok plugin ne bude spreman)
+  (async () => {
+    for (let i = 0; i < 12; i++) {
+      try {
+        if (!window.Capacitor) throw new Error("Capacitor not ready yet");
+
+        const { FirebaseAnalytics } =
+          await import('@capacitor-firebase/analytics');
+
+        await FirebaseAnalytics.setUserProperty({
+          name: "tester",
+          value: testerName
+        });
+
+        console.log("🧪 Tester registered (Firebase):", testerName);
+        return;
+
+      } catch (e) {
+        // pokušaj opet
+        await new Promise(r => setTimeout(r, 500));
+      }
+    }
+
+    console.log("Tester mode: Firebase not ready after retries");
+  })();
+
+}, 1800);
+
+
+// ===== FIREBASE ANALYTICS BOOTSTRAP (SAFE INIT) =====
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    if (window.Capacitor) {
+      const { FirebaseAnalytics } =
+        await import('@capacitor-firebase/analytics');
+
+      await FirebaseAnalytics.setEnabled({ enabled: true });
+
+      console.log('🔥 Firebase Analytics ENABLED');
+    }
+  } catch (err) {
+    console.log('Firebase Analytics init skipped', err);
+  }
+});
 
 /* =====================================================
    GLOBAL ERROR GUARD — LIFEOMPAS CORE SAFETY NET
@@ -757,6 +816,23 @@ function openEditObligation(id) {
 
     const date = document.getElementById('obligationDateTime');
     if (date) date.value = obligation.dateTime || '';
+
+    // ===== REMINDER: restore state in edit =====
+const enableReminder = document.getElementById('enableReminder');
+const reminderOptions = document.getElementById('reminderOptions');
+const reminderTime = document.getElementById('reminderTime');
+
+const hasReminder = !!obligation.reminder;
+
+if (enableReminder) enableReminder.checked = hasReminder;
+
+if (reminderOptions) {
+  reminderOptions.classList.toggle('hidden', !hasReminder);
+}
+
+if (reminderTime && hasReminder) {
+  reminderTime.value = obligation.reminder;
+}
 
     window.__editingObligationId = id;
 

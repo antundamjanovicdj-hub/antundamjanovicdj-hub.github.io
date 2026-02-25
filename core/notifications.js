@@ -1,3 +1,9 @@
+import { FirebaseAnalytics } from '@capacitor-firebase/analytics';
+
+if (window.Capacitor) {
+  FirebaseAnalytics.setEnabled({ enabled: true });
+}
+
 // ===== CAPACITOR GUARD =====
 let LocalNotifications = null;
 const IS_CAPACITOR =

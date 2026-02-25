@@ -852,61 +852,139 @@ export function initApp() {
 
       // SPREMI ILI AŽURIRAJ
       document.getElementById('saveObligation').addEventListener('click', async () => {
-        const title = document.getElementById('obligationTitle').value.trim();
-        if (!title) { alert(I18N[getLang()].popup.newObligationTitle); return; }
-        const editIdStr = document.getElementById('saveObligation').dataset.editId;
-        const isEdit = !!editIdStr;
-        const editId = isEdit ? parseInt(editIdStr, 10) : null;
-        const lang = getLang();
-        let existing = null;
-        if (isEdit) {
-          const all = await obligationDB.getAll();
-          existing = all.find(o => o.id === editId) || null;
-        }
-        const obligation = {
-          id: isEdit ? editId : Date.now(),
-          type: 'obligation',
-          title,
-          note: document.getElementById('obligationNote').value,
-          dateTime: document.getElementById('obligationDateTime').value,
-          urgent: document.getElementById('urgentObligation')?.checked || false,
-          reminder: document.getElementById('enableReminder').checked ? document.getElementById('reminderTime').value : null,
-          repeat: document.getElementById('repeatType')?.value || null,
-          customRepeat: isEdit ? (existing?.customRepeat || null) : null,
-          repeatPaused: isEdit ? (existing?.repeatPaused || false) : false,
-          skipNextRepeat: isEdit ? (existing?.skipNextRepeat || false) : false,
-          status: isEdit ? (existing?.status || 'active') : 'active',
-          createdAt: isEdit ? (existing?.createdAt || new Date().toISOString()) : new Date().toISOString(),
-          lang
-        };
-        await obligationDB.add(obligation);
-        const m = await import('./notifications.js');
-        if (obligation.reminder) {
-          const granted = await m.requestNotificationPermission();
-          if (!granted) { alert(I18N[getLang()].popup.newObligationSaved); showScreen('screen-menu'); return; }
-        }
-        if (isEdit) await m.rescheduleObligationNotification(obligation);
-        else await m.scheduleObligationNotification(obligation);
-        alert(isEdit ? I18N[getLang()].popup.newObligationSaved : I18N[getLang()].popup.newObligationSaved);
-        document.getElementById('obligationTitle').value = '';
-        document.getElementById('obligationNote').value = '';
-        document.getElementById('obligationDateTime').value = '';
-        document.getElementById('enableReminder').checked = false;
-        document.getElementById('reminderOptions').classList.add('hidden');
-        const repeatSelect = document.getElementById('repeatType');
-        if (repeatSelect) repeatSelect.value = '';
-        document.getElementById('saveObligation').removeAttribute('data-edit-id');
-        if (isEdit) { showScreen('screen-obligations-list'); refreshCurrentObligationsView(); }
-        else { showScreen('screen-menu'); }
-      });
 
-      // ODUSTANI
-      document.getElementById('cancelObligation').addEventListener('click', () => {
-        const isEdit = !!document.getElementById('saveObligation').dataset.editId;
-        document.getElementById('saveObligation').removeAttribute('data-edit-id');
-        if (isEdit) { showScreen('screen-obligations-list'); refreshCurrentObligationsView(); }
-        else { showScreen('screen-menu'); }
-      });
+  const saveBtn = document.getElementById('saveObligation');
+
+  // ✅ HARD LOCK: spriječi multi-click duplikate
+  if (saveBtn.dataset.saving === '1') return;
+  saveBtn.dataset.saving = '1';
+  saveBtn.disabled = true;
+
+  try {
+
+    const title = document.getElementById('obligationTitle').value.trim();
+    if (!title) {
+      alert(I18N[getLang()].popup.newObligationTitle);
+      return;
+    }
+
+    const editIdStr = saveBtn.dataset.editId;
+    const isEdit = !!editIdStr;
+    const editId = isEdit ? parseInt(editIdStr, 10) : null;
+
+    const lang = getLang();
+
+    let existing = null;
+    if (isEdit) {
+      const all = await obligationDB.getAll();
+      existing = all.find(o => o.id === editId) || null;
+    }
+
+    const obligation = {
+      id: isEdit ? editId : Date.now(),
+      type: 'obligation',
+      title,
+      note: document.getElementById('obligationNote').value,
+      dateTime: document.getElementById('obligationDateTime').value,
+      urgent: document.getElementById('urgentObligation')?.checked || false,
+      reminder: document.getElementById('enableReminder').checked
+        ? document.getElementById('reminderTime').value
+        : null,
+      repeat: document.getElementById('repeatType')?.value || null,
+      customRepeat: isEdit ? (existing?.customRepeat || null) : null,
+      repeatPaused: isEdit ? (existing?.repeatPaused || false) : false,
+      skipNextRepeat: isEdit ? (existing?.skipNextRepeat || false) : false,
+      status: isEdit ? (existing?.status || 'active') : 'active',
+      createdAt: isEdit ? (existing?.createdAt || new Date().toISOString()) : new Date().toISOString(),
+      lang
+    };
+
+    // ✅ 1) Spremi odmah
+    await obligationDB.add(obligation);
+
+    // ✅ 2) UX: odmah zatvori i osvježi (ne čekamo notifikacije)
+    showScreen('screen-obligations-list');
+    refreshCurrentObligationsView();
+
+    // ✅ 3) Očisti formu
+    document.getElementById('obligationTitle').value = '';
+    document.getElementById('obligationNote').value = '';
+    document.getElementById('obligationDateTime').value = '';
+    document.getElementById('enableReminder').checked = false;
+    document.getElementById('reminderOptions').classList.add('hidden');
+
+    const repeatSelect = document.getElementById('repeatType');
+    if (repeatSelect) repeatSelect.value = '';
+
+    saveBtn.removeAttribute('data-edit-id');
+
+    // ✅ 4) Notifikacije: pokušaj + jasni logovi (ne blokira UX)
+(async () => {
+  try {
+    const m = await import('./notifications.js');
+
+    console.log("🔔 Reminder value:", obligation.reminder, "dateTime:", obligation.dateTime);
+
+    if (!obligation.reminder) {
+      console.log("🔔 No reminder set -> skip scheduling");
+      return;
+    }
+
+    const granted = await m.requestNotificationPermission();
+    console.log("🔔 Permission granted:", granted);
+
+    if (!granted) return;
+
+    if (isEdit) {
+      await m.rescheduleObligationNotification(obligation);
+      console.log("🔔 Rescheduled notification for obligation:", obligation.id);
+    } else {
+      await m.scheduleObligationNotification(obligation);
+      console.log("🔔 Scheduled notification for obligation:", obligation.id);
+    }
+
+  } catch (e) {
+    console.log("🔔 Notification scheduling error", e);
+  }
+})();
+
+  } finally {
+    // ✅ Unlock uvijek, čak i ako nešto pukne
+    saveBtn.dataset.saving = '0';
+    saveBtn.disabled = false;
+  }
+
+});
+
+// ===== CANCEL OBLIGATION (SAFE) =====
+const cancelBtn = document.getElementById('cancelObligation');
+if (cancelBtn) {
+  cancelBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const saveBtn = document.getElementById('saveObligation');
+    if (saveBtn) {
+      saveBtn.dataset.saving = '0';
+      saveBtn.disabled = false;
+      saveBtn.removeAttribute('data-edit-id');
+    }
+
+    // očisti formu
+    document.getElementById('obligationTitle').value = '';
+    document.getElementById('obligationNote').value = '';
+    document.getElementById('obligationDateTime').value = '';
+    document.getElementById('enableReminder').checked = false;
+    document.getElementById('reminderOptions').classList.add('hidden');
+
+    const repeatSelect = document.getElementById('repeatType');
+    if (repeatSelect) repeatSelect.value = '';
+
+    // UX: uvijek natrag na listu
+    showScreen('screen-obligations-list');
+    refreshCurrentObligationsView?.();
+  });
+}
 
       // PREGLED OBVEZA
       document.getElementById('btnViewObligations').addEventListener('click', () => {

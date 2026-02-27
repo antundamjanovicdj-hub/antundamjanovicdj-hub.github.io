@@ -69,10 +69,10 @@ setTimeout(() => {
   (async () => {
     for (let i = 0; i < 12; i++) {
       try {
-        if (!window.Capacitor) throw new Error("Capacitor not ready yet");
+        const FirebaseAnalytics =
+          window.Capacitor?.Plugins?.FirebaseAnalytics;
 
-        const { FirebaseAnalytics } =
-          await import('@capacitor-firebase/analytics');
+        if (!FirebaseAnalytics) throw new Error("FirebaseAnalytics plugin not ready yet");
 
         await FirebaseAnalytics.setUserProperty({
           name: "tester",
@@ -83,7 +83,6 @@ setTimeout(() => {
         return;
 
       } catch (e) {
-        // pokušaj opet
         await new Promise(r => setTimeout(r, 500));
       }
     }
@@ -97,13 +96,14 @@ setTimeout(() => {
 // ===== FIREBASE ANALYTICS BOOTSTRAP (SAFE INIT) =====
 document.addEventListener('DOMContentLoaded', async () => {
   try {
-    if (window.Capacitor) {
-      const { FirebaseAnalytics } =
-        await import('@capacitor-firebase/analytics');
+    const FirebaseAnalytics =
+      window.Capacitor?.Plugins?.FirebaseAnalytics;
 
+    if (FirebaseAnalytics) {
       await FirebaseAnalytics.setEnabled({ enabled: true });
-
       console.log('🔥 Firebase Analytics ENABLED');
+    } else {
+      console.log('Firebase Analytics plugin not available (skip)');
     }
   } catch (err) {
     console.log('Firebase Analytics init skipped', err);
@@ -162,7 +162,7 @@ document.getElementById("appVersion").textContent = "v" + APP_VERSION;
 // ===== GLOBAL CONFIG =====
 const CONFIG = {
   notificationsEnabled: true,
-  serviceWorkerEnabled: true,
+  serviceWorkerEnabled: !window.Capacitor, // ✅ SW samo na webu/localhostu
   debug: false
 };
 // ===== INIT SERVICE WORKER (guarded) =====

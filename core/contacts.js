@@ -403,8 +403,6 @@ requestAnimationFrame(() => {
 // ===== BIRTHDAY NOTIFY TOGGLE =====
   document.getElementById('birthdayNotifyToggle').addEventListener('change', async (e) => {
 
-  const m = await import('./notifications.js');
-
   if (e.target.checked) {
 
     const confirmed = confirm(
@@ -452,8 +450,6 @@ if (btnDeleteContact) {
   if (!currentId) return;
 
   if (!confirm(getContactMessages().deleteConfirm)) return;
-
-  const m = await import('./notifications.js');
 
 // Cancel scheduled birthday notification before deleting contact
 await m.cancelBirthdayNotification(Number(currentId));
@@ -620,8 +616,6 @@ if (saveContactBtn) {
     };
 
     await addContact(contact);
-
-    const m = await import('./notifications.js');
 
     if (contact.birthdayNotify) {
 

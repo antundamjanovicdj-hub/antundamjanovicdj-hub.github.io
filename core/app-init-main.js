@@ -36,6 +36,7 @@ import {
   getShoppingItems,
   addShoppingItem
 } from './db.js';
+import * as notifications from './notifications.js';
 import { getContacts } from './db.js';
 
 export function initApp() {
@@ -398,16 +399,20 @@ export function initApp() {
       }
 
       // ===== SERVICE WORKER SNOOZE =====
-      navigator.serviceWorker?.addEventListener('message', e => {
-        if (e.data?.type === 'SNOOZE') {
-          import('./notifications.js').then(({ snoozeObligation }) => {
-            obligationDB.getAll().then(items => {
-              const ob = items.find(o => o.id === e.data.obligationId);
-              if (ob) snoozeObligation(ob, e.data.minutes);
-            });
-          });
-        }
-      });
+      navigator.serviceWorker?.addEventListener('message', async e => {
+  if (e.data?.type === 'SNOOZE') {
+
+    const items = await obligationDB.getAll();
+    const ob = items.find(o => o.id === e.data.obligationId);
+
+    if (ob) {
+      await notifications.snoozeObligation(
+        ob,
+        e.data.minutes
+      );
+    }
+  }
+});
 
       /* ===== SET LANGUAGE + SHOW MENU (RESTORED) ===== */
       function setLanguage(lang) {
@@ -900,11 +905,11 @@ export function initApp() {
     };
 
     // ✅ 1) Spremi odmah
-    await obligationDB.add(obligation);
+await obligationDB.add(obligation);
 
-    // ✅ 2) UX: odmah zatvori i osvježi (ne čekamo notifikacije)
-    showScreen('screen-obligations-list');
-    refreshCurrentObligationsView();
+// ✅ 3) Tek sada navigacija
+showScreen('screen-obligations-list');
+refreshCurrentObligationsView();
 
     // ✅ 3) Očisti formu
     document.getElementById('obligationTitle').value = '';
@@ -921,30 +926,43 @@ export function initApp() {
     // ✅ 4) Notifikacije: pokušaj + jasni logovi (ne blokira UX)
 (async () => {
   try {
-    const m = await import('./notifications.js');
 
-    console.log("🔔 Reminder value:", obligation.reminder, "dateTime:", obligation.dateTime);
+    console.log("🔔 [notif] start", {
+      isEdit,
+      reminder: obligation?.reminder,
+      dateTime: obligation?.dateTime,
+      id: obligation?.id
+    });
 
-    if (!obligation.reminder) {
-      console.log("🔔 No reminder set -> skip scheduling");
+    console.log("🔔 [notif] importing notifications.js ...");
+    console.log("🔔 [notif] imported OK", Object.keys(m));
+
+    if (!obligation?.reminder) {
+      console.log("🔔 [notif] no reminder -> skip");
       return;
     }
 
+    console.log("🔔 [notif] requesting permission ...");
     const granted = await m.requestNotificationPermission();
-    console.log("🔔 Permission granted:", granted);
+    console.log("🔔 [notif] permission result:", granted);
 
     if (!granted) return;
 
+    console.log("🔔 [notif] calling schedule/reschedule ...");
     if (isEdit) {
       await m.rescheduleObligationNotification(obligation);
-      console.log("🔔 Rescheduled notification for obligation:", obligation.id);
+      console.log("🔔 [notif] rescheduled:", obligation.id);
     } else {
       await m.scheduleObligationNotification(obligation);
-      console.log("🔔 Scheduled notification for obligation:", obligation.id);
+      console.log("🔔 [notif] scheduled:", obligation.id);
     }
 
   } catch (e) {
-    console.log("🔔 Notification scheduling error", e);
+    console.error("🔔 [notif] ERROR object:", e);
+    console.error("🔔 [notif] ERROR message:", e?.message);
+    console.error("🔔 [notif] ERROR stack:", e?.stack);
+    console.error("🔔 [notif] ERROR keys:", e ? Object.keys(e) : null);
+    console.error("🔔 [notif] ERROR string:", String(e));
   }
 })();
 
@@ -1017,7 +1035,6 @@ if (cancelBtn) {
       // PROVJERA
       obligationDB.getAll().then(async obligations => {
         console.log('Učitane obveze iz IndexedDB:', obligations);
-        const m = await import('./notifications.js');
         await m.rescheduleAllObligations(obligations);
       });
 

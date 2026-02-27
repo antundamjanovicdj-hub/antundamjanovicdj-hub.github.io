@@ -923,7 +923,7 @@ refreshCurrentObligationsView();
 
     saveBtn.removeAttribute('data-edit-id');
 
-    // ✅ 4) Notifikacije: pokušaj + jasni logovi (ne blokira UX)
+// ✅ 4) Notifikacije: pokušaj + jasni logovi (ne blokira UX)
 (async () => {
   try {
 
@@ -935,6 +935,9 @@ refreshCurrentObligationsView();
     });
 
     console.log("🔔 [notif] importing notifications.js ...");
+
+    const m = await import('./notifications.js');
+
     console.log("🔔 [notif] imported OK", Object.keys(m));
 
     if (!obligation?.reminder) {
@@ -944,11 +947,13 @@ refreshCurrentObligationsView();
 
     console.log("🔔 [notif] requesting permission ...");
     const granted = await m.requestNotificationPermission();
+
     console.log("🔔 [notif] permission result:", granted);
 
     if (!granted) return;
 
     console.log("🔔 [notif] calling schedule/reschedule ...");
+
     if (isEdit) {
       await m.rescheduleObligationNotification(obligation);
       console.log("🔔 [notif] rescheduled:", obligation.id);

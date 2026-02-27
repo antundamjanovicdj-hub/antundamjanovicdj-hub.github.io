@@ -50,6 +50,11 @@ NEXT PHASE:
 // LifeKompas INIT EXTRACTION – STEP 1 (scaffold)
 // Namjerno prazno: u sljedećem koraku selimo veliki dio koda iz index.html ovdje.
 
+// 🔔 LifeKompas notification bootstrap
+import('./notifications.js')
+  .then(() => console.log('🔔 notifications module loaded'))
+  .catch(e => console.log('🔔 notifications bootstrap skipped', e));
+
 console.log('[LifeKompas] app-init.js loaded');
 // ===== LIFEKOMPAS TESTER MODE (PROMPT FIRST, THEN RETRY FIREBASE) =====
 setTimeout(() => {

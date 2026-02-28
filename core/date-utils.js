@@ -2,7 +2,15 @@
 // ZERO-RISK helper extraction
 
 export function getISODateFromDateTime(dateTime) {
-  return dateTime ? dateTime.slice(0, 10) : null;
+  if (!dateTime) return null;
+
+  // already ISO date (YYYY-MM-DD)
+  if (dateTime.length === 10) return dateTime;
+
+  const d = new Date(dateTime);
+  if (isNaN(d)) return null;
+
+  return d.toISOString().slice(0, 10);
 }
 
 export function todayISO() {

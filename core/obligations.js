@@ -59,34 +59,30 @@ export async function loadDailyForDate(isoDate) {
 
 export function buildObligationCard(ob, lang) {
   // ===== NORMALIZE OB OBJECT (prevent "undefined") =====
-  const safe = {
-    id: ob.id,
-    title: ob.title || "",
-    note: ob.note || "",
-    dateTime: ob.dateTime || null,
-    reminder: ob.reminder || null,
-    repeat: ob.repeat || null,
-    status: ob.status || "active",
-  };
+  const safe = ob;
 
-  const t = window.I18N && I18N[lang] ? I18N[lang] : I18N.hr;
+  const t = I18N[lang] || I18N.hr;
   const ol =
     t && t.obligationsList ? t.obligationsList : I18N.hr.obligationsList;
 
   const dt = safe.dateTime ? new Date(safe.dateTime) : null;
-  const dateStr = dt ? dt.toLocaleDateString((t && t.lang) || "hr-HR") : "—";
+const isoDate = safe.dateTime
+  ? getISODateFromDateTime(safe.dateTime)
+  : null;
+  const dateStr = dt ? dt.toLocaleDateString(t.lang) : "—";
   const timeStr = dt
-    ? dt.toLocaleTimeString((t && t.lang) || "hr-HR", {
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-    : "—";
-  const isOverdue =
-    safe.dateTime && getISODateFromDateTime(safe.dateTime) < todayISO();
+  ? dt.toLocaleTimeString(t.lang, {
+      hour: "2-digit",
+      minute: "2-digit",
+    })
+  : "—";
+  const isOverdue = isoDate && isoDate < todayISO();
 
-  const overdueHint = isOverdue
-    ? `<div style="font-size:12px; opacity:0.6; margin-top:2px;">Zakašnjelo</div>`
-    : "";
+  const overdueText = ol.overdue || "Zakašnjelo";
+
+const overdueHint = isOverdue
+  ? `<div class="obligation-overdue">${overdueText}</div>`
+  : "";
 
   let reminderStr = "";
   if (safe.reminder) {
@@ -112,11 +108,10 @@ export function buildObligationCard(ob, lang) {
   const statusText =
     safe.status === "done" ? `✅ ${statusDoneText}` : `⏳ ${statusActiveText}`;
 
-  const bgColor =
-    safe.status === "done" ? "#e8f5e9" : isOverdue ? "#f7f7f7" : "#e3f2fd";
+  let stateClass = "ob-active";
 
-  const borderColor =
-    safe.status === "done" ? "#4caf50" : isOverdue ? "#bbb" : "#2196f3";
+if (safe.status === "done") stateClass = "ob-done";
+else if (isOverdue) stateClass = "ob-overdue";
 
   const toggleBtnText =
     safe.status === "done"
@@ -127,12 +122,10 @@ export function buildObligationCard(ob, lang) {
   const deleteText = ol.delete || "Delete";
 
   return `
-    <div class="obligation-card" data-id="${
-      safe.id
-    }" style="background:${bgColor}; border-left:4px solid ${borderColor};">
-      <div class="obligation-title" title="${repeatTitle}">${
-    safe.title
-  }${repeatIcon}</div>
+    <div class="obligation-card ${stateClass}" data-id="${safe.id}">
+      <div class="obligation-title" title="${repeatTitle}">
+        ${safe.title}${repeatIcon}
+      </div>
 
       ${safe.note ? `<div class="obligation-note">${safe.note}</div>` : ""}
 
@@ -141,7 +134,7 @@ export function buildObligationCard(ob, lang) {
   📅 ${dateStr}
   ${overdueHint}
 </div>
-<div class="obligation-time">⏰ ${timeStr}</div>
+${dt ? `<div class="obligation-time">⏰ ${timeStr}</div>` : ""}
         ${
           reminderStr
             ? `<div class="obligation-reminder">🔔 ${reminderStr}</div>`
@@ -156,18 +149,22 @@ export function buildObligationCard(ob, lang) {
         ${toggleBtnText}
       </button>
 
-      <button class="obligation-edit" data-id="${
-        safe.id
-      }">✏️ ${editText}</button>
+      <div class="obligation-actions">
 
-      <button
-        class="obligation-delete"
-        data-id="${safe.id}"
-        title="${deleteText}"
-        aria-label="${deleteText}"
-      >
-        🗑️
-      </button>
+  <button class="obligation-edit" data-id="${safe.id}">
+    ✏️ ${editText}
+  </button>
+
+  <button
+    class="obligation-delete"
+    data-id="${safe.id}"
+    title="${deleteText}"
+    aria-label="${deleteText}"
+  >
+    🗑️
+  </button>
+
+</div>
     </div>
   `;
 }
@@ -175,47 +172,38 @@ export function attachObligationHandlers(container) {
 
   if (!container) return;
 
-  // TOGGLE STATUS
+  // TOGGLE STATUS (engine-owned)
   container.querySelectorAll(".obligation-toggle-status").forEach(btn => {
-    btn.addEventListener("click", async (e) => {
+    btn.addEventListener("click", (e) => {
       e.stopPropagation();
 
       const id = parseInt(btn.dataset.id, 10);
       const currentStatus = btn.dataset.status;
       const newStatus = currentStatus === "done" ? "active" : "done";
 
-      const obligations = await obligationDB.getAll();
-      const obligation = obligations.find(o => o.id === id);
-      if (!obligation) return;
-
-      obligation.status = newStatus;
-      await obligationDB.add(obligation);
-
-      window.refreshCurrentObligationsView?.();
+      window.toggleObligationStatus?.(id, newStatus);
     });
   });
 
-  // DELETE
+  // DELETE (engine-owned)
   container.querySelectorAll(".obligation-delete").forEach(btn => {
-    btn.addEventListener("click", async (e) => {
+    btn.addEventListener("click", (e) => {
       e.stopPropagation();
 
       const id = parseInt(btn.dataset.id, 10);
-      await obligationDB.delete(id);
 
-      window.refreshCurrentObligationsView?.();
+      window.deleteObligation?.(id);
     });
   });
-// ✅ EDIT — ZALIJEPI TOČNO OVDJE
+
+  // EDIT
   container.querySelectorAll(".obligation-edit").forEach(btn => {
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
 
       const id = parseInt(btn.dataset.id, 10);
 
-      if (typeof window.openEditObligation === "function") {
-        window.openEditObligation(id);
-      }
+      window.openEditObligation?.(id);
     });
   });
 

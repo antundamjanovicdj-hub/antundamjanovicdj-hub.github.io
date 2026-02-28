@@ -708,11 +708,22 @@ async function loadDailyForDate(isoDate) {
 // Acceptable while dataset is small.
 // Future optimization: indexed queries or in-memory cache.
   const all = (await obligationDB.getAll())
-  .filter(o => o.type !== 'shopping');
+  .filter(o => o.type !== 'shopping')
+  .map(o => {
+    // normalize date-only obligations globally
+    if (o.dateTime && o.dateTime.length === 10) {
+      return { ...o, dateTime: o.dateTime + "T00:00" };
+    }
+    return o;
+  });
 
-const filtered = all.filter(o =>
-  getISODateFromDateTime(o.dateTime) === isoDate
-);
+const filtered = all.filter(o => {
+  if (!o.dateTime) return false;
+
+  // supports date-only AND datetime values
+  const iso = getISODateFromDateTime(o.dateTime);
+  return iso === isoDate;
+});
   const groups = groupObligationsByStatus(filtered);
 
   const openWrap = document.getElementById('dailyOpenWrap');
@@ -882,3 +893,23 @@ window.openEditObligation = openEditObligation;
     }
   }
 })();
+
+// ===== OBLIGATIONS ENGINE BRIDGE (Calm Simplification) =====
+
+// toggle status (engine owns DB)
+window.toggleObligationStatus = async function(id, newStatus) {
+  const obligations = await obligationDB.getAll();
+  const obligation = obligations.find(o => o.id === id);
+  if (!obligation) return;
+
+  obligation.status = newStatus;
+  await obligationDB.add(obligation);
+
+  window.refreshCurrentObligationsView?.();
+};
+
+// delete obligation (engine owns DB)
+window.deleteObligation = async function(id) {
+  await obligationDB.delete(id);
+  window.refreshCurrentObligationsView?.();
+};

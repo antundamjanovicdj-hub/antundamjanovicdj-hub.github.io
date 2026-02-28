@@ -1949,3 +1949,35 @@ backdrop-filter: blur(10px);
 .shopping-item {
   display: block !important;
 }
+
+/* ===== OBLIGATION CARD STATES (Calm Simplification) ===== */
+
+.obligation-card.ob-active {
+  background:#e3f2fd;
+  border-left:4px solid #2196f3;
+}
+
+.obligation-card.ob-done {
+  background:#e8f5e9;
+  border-left:4px solid #4caf50;
+}
+
+.obligation-card.ob-overdue {
+  background:#f7f7f7;
+  border-left:4px solid #bbb;
+}
+
+/* overdue hint */
+.obligation-overdue{
+  font-size:12px;
+  opacity:0.6;
+  margin-top:2px;
+}
+
+/* secondary actions — calm layout */
+.obligation-actions{
+  margin-top:8px;
+  display:flex;
+  gap:8px;
+  opacity:0.8;
+}

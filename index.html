@@ -230,9 +230,14 @@
       <textarea id="obligationNote" placeholder="Napomena" rows="3"></textarea>
 
       <label class="datetime-label">
-        <span id="obligationDateTimeLabel">Datum i vrijeme</span>
-        <input type="datetime-local" id="obligationDateTime">
-      </label>
+  <span id="obligationDateTimeLabel">Datum</span>
+  <input type="date" id="obligationDate">
+</label>
+
+<label class="datetime-label">
+  <span>Vrijeme (opcionalno)</span>
+  <input type="time" id="obligationTime">
+</label>
 
       <label class="reminder-checkbox">
         <input type="checkbox" id="enableReminder">

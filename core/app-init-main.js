@@ -820,7 +820,23 @@ export function initApp() {
         showScreen('screen-add-obligation');
         document.getElementById('obligationTitle').value = ob.title || '';
         document.getElementById('obligationNote').value = ob.note || '';
-        document.getElementById('obligationDateTime').value = ob.dateTime || '';
+        const dateInput = document.getElementById('obligationDate');
+const timeInput = document.getElementById('obligationTime');
+
+if (ob.dateTime) {
+  const [datePart, timePart] = ob.dateTime.split('T');
+
+  if (dateInput) dateInput.value = datePart || '';
+
+  if (timeInput) {
+    timeInput.value = timePart
+      ? timePart.slice(0, 5)
+      : '';
+  }
+} else {
+  if (dateInput) dateInput.value = '';
+  if (timeInput) timeInput.value = '';
+}
         const urgent = document.getElementById('urgentObligation');
         if (urgent) urgent.checked = !!ob.urgent;
         const enableReminder = document.getElementById('enableReminder');
@@ -885,24 +901,51 @@ export function initApp() {
       existing = all.find(o => o.id === editId) || null;
     }
 
-    const obligation = {
-      id: isEdit ? editId : Date.now(),
-      type: 'obligation',
-      title,
-      note: document.getElementById('obligationNote').value,
-      dateTime: document.getElementById('obligationDateTime').value,
-      urgent: document.getElementById('urgentObligation')?.checked || false,
-      reminder: document.getElementById('enableReminder').checked
-        ? document.getElementById('reminderTime').value
-        : null,
-      repeat: document.getElementById('repeatType')?.value || null,
-      customRepeat: isEdit ? (existing?.customRepeat || null) : null,
-      repeatPaused: isEdit ? (existing?.repeatPaused || false) : false,
-      skipNextRepeat: isEdit ? (existing?.skipNextRepeat || false) : false,
-      status: isEdit ? (existing?.status || 'active') : 'active',
-      createdAt: isEdit ? (existing?.createdAt || new Date().toISOString()) : new Date().toISOString(),
-      lang
-    };
+// If user selected a date in a UI that yields date-only elsewhere,
+// accept "YYYY-MM-DD" too. Also normalize date-only to midnight.
+const dateVal =
+  document.getElementById('obligationDate')?.value || '';
+
+const timeVal =
+  document.getElementById('obligationTime')?.value || '';
+
+let dateTime = null;
+
+if (dateVal && timeVal) {
+  dateTime = `${dateVal}T${timeVal}`;
+} else if (dateVal) {
+  dateTime = `${dateVal}T00:00`;
+} else if (isEdit && existing?.dateTime) {
+  // ✅ KEEP OLD DATE WHEN USER DID NOT CHANGE IT
+  dateTime = existing.dateTime;
+}
+// ===== FORM SNAPSHOT (Calm Simplification) =====
+const formData = {
+  title: document.getElementById('obligationTitle').value.trim(),
+  note: document.getElementById('obligationNote').value,
+  urgent: document.getElementById('urgentObligation')?.checked || false,
+  reminderEnabled: document.getElementById('enableReminder').checked,
+  reminderValue: document.getElementById('reminderTime').value,
+  repeat: document.getElementById('repeatType')?.value || null
+};
+
+const obligation = {
+  id: isEdit ? editId : Date.now(),
+  type: 'obligation',
+  title: formData.title,
+note: formData.note,
+urgent: formData.urgent,
+  reminder: formData.reminderEnabled
+  ? formData.reminderValue
+  : null,
+  repeat: formData.repeat,
+  customRepeat: isEdit ? (existing?.customRepeat || null) : null,
+  repeatPaused: isEdit ? (existing?.repeatPaused || false) : false,
+  skipNextRepeat: isEdit ? (existing?.skipNextRepeat || false) : false,
+  status: isEdit ? (existing?.status || 'active') : 'active',
+  createdAt: isEdit ? (existing?.createdAt || new Date().toISOString()) : new Date().toISOString(),
+  lang
+};
 
     // ✅ 1) Spremi odmah
 await obligationDB.add(obligation);
@@ -913,10 +956,16 @@ refreshCurrentObligationsView();
 
     // ✅ 3) Očisti formu
     document.getElementById('obligationTitle').value = '';
-    document.getElementById('obligationNote').value = '';
-    document.getElementById('obligationDateTime').value = '';
-    document.getElementById('enableReminder').checked = false;
-    document.getElementById('reminderOptions').classList.add('hidden');
+document.getElementById('obligationNote').value = '';
+
+const dateInput = document.getElementById('obligationDate');
+if (dateInput) dateInput.value = '';
+
+const timeInput = document.getElementById('obligationTime');
+if (timeInput) timeInput.value = '';
+
+document.getElementById('enableReminder').checked = false;
+document.getElementById('reminderOptions').classList.add('hidden');
 
     const repeatSelect = document.getElementById('repeatType');
     if (repeatSelect) repeatSelect.value = '';
@@ -995,10 +1044,16 @@ if (cancelBtn) {
 
     // očisti formu
     document.getElementById('obligationTitle').value = '';
-    document.getElementById('obligationNote').value = '';
-    document.getElementById('obligationDateTime').value = '';
-    document.getElementById('enableReminder').checked = false;
-    document.getElementById('reminderOptions').classList.add('hidden');
+document.getElementById('obligationNote').value = '';
+
+const dateInput = document.getElementById('obligationDate');
+if (dateInput) dateInput.value = '';
+
+const timeInput = document.getElementById('obligationTime');
+if (timeInput) timeInput.value = '';
+
+document.getElementById('enableReminder').checked = false;
+document.getElementById('reminderOptions').classList.add('hidden');
 
     const repeatSelect = document.getElementById('repeatType');
     if (repeatSelect) repeatSelect.value = '';
@@ -1039,9 +1094,14 @@ if (cancelBtn) {
 
       // PROVJERA
       obligationDB.getAll().then(async obligations => {
-        console.log('Učitane obveze iz IndexedDB:', obligations);
-        await m.rescheduleAllObligations(obligations);
-      });
+  console.log('Učitane obveze iz IndexedDB:', obligations);
+
+  const notif = await import('./notifications.js');
+
+  if (notif?.rescheduleAllObligations) {
+    await notif.rescheduleAllObligations(obligations);
+  }
+});
 
       // ===== HANDLE NOTIFICATION TAP (deep link) =====
       if (window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.LocalNotifications) {

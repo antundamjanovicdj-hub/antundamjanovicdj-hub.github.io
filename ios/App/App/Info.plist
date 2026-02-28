@@ -49,5 +49,11 @@
 	<true/>
 	<key>NSUserNotificationsUsageDescription</key>
 	<string>LifeKompas sends reminders so you never miss important obligations.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>LifeKompas needs access to your photos so you can add a profile image to your contact. Photos stay only on your device.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>LifeKompas uses your photo library only when you choose a contact photo.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>LifeKompas allows you to take or choose a photo for a contact profile image. Photos remain only on your device.</string>
 </dict>
 </plist>

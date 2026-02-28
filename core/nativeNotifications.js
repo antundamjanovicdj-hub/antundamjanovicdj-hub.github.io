@@ -53,6 +53,8 @@ async function ensureChannel() {
 
 // ===== SCHEDULE =====
 
+console.log("🔥 NATIVE NOTIFICATION RECEIVED", obligation, triggerTime);
+
 export async function scheduleNativeNotification(obligation, triggerTime) {
 
   console.log("🔥 scheduleNativeNotification CALLED");

@@ -10,6 +10,19 @@ import {
 
 const ContactsPlugin = window.Capacitor?.Plugins?.Contacts;
 
+// ===== TRUST NOTIFICATION BRIDGE =====
+async function requestNotificationPermissionSafe() {
+  return await window.requestNotificationPermission?.();
+}
+
+async function scheduleBirthdayNotificationSafe(contact) {
+  return await window.scheduleBirthdayNotification?.(contact);
+}
+
+async function cancelBirthdayNotificationSafe(id) {
+  return await window.cancelBirthdayNotification?.(id);
+}
+
 let contacts = [];
 let filteredContacts = [];
 function getContactMessages() {
@@ -401,7 +414,9 @@ requestAnimationFrame(() => {
   });
 
 // ===== BIRTHDAY NOTIFY TOGGLE =====
-  document.getElementById('birthdayNotifyToggle').addEventListener('change', async (e) => {
+document.getElementById('birthdayNotifyToggle').addEventListener('change', async (e) => {
+
+  const nb = getNotificationsBridge();
 
   if (e.target.checked) {
 
@@ -415,154 +430,133 @@ requestAnimationFrame(() => {
       return;
     }
 
-    const granted = await m.requestNotificationPermission();
-    if (!granted) {
-      e.target.checked = false;
-      return;
+    if (typeof nb.requestPermission === 'function') {
+      const granted = await nb.requestPermission();
+      if (!granted) {
+        e.target.checked = false;
+        return;
+      }
     }
 
     c.birthdayNotify = true;
     await addContact(c);
-    await m.scheduleBirthdayNotification(c);
+
+    if (typeof nb.scheduleBirthday === 'function') {
+      await nb.scheduleBirthday(c);
+    }
 
   } else {
 
     c.birthdayNotify = false;
     await addContact(c);
-    await m.cancelBirthdayNotification(c.id);
+
+    if (typeof nb.cancelBirthday === 'function') {
+      await nb.cancelBirthday(c.id);
+    }
 
   }
 
 });
 
-  showScreen('screen-contact-details');
+showScreen('screen-contact-details');
+  requestAnimationFrame(() => {
+    attachContactDetailsHandlers();
+  });
 } // <-- KRAJ openContactDetails()
 
-// ===== DELETE CONTACT =====
-const btnDeleteContact = document.getElementById('btnDeleteContact');
-if (btnDeleteContact) {
-  btnDeleteContact.addEventListener('click', async () => {
-    const wrap = document.getElementById('contactDetailsContent');
-    if (!wrap) return;
-
-  // uzmi ID trenutno otvorenog kontakta
-  const currentId = wrap.querySelector('[data-current-contact-id]')?.dataset.currentContactId;
-  if (!currentId) return;
-
-  if (!confirm(getContactMessages().deleteConfirm)) return;
-
-// Cancel scheduled birthday notification before deleting contact
-await m.cancelBirthdayNotification(Number(currentId));
-
-await deleteContact(Number(currentId));
-await loadContacts();
-showScreen('screen-contacts');
-  });
-}
-// ===== EDIT CONTACT =====
-const btnEditContact = document.getElementById('btnEditContact');
-if (btnEditContact) {
-  btnEditContact.addEventListener('click', async () => {
-    const wrap = document.getElementById('contactDetailsContent');
-  const currentId = wrap.querySelector('[data-current-contact-id]')?.dataset.currentContactId;
-  if (!currentId) return;
-
-  const all = await getContacts();
-  const c = all.find(x => x.id == currentId);
-  if (!c) return;
-
-  // napuni formu
-  document.getElementById('contactFirstName').value = c.firstName;
-  document.getElementById('contactLastName').value = c.lastName;
-  document.getElementById('contactBirthDate').value = c.birthDate;
-  document.getElementById('contactBirthdayTime').value = c.birthdayTime || "09:00";
-  const birthdayCheckbox = document.getElementById('contactBirthdayNotify');
-if (birthdayCheckbox) {
-  birthdayCheckbox.checked = !!c.birthdayNotify;
-}
-  document.getElementById('contactAddress').value = c.address;
-  document.getElementById('contactEmail').value = c.email;
-  document.getElementById('contactPhone').value = c.phone;
-  document.getElementById('contactPhotoData').value = c.photo || '';
-
-  // zapamti da je edit
-  document.getElementById('saveContact').dataset.editId = c.id;
-
-  showScreen('screen-contact-form');
- });
+// ===== TRUST-GRADE: BIND ONCE HELPERS =====
+function bindOnce(el, key, eventName, handler) {
+  if (!el) return;
+  const attr = `data-lk-bound-${key}`;
+  if (el.getAttribute(attr) === '1') return;
+  el.setAttribute(attr, '1');
+  el.addEventListener(eventName, handler);
 }
 
-// ===== OPEN FORM =====
-const btnAddContact = document.getElementById('btnAddContact');
-if (btnAddContact) {
-  btnAddContact.addEventListener('click', () => {
+function getNotificationsBridge() {
+  return {
+    requestPermission: requestNotificationPermissionSafe,
+    scheduleBirthday: scheduleBirthdayNotificationSafe,
+    cancelBirthday: cancelBirthdayNotificationSafe
+  };
+}
 
-    // HARD RESET FORM (prevents edit ghost bug)
-    document.getElementById('contactFirstName').value = '';
-    document.getElementById('contactLastName').value = '';
-    document.getElementById('contactBirthDate').value = '';
-    document.getElementById('contactBirthdayTime').value = '09:00';
-    document.getElementById('contactAddress').value = '';
-    document.getElementById('contactEmail').value = '';
-    document.getElementById('contactPhone').value = '';
-    document.getElementById('contactPhotoData').value = '';
+function resetContactFormFields() {
+  document.getElementById('contactFirstName').value = '';
+  document.getElementById('contactLastName').value = '';
+  document.getElementById('contactBirthDate').value = '';
+  document.getElementById('contactBirthdayTime').value = '09:00';
+  document.getElementById('contactAddress').value = '';
+  document.getElementById('contactEmail').value = '';
+  document.getElementById('contactPhone').value = '';
+  document.getElementById('contactPhotoData').value = '';
+  document.getElementById('saveContact')?.removeAttribute('data-edit-id');
+}
 
-    document.getElementById('saveContact')?.removeAttribute('data-edit-id');
+function attachContactsListHandlers() {
+  const btnAddContact = document.getElementById('btnAddContact');
 
+  bindOnce(btnAddContact, 'add-contact', 'click', () => {
+    resetContactFormFields();
     showScreen('screen-contact-form');
 
-// Force default birthday time after screen becomes active (iOS WebKit reset fix)
-requestAnimationFrame(() => {
-  const birthdayTimeInput = document.getElementById('contactBirthdayTime');
-  if (birthdayTimeInput) {
-    birthdayTimeInput.type = 'text';
-    birthdayTimeInput.value = '09:00';
-    birthdayTimeInput.type = 'time';
-  }
-
-  fillContactFormI18N();
-});
+    // Force default birthday time after screen becomes active (iOS WebKit reset fix)
+    requestAnimationFrame(() => {
+      const birthdayTimeInput = document.getElementById('contactBirthdayTime');
+      if (birthdayTimeInput) {
+        birthdayTimeInput.type = 'text';
+        birthdayTimeInput.value = '09:00';
+        birthdayTimeInput.type = 'time';
+      }
+      fillContactFormI18N();
+    });
   });
 }
 
-// ===== PICK PHOTO =====
-const btnPickContactPhoto = document.getElementById('btnPickContactPhoto');
-if (btnPickContactPhoto) {
-  btnPickContactPhoto.addEventListener('click', async () => {
+function attachContactFormHandlers() {
+  const backContactForm = document.getElementById('backContactForm');
+  const btnPickContactPhoto = document.getElementById('btnPickContactPhoto');
+  const saveContactBtn = document.getElementById('saveContact');
 
+  bindOnce(backContactForm, 'back-form', 'click', () => {
+    showScreen('screen-contacts');
+  });
+
+  bindOnce(btnPickContactPhoto, 'pick-photo', 'click', async () => {
     // Android / Capacitor
-if (window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.Camera) {
+    if (window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.Camera) {
 
-  const confirmed = confirm(
-    getContactMessages().photoPermissionExplanation ||
-    "LifeKompas needs access to your photos so you can add a profile image. The photo stays only on your device."
-  );
+      const confirmed = confirm(
+        getContactMessages().photoPermissionExplanation ||
+        "LifeKompas needs access to your photos so you can add a profile image. The photo stays only on your device."
+      );
 
-  if (!confirmed) return;
+      if (!confirmed) return;
 
-  try {
-    const image = await Capacitor.Plugins.Camera.getPhoto({
-      quality: 80,
-      allowEditing: false,
-      resultType: "dataUrl",
-      source: "photos"
-    });
+      try {
+        const image = await Capacitor.Plugins.Camera.getPhoto({
+          quality: 80,
+          allowEditing: false,
+          resultType: "dataUrl",
+          source: "PHOTOS"
+        });
 
-    document.getElementById('contactPhotoData').value = image.dataUrl;
-  } catch (err) {
-    console.warn("Camera permission denied or cancelled", err);
-  }
+        document.getElementById('contactPhotoData').value = image.dataUrl;
+      } catch (err) {
+        console.warn("Camera permission denied or cancelled", err);
+      }
 
-  return;
-}
+      return;
+    }
 
     // Web fallback
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
     fileInput.accept = 'image/*';
     fileInput.onchange = () => {
-      const file = fileInput.files[0];
+      const file = fileInput.files && fileInput.files[0];
       if (!file) return;
+
       const reader = new FileReader();
       reader.onload = e => {
         document.getElementById('contactPhotoData').value = e.target.result;
@@ -571,20 +565,8 @@ if (window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.Camera) {
     };
     fileInput.click();
   });
-}
 
-// ===== BACK FROM FORM =====
-const backContactForm = document.getElementById('backContactForm');
-if (backContactForm) {
-  backContactForm.addEventListener('click', () => {
-    showScreen('screen-contacts');
-  });
-}
-
-// ===== SAVE CONTACT =====
-const saveContactBtn = document.getElementById('saveContact');
-if (saveContactBtn) {
-  saveContactBtn.addEventListener('click', async () => {
+  bindOnce(saveContactBtn, 'save-contact', 'click', async () => {
 
     const firstName = document.getElementById('contactFirstName').value.trim();
     const lastName = document.getElementById('contactLastName').value.trim();
@@ -595,7 +577,6 @@ if (saveContactBtn) {
     }
 
     const photoBase64 = document.getElementById('contactPhotoData').value || '';
-
     const editId = document.getElementById('saveContact').dataset.editId;
 
     const birthDateValue = formatBirthDateByLang(
@@ -615,50 +596,141 @@ if (saveContactBtn) {
       photo: photoBase64
     };
 
-    await addContact(contact);
-
-    if (contact.birthdayNotify) {
-
-  const confirmed = confirm(
-    getContactMessages().notificationPermissionExplanation ||
-    "LifeKompas can remind you about birthdays. Notifications stay private and are only used for reminders you create."
-  );
-
-  if (!confirmed) {
-    contact.birthdayNotify = false;
-    await m.cancelBirthdayNotification(contact.id);
-  } else {
-    const granted = await m.requestNotificationPermission();
-    if (granted) {
-      await m.cancelBirthdayNotification(contact.id);
-      await m.scheduleBirthdayNotification(contact);
+    // Trust-grade: lock save to prevent multi-tap duplicates
+    const btn = document.getElementById('saveContact');
+    const oldText = btn?.textContent || '';
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = (getContactMessages().saving || 'Spremam...');
     }
-  }
 
-} else {
-  await m.cancelBirthdayNotification(contact.id);
-}
+    try {
+      await addContact(contact);
 
-    document.getElementById('contactFirstName').value = '';
-    document.getElementById('contactLastName').value = '';
-    document.getElementById('contactBirthDate').value = '';
-    document.getElementById('contactBirthdayTime').value = '09:00';
-    document.getElementById('contactAddress').value = '';
-    document.getElementById('contactEmail').value = '';
-    document.getElementById('contactPhone').value = '';
-    document.getElementById('contactPhotoData').value = '';
-    document.getElementById('saveContact').removeAttribute('data-edit-id');
+      const nb = getNotificationsBridge();
 
-    await loadContacts();
-    showScreen('screen-contacts');
+      if (contact.birthdayNotify) {
 
+        const confirmed = confirm(
+          getContactMessages().notificationPermissionExplanation ||
+          "LifeKompas can remind you about birthdays. Notifications stay private and are only used for reminders you create."
+        );
+
+        if (!confirmed) {
+          contact.birthdayNotify = false;
+          if (typeof nb.cancelBirthday === 'function') {
+            await nb.cancelBirthday(contact.id);
+          }
+        } else {
+          if (typeof nb.requestPermission === 'function') {
+            const granted = await nb.requestPermission();
+            if (granted) {
+              if (typeof nb.cancelBirthday === 'function') {
+                await nb.cancelBirthday(contact.id);
+              }
+              if (typeof nb.scheduleBirthday === 'function') {
+                await nb.scheduleBirthday(contact);
+              }
+            }
+          }
+        }
+
+      } else {
+        if (typeof nb.cancelBirthday === 'function') {
+          await nb.cancelBirthday(contact.id);
+        }
+      }
+
+      resetContactFormFields();
+      await loadContacts();
+      showScreen('screen-contacts');
+
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = oldText;
+      }
+    }
   });
 }
-// APPLY I18N WHEN CONTACT FORM SCREEN IS SHOWN
+
+function attachContactDetailsHandlers() {
+  const btnDeleteContact = document.getElementById('btnDeleteContact');
+  const btnEditContact = document.getElementById('btnEditContact');
+
+  bindOnce(btnDeleteContact, 'delete-contact', 'click', async () => {
+    const wrap = document.getElementById('contactDetailsContent');
+    if (!wrap) return;
+
+    const currentId =
+      wrap.querySelector('[data-current-contact-id]')?.dataset.currentContactId;
+    if (!currentId) return;
+
+    if (!confirm(getContactMessages().deleteConfirm)) return;
+
+    // Trust-grade: lock delete + don't crash if notif bridge missing
+    const btn = document.getElementById('btnDeleteContact');
+    const oldText = btn?.textContent || '';
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = (getContactMessages().deleting || 'Brišem...');
+    }
+
+    try {
+      const nb = getNotificationsBridge();
+      if (typeof nb.cancelBirthday === 'function') {
+        await nb.cancelBirthday(Number(currentId));
+      }
+
+      await deleteContact(Number(currentId));
+      await loadContacts();
+      showScreen('screen-contacts');
+
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = oldText;
+      }
+    }
+  });
+
+  bindOnce(btnEditContact, 'edit-contact', 'click', async () => {
+    const wrap = document.getElementById('contactDetailsContent');
+    if (!wrap) return;
+
+    const currentId =
+      wrap.querySelector('[data-current-contact-id]')?.dataset.currentContactId;
+    if (!currentId) return;
+
+    const all = await getContacts();
+    const c = all.find(x => x.id == currentId);
+    if (!c) return;
+
+    document.getElementById('contactFirstName').value = c.firstName;
+    document.getElementById('contactLastName').value = c.lastName;
+    document.getElementById('contactBirthDate').value = c.birthDate;
+    document.getElementById('contactBirthdayTime').value = c.birthdayTime || "09:00";
+
+    const birthdayCheckbox = document.getElementById('contactBirthdayNotify');
+    if (birthdayCheckbox) birthdayCheckbox.checked = !!c.birthdayNotify;
+
+    document.getElementById('contactAddress').value = c.address;
+    document.getElementById('contactEmail').value = c.email;
+    document.getElementById('contactPhone').value = c.phone;
+    document.getElementById('contactPhotoData').value = c.photo || '';
+
+    document.getElementById('saveContact').dataset.editId = c.id;
+
+    showScreen('screen-contact-form');
+  });
+}
+
+// APPLY I18N + TRUST-GRADE BINDINGS WHEN SCREENS ARE SHOWN
 document.addEventListener('screenShown', (e) => {
 
   if (e.detail === 'screen-contact-form') {
     fillContactFormI18N();
+    attachContactFormHandlers();
 
     const saveBtn = document.getElementById('saveContact');
     const isEdit = saveBtn?.dataset.editId;
@@ -677,7 +749,12 @@ document.addEventListener('screenShown', (e) => {
       searchInput.value = '';
     }
 
+    attachContactsListHandlers();
     loadContacts();
+  }
+
+  if (e.detail === 'screen-contact-details') {
+    attachContactDetailsHandlers();
   }
 
 });

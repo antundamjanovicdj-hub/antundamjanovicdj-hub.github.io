@@ -67,8 +67,17 @@ await LN.cancel({
     id,
     title: "⏰ Obveza",
     body: obligation.title || "Obveza",
-    schedule: { at: new Date(triggerTime) },
+
+    schedule: {
+      at: new Date(triggerTime),
+      allowWhileIdle: true
+    },
+
     sound: "default",
+    smallIcon: "ic_stat_icon_config_sample",
+    importance: 5,
+    visibility: 1,
+
     extra: { obligationId: obligation.id }
   }]
 });

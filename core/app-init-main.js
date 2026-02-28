@@ -955,6 +955,7 @@ const obligation = {
   title: formData.title,
 note: formData.note,
 urgent: formData.urgent,
+dateTime,
   reminder: formData.reminderEnabled
   ? formData.reminderValue
   : null,

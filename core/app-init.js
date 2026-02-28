@@ -228,12 +228,25 @@ function legacy_showScreen(screenId) {
   });
 
   if (next) {
-    next.classList.add('active');
-    next.style.display = 'block';
-    requestAnimationFrame(() => {
+  next.classList.add('active');
+  next.style.display = 'block';
+
+  requestAnimationFrame(() => {
+
     navigationLock = false;
+
+    // ✅ LifeKompas auto keyboard (iOS + Android safe)
+    if (screenId === 'screen-add-obligation') {
+      const input = document.getElementById('obligationTitle');
+      if (input) {
+        setTimeout(() => {
+          input.focus();
+        }, 80);
+      }
+    }
+
   });
-  }
+}
 
   // ===== FORCE MENU ITEMS VISIBLE (fix blank menu) =====
 if (screenId === 'screen-menu') {

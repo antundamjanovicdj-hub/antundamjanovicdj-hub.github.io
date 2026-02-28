@@ -99,9 +99,18 @@ export function initApp() {
           });
         const target = document.getElementById(screenId);
         if (target) {
-          target.classList.add('active');
-          target.style.display = 'block'; // 🔥 KRITIČNO
-        }
+  target.classList.add('active');
+  target.style.display = 'block';
+
+  // iOS keyboard fix
+  const autofocusId = target?.dataset.autofocus;
+
+if (autofocusId) {
+  requestAnimationFrame(() => {
+    document.getElementById(autofocusId)?.focus();
+  });
+}
+}
 
         // ===== HEADER TITLE =====
         const headerTitle = document.getElementById('headerTitle');
@@ -227,8 +236,17 @@ export function initApp() {
 
         // 🔥 SCREEN LIFECYCLE EVENT
         document.dispatchEvent(
-          new CustomEvent('screenShown', { detail: screenId })
-        );
+  new CustomEvent('screenShown', { detail: screenId })
+);
+
+// iOS auto keyboard focus (LifeKompas UX)
+if (window.lkFocusIntent) {
+  requestAnimationFrame(() => {
+    const el = document.getElementById(window.lkFocusIntent);
+    if (el) el.focus();
+    window.lkFocusIntent = null;
+  });
+}
       };
 
       // klik na BACK
@@ -854,12 +872,14 @@ if (ob.dateTime) {
         document.getElementById('saveObligation').dataset.editId = ob.id;
       }
 
-      // FORMA ZA DODAVANJE
-      document.getElementById('btnAddObligation').addEventListener('click', () => {
-        screenHistory.push('screen-obligations-list');
-        showScreen('screen-add-obligation');
-        requestAnimationFrame(() => applyAddObligationI18N());
-      });
+      document.getElementById('btnAddObligation').addEventListener('click', (e) => {
+       document.getElementById('obligationTitle')?.focus(); 
+  window.lkFocusIntent = 'obligationTitle'; // iOS keyboard intent
+
+  screenHistory.push('screen-obligations-list');
+  showScreen('screen-add-obligation');
+  applyAddObligationI18N();
+});
       document.getElementById('saveObligation').removeAttribute('data-edit-id');
 
       // BACK IZ FORME

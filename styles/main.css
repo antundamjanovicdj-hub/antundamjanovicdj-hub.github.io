@@ -581,33 +581,33 @@ html, body {
 }
 
 .obligation-card {
-  background: rgba(255,255,255,0.14);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: rgba(255,255,255,0.04);
 
-  transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1),
-            box-shadow 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 
-  border-radius: 18px;
-  padding: 16px;
+  border-radius: 12px;
+  padding: 14px 14px 14px 48px;
 
-  transform: translateY(-2px);
+  border: 1px solid rgba(255,255,255,0.07);
 
-  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: none;
 
-  box-shadow:
-  0 18px 42px rgba(0,0,0,0.55),
-  inset 0 1px 0 rgba(255,255,255,0.06);
+  transform: none;
+  transition: background 0.25s ease;
 
   position: relative;
 }
 
-.obligation-card:active {
-  transform: translateY(0px) scale(0.985);
+/* calm hover / touch feedback */
+.obligation-card:hover {
+  background: rgba(255,255,255,0.07);
+}
 
+.obligation-card:active {
+  transform: none;
   box-shadow:
-    0 8px 18px rgba(0,0,0,0.45),
-    inset 0 1px 0 rgba(255,255,255,0.05);
+    0 4px 10px rgba(0,0,0,0.30);
 }
 
 .obligation-title {
@@ -750,6 +750,12 @@ html, body {
   width: 100%;
 }
 
+/* CALM MODE — hide action buttons */
+.obligation-toggle-status,
+.obligation-edit {
+  display: none;
+}
+
 .obligation-toggle-status:hover {
   background: #0a4a27;
 }
@@ -761,38 +767,34 @@ html, body {
 }
 
 .toolbar-btn {
-  padding: 12px 18px;
+  padding: 6px 8px;
   border: none;
-  border-radius: 18px;
+  border-radius: 10px;
 
-  background: rgba(255,255,255,0.16);
-  color: rgba(255,255,255,0.92);
+  background: transparent;
+  color: rgba(255,255,255,0.75);
 
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  font-size: 15px;
-  font-weight: 800;
+  font-size: 14px;
+  font-weight: 500;
 
   cursor: pointer;
 
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
 
-  box-shadow: 0 8px 22px rgba(0,0,0,0.32);
-  transition: transform 0.18s ease, background 0.18s ease;
+  transition: opacity 0.2s ease;
 }
 
 .toolbar-btn:hover {
-  background: rgba(255,255,255,0.22);
-  transform: scale(1.03);
+  opacity: 1;
+  transform: none;
+  background: transparent;
 }
 
 .toolbar-btn:active {
-  transform: scale(0.97);
-}
-
-.toolbar-btn:hover {
-  background: #ffd9a6;
-  transform: scale(1.04);
+  transform: none;
 }
 
 #dateFilter {
@@ -1980,4 +1982,167 @@ backdrop-filter: blur(10px);
   display:flex;
   gap:8px;
   opacity:0.8;
+}
+
+/* =====================================================
+   DAILY STATE — CALM TITLE
+   ===================================================== */
+
+.daily-state {
+  margin: 18px 16px 10px;
+  text-align: center;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.daily-state-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: 0.3px;
+}
+
+.daily-state-subtitle {
+  font-size: 15px;
+  color: rgba(255,255,255,0.75);
+}
+
+.daily-focus {
+  margin-top: 6px;
+  font-size: 14px;
+  color: rgba(255,255,255,0.85);
+  cursor: pointer;
+}
+
+.focus-highlight {
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,0.65),
+    0 0 18px rgba(255,255,255,0.35);
+  transition: box-shadow 0.3s ease;
+}
+
+.daily-focus {
+  margin-top: 6px;
+  font-size: 14px;
+  color: rgba(255,255,255,0.85);
+  cursor: pointer;
+
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.daily-focus.fade-out {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+.daily-focus.fade-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.obligation-quick-done {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+
+  width: 30px;
+  height: 30px;
+
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.65);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 16px;
+  font-weight: 700;
+
+  color: white;
+  background: rgba(0,0,0,0.25);
+
+  backdrop-filter: blur(4px);
+
+  cursor: pointer;
+
+  transition: transform 0.15s ease,
+              background 0.2s ease,
+              box-shadow 0.2s ease;
+}
+
+.obligation-quick-done:hover {
+  background: rgba(255,255,255,0.25);
+  transform: scale(1.08);
+}
+
+.obligation-quick-done:active {
+  transform: scale(0.95);
+}
+
+.daily-progress {
+  margin-top: 10px;
+  height: 4px;
+  width: 140px;
+
+  border-radius: 999px;
+  background: rgba(255,255,255,0.18);
+
+  position: relative;
+  overflow: hidden;
+
+  transition: opacity 0.4s ease;
+}
+
+.daily-progress-bar {
+  height: 100%;
+  background: rgba(255,255,255,0.85);
+  border-radius: 999px;
+
+  transition: width 0.6s ease;
+}
+
+.hidden {
+  display: none;
+}
+
+.obligations-list {
+  position: relative;
+}
+
+.obligations-list::before {
+  content: "";
+
+  position: absolute;
+  left: 26px;
+  top: 0;
+  bottom: 0;
+
+  width: 2px;
+
+  background: rgba(255,255,255,0.16);
+}
+
+/* CURRENT MOMENT DOT */
+
+.obligation-now-marker {
+  position: absolute;
+  left: 20px;
+
+  width: 14px;
+  height: 14px;
+
+  border-radius: 50%;
+
+  background: rgba(255,255,255,0.95);
+
+  box-shadow:
+    0 0 0 4px rgba(255,255,255,0.08),
+    0 0 12px rgba(255,255,255,0.35);
+
+  transition: top 0.5s ease;
+
+  z-index: 5;
 }

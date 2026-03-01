@@ -123,6 +123,10 @@ else if (isOverdue) stateClass = "ob-overdue";
 
   return `
     <div class="obligation-card ${stateClass}" data-id="${safe.id}">
+
+  <div class="obligation-quick-done" data-id="${safe.id}">
+    ✓
+  </div>
       <div class="obligation-title" title="${repeatTitle}">
         ${safe.title}${repeatIcon}
       </div>
@@ -195,6 +199,27 @@ export function attachObligationHandlers(container) {
       window.deleteObligation?.(id);
     });
   });
+
+  // QUICK DONE
+container.querySelectorAll(".obligation-quick-done").forEach(btn => {
+  btn.addEventListener("click", (e) => {
+
+    e.stopPropagation(); // IMPORTANT
+
+    const id = parseInt(btn.dataset.id, 10);
+
+    window.toggleObligationStatus?.(id, "done");
+
+  });
+});
+
+  // CARD TAP → EDIT
+container.querySelectorAll(".obligation-card").forEach(card => {
+  card.addEventListener("click", () => {
+    const id = parseInt(card.dataset.id, 10);
+    window.openEditObligation?.(id);
+  });
+});
 
   // EDIT
   container.querySelectorAll(".obligation-edit").forEach(btn => {

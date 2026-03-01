@@ -572,17 +572,38 @@ async function renderObligationsList() {
   const container = document.getElementById('obligationsContainer');
   const lang = getLang();
 
-  const today = todayISO();
+  const today = todayISO(); // always recompute fresh day
+
+  console.log("📅 LifeKompas today =", today);
+
+  // normalize all dates to local calendar day
+const normalizeISO = (dt) =>
+  getISODateFromDateTime(
+    typeof dt === "string" && dt.length === 10
+      ? dt + "T00:00"
+      : dt
+  );
 // ⚠️ PERFORMANCE NOTE:
 // Currently doing FULL DB read.
 // Acceptable while dataset is small.
 // Future optimization: indexed queries or in-memory cache.
-const obligations = (await obligationDB.getAll())
-  .filter(o =>
-    o.type !== 'shopping' &&
-    o.status !== 'done' &&
-    o.dateTime
-  );
+const all = await obligationDB.getAll();
+
+console.log(
+  "DEBUG obligations:",
+  all.map(o => ({
+    title: o.title,
+    dateTime: o.dateTime,
+    iso: getISODateFromDateTime(o.dateTime),
+    today: today
+  }))
+);
+
+const obligations = all.filter(o =>
+  o.type !== 'shopping' &&
+  o.status !== 'done' &&
+  o.dateTime
+);
 
   obligations.sort((a, b) => {
     if (a.status !== b.status) return a.status === 'active' ? -1 : 1;
@@ -592,16 +613,133 @@ const obligations = (await obligationDB.getAll())
   });
 
 const todayItems = obligations.filter(o =>
-  getISODateFromDateTime(o.dateTime) === today
+  normalizeISO(o.dateTime) === today
 );
 
 const overdueItems = obligations.filter(o =>
-  getISODateFromDateTime(o.dateTime) < today
+  normalizeISO(o.dateTime) < today
 );
 
 const upcomingItems = obligations.filter(o =>
-  getISODateFromDateTime(o.dateTime) > today
+  normalizeISO(o.dateTime) > today
 );
+
+/* ===== DAILY NEXT FOCUS ===== */
+
+const focusEl = document.getElementById("dailyFocus");
+let next = null;
+
+if (focusEl) {
+
+  const now = new Date();
+
+  // 1️⃣ sljedeća današnja u budućnosti
+  const nextTodayFuture = todayItems.find(o =>
+    new Date(o.dateTime) > now
+  );
+
+  // 2️⃣ ili prva nadolazeća
+  next = nextTodayFuture || upcomingItems[0];
+
+  if (next) {
+
+    const dt = new Date(next.dateTime);
+
+    const time = dt.toLocaleTimeString(getLang(), {
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+
+    const newText = `Sljedeće: ${next.title} · ${time}`;
+
+if (focusEl.textContent !== newText) {
+
+  focusEl.classList.add("fade-out");
+
+  setTimeout(() => {
+    focusEl.textContent = newText;
+
+    focusEl.classList.remove("fade-out");
+    focusEl.classList.add("fade-in");
+
+    setTimeout(() => {
+      focusEl.classList.remove("fade-in");
+    }, 350);
+
+  }, 200);
+
+}
+
+    focusEl.onclick = () => {
+
+      const el = document.querySelector(
+        `.obligation-card[data-id="${next.id}"]`
+      );
+
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+
+        el.classList.add("focus-highlight");
+
+        setTimeout(() => {
+          el.classList.remove("focus-highlight");
+        }, 1600);
+      }
+    };
+
+  } else {
+    focusEl.textContent = "Danas nema obveza.";
+  }
+}
+/* ===== DAILY PROGRESS ===== */
+
+const progressEl = document.getElementById("dailyProgress");
+
+if (progressEl) {
+
+  const totalToday = todayItems.length;
+
+  if (totalToday > 0) {
+
+    progressEl.classList.remove("hidden");
+
+    const allToday = (await obligationDB.getAll())
+      .filter(o =>
+        o.type !== "shopping" &&
+        normalizeISO(o.dateTime) === today
+      );
+
+    const doneToday = allToday.filter(o => o.status === "done").length;
+
+    const ratio = doneToday / totalToday;
+
+    progressEl.innerHTML = `
+      <div class="daily-progress-bar"
+           style="width:${Math.max(ratio * 100, 6)}%">
+      </div>
+    `;
+
+  } else {
+    progressEl.classList.add("hidden");
+  }
+}
+
+/* ===== DAY COMPLETION ===== */
+
+const titleEl = document.querySelector(".daily-state-title");
+const subEl = document.querySelector(".daily-state-subtitle");
+
+if (titleEl && subEl) {
+
+  if (todayItems.length === 0 && overdueItems.length === 0) {
+
+    titleEl.textContent = "Miran dan";
+    subEl.textContent = "Sve za danas je završeno.";
+
+    if (focusEl) focusEl.textContent = "";
+  }
+
+}
 
 if (todayItems.length === 0 && overdueItems.length === 0 && upcomingItems.length === 0) {
   container.innerHTML = `
@@ -639,9 +777,8 @@ html += `
 
 if (todayItems.length > 0) {
   html += `
-    <div class="obligations-section-title">Danas</div>
-    ${todayItems.map(ob => buildObligationCard(ob, lang)).join('')}
-  `;
+  ${todayItems.map(ob => buildObligationCard(ob, lang)).join('')}
+`;
 }
 
 if (overdueItems.length > 0) {
@@ -664,7 +801,32 @@ if (upcomingItems.length > 0) {
 
 container.innerHTML = html;
 attachObligationHandlers(container);
+
+let markerTarget = null;
+
+// 1️⃣ sljedeća današnja u budućnosti
+const futureToday = todayItems.find(
+  o => new Date(o.dateTime) > new Date()
+);
+
+if (futureToday) {
+  markerTarget = futureToday.id;
 }
+
+// 2️⃣ nema budućih → zadnja današnja
+else if (todayItems.length > 0) {
+  markerTarget = todayItems[todayItems.length - 1].id;
+}
+
+// 3️⃣ nema današnjih → marker dolje (day complete)
+updateCurrentMomentMarker(markerTarget);
+}
+
+
+// ensure correct grouping after startup timing
+setTimeout(() => {
+  refreshCurrentObligationsView?.();
+}, 0);
 
 /* ===== DAILY VIEW LOGIC ===== */
 let viewMode = 'list'; // 'list' | 'days'
@@ -785,6 +947,40 @@ function refreshCurrentObligationsView() {
     renderObligationsList();
   }
 }
+
+/* ===== CURRENT MOMENT MARKER ===== */
+function updateCurrentMomentMarker(nextId) {
+
+  const list = document.getElementById("screen-obligations-list");
+  if (!list) return;
+
+  let marker = document.querySelector(".obligation-now-marker");
+
+  if (!marker) {
+    marker = document.createElement("div");
+    marker.className = "obligation-now-marker";
+    list.appendChild(marker);
+  }
+
+  const nextCard = document.querySelector(
+    `.obligation-card[data-id="${nextId}"]`
+  );
+
+  if (!nextCard) {
+    marker.style.opacity = "0";
+    return;
+  }
+
+  const listRect = list.getBoundingClientRect();
+  const cardRect = nextCard.getBoundingClientRect();
+
+  const offset =
+    cardRect.top - listRect.top + cardRect.height / 2;
+
+  marker.style.opacity = "1";
+  marker.style.top = offset + "px";
+}
+
 
 // ===== HEADER TITLE MAP (i18n based) =====
 const SCREEN_TITLES = {

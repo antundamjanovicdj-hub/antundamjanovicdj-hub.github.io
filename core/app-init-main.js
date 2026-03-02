@@ -36,6 +36,7 @@ import {
   getShoppingItems,
   addShoppingItem
 } from './db.js';
+import Temporal from '../src/core/temporal/index.js';
 import * as notifications from './notifications.js';
 import { getContacts } from './db.js';
 
@@ -90,6 +91,9 @@ export function initApp() {
 
       // jednostavna povijest ekrana
       window.showScreen = function (screenId) {
+        if (window.legacy_showScreen) {
+           window.legacy_showScreen(screenId);
+        }
         console.log('[NAV]', screenId);
         // TRUE screen engine
         document.querySelectorAll('.screen')
@@ -239,6 +243,11 @@ if (autofocusId) {
   new CustomEvent('screenShown', { detail: screenId })
 );
 
+// 🔗 LIFEOMPAS ENGINE BRIDGE
+if (typeof window.legacy_showScreen === 'function') {
+  window.legacy_showScreen(screenId);
+}
+
 // iOS auto keyboard focus (LifeKompas UX)
 if (window.lkFocusIntent) {
   requestAnimationFrame(() => {
@@ -248,6 +257,35 @@ if (window.lkFocusIntent) {
   });
 }
       };
+
+      // ===== OBLIGATIONS: DETERMINISTIC LIST REFRESH (ENGINE SAFE) =====
+window.forceObligationsListRefresh = async function(reason = '') {
+  try {
+
+    const all = await obligationDB.getAll();
+    Temporal.setObligations(all);
+
+    window.__TEMPORAL_STATE__ =
+      Temporal.getState?.() || window.__TEMPORAL_STATE__;
+
+    console.log('🧾 [forceListRefresh]', reason, {
+      dbCount: all.length,
+      lastId: all[all.length - 1]?.id
+    });
+
+    window.AppState.obligations.viewMode = 'list';
+
+    showListMode?.();
+
+// ⏱ wait one engine frame AFTER Temporal recalculation
+setTimeout(() => {
+  renderObligationsList?.();
+}, 0);
+
+  } catch (e) {
+    console.log('🧾 [forceListRefresh] failed', e);
+  }
+};
 
       // klik na BACK
       if (headerBack) {
@@ -971,9 +1009,16 @@ dateTime,
     // ✅ 1) Spremi odmah
 await obligationDB.add(obligation);
 
-// ✅ 3) Tek sada navigacija
+// ✅ always go back to list screen
+window.AppState.obligations.viewMode = 'list';
 showScreen('screen-obligations-list');
-refreshCurrentObligationsView();
+
+// ✅ deterministic render AFTER screen mount (2x RAF)
+requestAnimationFrame(() => {
+  requestAnimationFrame(async () => {
+    await window.forceObligationsListRefresh?.('afterSave');
+  });
+});
 
     // ✅ 3) Očisti formu
     document.getElementById('obligationTitle').value = '';
@@ -1103,15 +1148,22 @@ document.getElementById('reminderOptions').classList.add('hidden');
       if (backToObligationsList) backToObligationsList.addEventListener('click', () => showScreen('screen-menu'));
 
       // DATE PICKER
-      const dailyDatePicker = document.getElementById('dailyDatePicker');
-      if (dailyDatePicker) {
-        dailyDatePicker.value = todayISO();
-        window.AppState.obligations.currentDailyDate = dailyDatePicker.value;
-        dailyDatePicker.addEventListener('change', () => {
-          window.AppState.obligations.currentDailyDate = dailyDatePicker.value;
-          loadDailyForDate(window.AppState.obligations.currentDailyDate);
-        });
-      }
+const dailyDatePicker = document.getElementById('dailyDatePicker');
+if (dailyDatePicker) {
+
+  // ✅ ne forsiraj Daily view svaki ulazak
+  if (!window.AppState.obligations.currentDailyDate) {
+    dailyDatePicker.value = todayISO();
+    window.AppState.obligations.currentDailyDate = dailyDatePicker.value;
+  } else {
+    dailyDatePicker.value = window.AppState.obligations.currentDailyDate;
+  }
+
+  dailyDatePicker.addEventListener('change', () => {
+    window.AppState.obligations.currentDailyDate = dailyDatePicker.value;
+    loadDailyForDate(window.AppState.obligations.currentDailyDate);
+  });
+}
 
       // PROVJERA
       obligationDB.getAll().then(async obligations => {

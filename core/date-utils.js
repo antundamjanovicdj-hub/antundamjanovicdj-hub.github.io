@@ -18,7 +18,7 @@ export function getISODateFromDateTime(dateTime) {
 }
 
 export function todayISO() {
-  console.log("🔥 NEW todayISO RUNNING");
+
 
   const now = new Date();
 

@@ -25,15 +25,21 @@ const __OBLIGATIONS_MODULE__ = true;
 // These wrappers allow us to import this module later without breaking existing behavior.
 
 import { obligationDB } from "./db.js";
+import Temporal from "../src/core/temporal/index.js";
 import { getISODateFromDateTime, todayISO } from "./date-utils.js";
 
 export async function renderObligationsList_SAFE() {
+
+  const obligations = await obligationDB.getAll();
+
+  // 🫀 feed Temporal Brain
+  Temporal.setObligations(obligations);
+
   if (typeof window.renderObligationsList === "function") {
-    return window.renderObligationsList();
+    return window.renderObligationsList(obligations);
   }
 
   console.warn("[obligations] renderObligationsList not wired yet");
-  return;
 }
 
 export function showListMode() {
@@ -233,3 +239,14 @@ container.querySelectorAll(".obligation-card").forEach(card => {
   });
 
 }
+
+// 🫀 TEMPORAL UI SUBSCRIBER (shadow mode)
+
+Temporal.subscribe((state) => {
+
+  window.__TEMPORAL_STATE__ = state;
+
+  // 🫀 calm temporal refresh
+  window.refreshCurrentObligationsView?.();
+
+});

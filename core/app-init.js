@@ -1,3 +1,44 @@
+import Temporal from '../src/core/temporal/index.js';
+
+// 🫀 Temporal Brain auto-boot
+void Temporal;
+
+// 🫀 TEMPORAL SUBSCRIBER (source of truth for list)
+let __temporalRerenderQueued = false;
+
+Temporal.subscribe((state) => {
+
+  // ✅ always keep freshest state
+  window.__TEMPORAL_STATE__ = state;
+
+  console.log('🧭 TEMPORAL STATE', {
+    now: state.now,
+    pointer: state.pointer,
+    past: state.past.length,
+    future: state.future.length,
+    nextChangeAt: state.nextChangeAt
+  });
+
+  // ✅ if we are currently on obligations list + list mode → rerender once
+  const activeId = document.querySelector('.screen.active')?.id;
+  const mode = window.AppState?.obligations?.viewMode || 'list';
+
+  if (activeId !== 'screen-obligations-list') return;
+  if (mode !== 'list') return;
+
+  if (__temporalRerenderQueued) return;
+  __temporalRerenderQueued = true;
+
+  requestAnimationFrame(() => {
+    __temporalRerenderQueued = false;
+    try {
+      renderObligationsList?.();
+    } catch (e) {
+      console.log('[Temporal] list rerender skipped', e);
+    }
+  });
+});
+
 // ===== GLOBAL ERROR GUARD (STABILIZATION WALL) =====
 
 window.addEventListener('error', (e) => {
@@ -234,6 +275,33 @@ function legacy_showScreen(screenId) {
   requestAnimationFrame(() => {
 
     navigationLock = false;
+
+   // ===== OBLIGATIONS LIST ENTER =====
+if (screenId === 'screen-obligations-list') {
+
+  // ✅ refresh only when needed
+  if (window.__OBLIGATIONS_DIRTY__) {
+
+    window.__OBLIGATIONS_DIRTY__ = false;
+
+    (async () => {
+
+      const all = await obligationDB.getAll();
+      Temporal.setObligations(all);
+
+      window.__TEMPORAL_STATE__ =
+        Temporal.getState?.() || window.__TEMPORAL_STATE__;
+
+      renderObligationsList?.();
+      window.refreshCurrentObligationsView?.();
+
+    })();
+  }
+
+  // ✅ SINGLE SOURCE OF TRUTH — always list after save
+  window.AppState.obligations.viewMode = 'list';
+  showListMode?.();
+}
 
     // ✅ LifeKompas auto keyboard (iOS + Android safe)
     if (screenId === 'screen-add-obligation') {
@@ -567,51 +635,72 @@ if (diff < -DELETE_THRESHOLD || velocity > 0.6) {
 
 /* ===== LIST VIEW RENDER ===== */
 async function renderObligationsList() {
-  if (viewMode === 'days') return;
+
+  // 🔥 SINGLE SOURCE OF TRUTH
+  const all = await obligationDB.getAll();
+
+  Temporal.setObligations(all);
+
+  window.__TEMPORAL_STATE__ =
+    Temporal.getState?.() || window.__TEMPORAL_STATE__;
+
+  const temporal = window.__TEMPORAL_STATE__;
 
   const container = document.getElementById('obligationsContainer');
   const lang = getLang();
-
-  const today = todayISO(); // always recompute fresh day
+  const today = todayISO();
 
   console.log("📅 LifeKompas today =", today);
 
-  // normalize all dates to local calendar day
-const normalizeISO = (dt) =>
-  getISODateFromDateTime(
-    typeof dt === "string" && dt.length === 10
-      ? dt + "T00:00"
-      : dt
+  const normalizeISO = (dt) =>
+    getISODateFromDateTime(
+      typeof dt === "string" && dt.length === 10
+        ? dt + "T00:00"
+        : dt
+    );
+
+  console.log(
+    "DEBUG obligations:",
+    all.map(o => ({
+      title: o.title,
+      dateTime: o.dateTime,
+      iso: getISODateFromDateTime(o.dateTime),
+      today: today
+    }))
   );
-// ⚠️ PERFORMANCE NOTE:
-// Currently doing FULL DB read.
-// Acceptable while dataset is small.
-// Future optimization: indexed queries or in-memory cache.
-const all = await obligationDB.getAll();
 
-console.log(
-  "DEBUG obligations:",
-  all.map(o => ({
-    title: o.title,
-    dateTime: o.dateTime,
-    iso: getISODateFromDateTime(o.dateTime),
-    today: today
-  }))
-);
+  const obligations = all.filter(o =>
+    o.type !== 'shopping' &&
+    o.status !== 'done' &&
+    o.dateTime
+  );
 
-const obligations = all.filter(o =>
-  o.type !== 'shopping' &&
-  o.status !== 'done' &&
-  o.dateTime
-);
-
+/* ===== LEGACY SORT (DISABLED BY TEMPORAL) =====
   obligations.sort((a, b) => {
     if (a.status !== b.status) return a.status === 'active' ? -1 : 1;
     if (!a.dateTime) return 1;
     if (!b.dateTime) return -1;
     return new Date(a.dateTime) - new Date(b.dateTime);
   });
+================================================ */
+// 🫀 TEMPORAL INPUT (shadow read)
 
+let temporalPast = [];
+let temporalFuture = [];
+let temporalPointer = null;
+
+if (temporal) {
+  temporalPast = temporal.past;
+  temporalFuture = temporal.future;
+  temporalPointer = temporal.pointer;
+}
+
+// 🫀 TEMPORAL COMPATIBILITY LAYER
+const todayItems = temporalFuture;
+const overdueItems = temporalPast;
+const upcomingItems = temporalFuture;
+
+/* ===== LEGACY CALENDAR LOGIC (TEMPORARILY DISABLED) =====
 const todayItems = obligations.filter(o =>
   normalizeISO(o.dateTime) === today
 );
@@ -623,7 +712,7 @@ const overdueItems = obligations.filter(o =>
 const upcomingItems = obligations.filter(o =>
   normalizeISO(o.dateTime) > today
 );
-
+========================================================== */
 /* ===== DAILY NEXT FOCUS ===== */
 
 const focusEl = document.getElementById("dailyFocus");
@@ -639,7 +728,12 @@ if (focusEl) {
   );
 
   // 2️⃣ ili prva nadolazeća
-  next = nextTodayFuture || upcomingItems[0];
+next = nextTodayFuture || upcomingItems[0];
+
+// 🫀 TEMPORAL OVERRIDE (safe mode)
+if (temporalFuture.length > 0) {
+  next = temporalFuture[0];
+}
 
   if (next) {
 
@@ -697,7 +791,8 @@ const progressEl = document.getElementById("dailyProgress");
 
 if (progressEl) {
 
-  const totalToday = todayItems.length;
+  // 🫀 TEMPORAL TOTAL (safe mode)
+const totalToday = temporalPast.length + temporalFuture.length;
 
   if (totalToday > 0) {
 
@@ -709,7 +804,7 @@ if (progressEl) {
         normalizeISO(o.dateTime) === today
       );
 
-    const doneToday = allToday.filter(o => o.status === "done").length;
+    const doneToday = temporalPast.filter(o => o.status === "done").length;
 
     const ratio = doneToday / totalToday;
 
@@ -764,6 +859,12 @@ if (todayItems.length === 0 && overdueItems.length === 0 && upcomingItems.length
 
 let html = '';
 
+// 🫀 TEMPORAL CONTINUOUS FLOW
+const allItems = [
+  ...temporalPast,
+  ...temporalFuture
+];
+
 const todayDate = new Date().toLocaleDateString(
   (I18N[lang] && I18N[lang].lang) || 'hr-HR',
   { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' }
@@ -775,20 +876,10 @@ html += `
   </div>
 `;
 
-if (todayItems.length > 0) {
-  html += `
-  ${todayItems.map(ob => buildObligationCard(ob, lang)).join('')}
+// 🫀 TEMPORAL CONTINUOUS LIST
+html += `
+  ${allItems.map(ob => buildObligationCard(ob, lang)).join('')}
 `;
-}
-
-if (overdueItems.length > 0) {
-  html += `
-    <div class="obligations-section-title overdue">
-  Zakašnjelo
-</div>
-    ${overdueItems.map(ob => buildObligationCard(ob, lang)).join('')}
-  `;
-}
 
 if (upcomingItems.length > 0) {
   html += `
@@ -802,37 +893,37 @@ if (upcomingItems.length > 0) {
 container.innerHTML = html;
 attachObligationHandlers(container);
 
+// 🫀 TEMPORAL POINTER
+
 let markerTarget = null;
 
-// 1️⃣ sljedeća današnja u budućnosti
-const futureToday = todayItems.find(
-  o => new Date(o.dateTime) > new Date()
-);
-
-if (futureToday) {
-  markerTarget = futureToday.id;
+if (temporalFuture.length > 0) {
+  markerTarget = temporalFuture[0].id;
 }
 
-// 2️⃣ nema budućih → zadnja današnja
-else if (todayItems.length > 0) {
-  markerTarget = todayItems[todayItems.length - 1].id;
-}
-
-// 3️⃣ nema današnjih → marker dolje (day complete)
 updateCurrentMomentMarker(markerTarget);
 }
 
-
-// ensure correct grouping after startup timing
-setTimeout(() => {
-  refreshCurrentObligationsView?.();
-}, 0);
-
 /* ===== DAILY VIEW LOGIC ===== */
-let viewMode = 'list'; // 'list' | 'days'
+// SINGLE SOURCE OF TRUTH
+Object.defineProperty(window, 'viewMode', {
+  get() {
+    return window.AppState?.obligations?.viewMode || 'list';
+  },
+  set(v) {
+    if (!window.AppState) window.AppState = {};
+    if (!window.AppState.obligations)
+      window.AppState.obligations = {};
+
+    window.AppState.obligations.viewMode = v;
+  }
+});
+
+viewMode = 'list';
 let currentDailyDate = todayISO();
 
 function showListMode() {
+  window.AppState.obligations.viewMode = 'list';
   viewMode = 'list';
 
   const dailyView = document.getElementById('dailyView');
@@ -849,6 +940,7 @@ function showListMode() {
 }
 
 function showDailyMode() {
+  window.AppState.obligations.viewMode = 'days';
   viewMode = 'days';
 
   const dailyView = document.getElementById('dailyView');
@@ -872,6 +964,7 @@ function groupObligationsByStatus(items) {
 }
 
 async function loadDailyForDate(isoDate) {
+
   currentDailyDate = isoDate;
 
   const picker = document.getElementById('dailyDatePicker');
@@ -1113,6 +1206,9 @@ window.toggleObligationStatus = async function(id, newStatus) {
 
   obligation.status = newStatus;
   await obligationDB.add(obligation);
+  // 🫀 Temporal sync
+const all = await obligationDB.getAll();
+Temporal.setObligations(all);
 
   window.refreshCurrentObligationsView?.();
 };
@@ -1120,5 +1216,8 @@ window.toggleObligationStatus = async function(id, newStatus) {
 // delete obligation (engine owns DB)
 window.deleteObligation = async function(id) {
   await obligationDB.delete(id);
+  // 🫀 Temporal sync
+const all = await obligationDB.getAll();
+Temporal.setObligations(all);
   window.refreshCurrentObligationsView?.();
 };

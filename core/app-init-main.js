@@ -261,27 +261,41 @@ if (window.lkFocusIntent) {
       // ===== OBLIGATIONS: DETERMINISTIC LIST REFRESH (ENGINE SAFE) =====
 window.forceObligationsListRefresh = async function(reason = '') {
   try {
-
     const all = await obligationDB.getAll();
-    Temporal.setObligations(all);
-
+    Temporal.setObligations([]);  // 1. isprazni
+    setTimeout(() => {
+      Temporal.setObligations(all);  // 2. postavi prave podatke
+      window.__TEMPORAL_STATE__ = Temporal.getState?.() || window.__TEMPORAL_STATE__;
+    }, 0);
     window.__TEMPORAL_STATE__ =
       Temporal.getState?.() || window.__TEMPORAL_STATE__;
-
-    console.log('🧾 [forceListRefresh]', reason, {
+    
+    // 🧪 DEBUG LOGS
+    console.log('🧾 [forceListRefresh] START', {
+      reason,
       dbCount: all.length,
-      lastId: all[all.length - 1]?.id
+      viewMode: window.AppState?.obligations?.viewMode,
+      queueFlag: window.__temporalRerenderQueued
     });
-
+    
     window.AppState.obligations.viewMode = 'list';
-
     showListMode?.();
-
-// ⏱ wait one engine frame AFTER Temporal recalculation
-setTimeout(() => {
-  renderObligationsList?.();
-}, 0);
-
+    
+    // 🫀 RESET TEMPORAL QUEUE
+    window.__temporalRerenderQueued = false;
+    
+    console.log('🧾 [forceListRefresh] AFTER RESET', {
+      queueFlag: window.__temporalRerenderQueued,
+      viewMode: window.AppState?.obligations?.viewMode
+    });
+    
+    // 🫀 DOUBLE RAF: čekaj da DOM i CSS budu spremni za prikaz
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        console.log('🧾 [forceListRefresh] CALLING renderObligationsList');
+        renderObligationsList?.();
+      });
+    });
   } catch (e) {
     console.log('🧾 [forceListRefresh] failed', e);
   }
@@ -1013,10 +1027,18 @@ await obligationDB.add(obligation);
 window.AppState.obligations.viewMode = 'list';
 showScreen('screen-obligations-list');
 
-// ✅ deterministic render AFTER screen mount (2x RAF)
+// ✅ deterministic render AFTER screen mount + visibility check
 requestAnimationFrame(() => {
-  requestAnimationFrame(async () => {
-    await window.forceObligationsListRefresh?.('afterSave');
+  requestAnimationFrame(() => {
+    // 🧪 Provjeri da li smo na list screenu PRIJE rendera
+    const isActive = document.getElementById('screen-obligations-list')?.classList?.contains('active');
+    console.log('🔍 [before forceListRefresh] screen active:', isActive);
+    
+    if (isActive) {
+      window.forceObligationsListRefresh?.('afterSave');
+    } else {
+      console.warn('⚠️ screen-obligations-list not active, skipping render');
+    }
   });
 });
 

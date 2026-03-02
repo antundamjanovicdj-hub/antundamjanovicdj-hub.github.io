@@ -4,7 +4,7 @@ import Temporal from '../src/core/temporal/index.js';
 void Temporal;
 
 // 🫀 TEMPORAL SUBSCRIBER (source of truth for list)
-let __temporalRerenderQueued = false;
+window.__temporalRerenderQueued = false;
 
 Temporal.subscribe((state) => {
 
@@ -26,11 +26,11 @@ Temporal.subscribe((state) => {
   if (activeId !== 'screen-obligations-list') return;
   if (mode !== 'list') return;
 
-  if (__temporalRerenderQueued) return;
-  __temporalRerenderQueued = true;
+  if (window.__temporalRerenderQueued) return;
+  window.__temporalRerenderQueued = true;
 
   requestAnimationFrame(() => {
-    __temporalRerenderQueued = false;
+    window.__temporalRerenderQueued = false;
     try {
       renderObligationsList?.();
     } catch (e) {
@@ -647,6 +647,13 @@ async function renderObligationsList() {
   const temporal = window.__TEMPORAL_STATE__;
 
   const container = document.getElementById('obligationsContainer');
+  console.log('🔍 [renderObligationsList] container:', {
+    exists: !!container,
+    display: container?.style?.display,
+    classList: container?.classList?.value,
+    offsetHeight: container?.offsetHeight,
+    parentDisplay: container?.parentElement?.style?.display
+  });
   const lang = getLang();
   const today = todayISO();
 
@@ -923,6 +930,7 @@ viewMode = 'list';
 let currentDailyDate = todayISO();
 
 function showListMode() {
+  console.log('📋 [showListMode] CALLED');
   window.AppState.obligations.viewMode = 'list';
   viewMode = 'list';
 

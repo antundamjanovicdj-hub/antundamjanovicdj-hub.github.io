@@ -227,7 +227,6 @@
   <div id="screen-add-obligation" class="screen" data-autofocus="obligationTitle">
     <div class="obligation-form">
       <input type="text" id="obligationTitle" placeholder="Naslov obveze" maxlength="100">
-      <textarea id="obligationNote" placeholder="Napomena" rows="3"></textarea>
 
       <label class="datetime-label">
   <span id="obligationDateTimeLabel">Datum</span>
@@ -240,40 +239,32 @@
 </label>
 
       <label class="reminder-checkbox">
-        <input type="checkbox" id="enableReminder">
-        <span id="reminderLabel">Podsjetnik</span>
-      </label>
-      <label class="reminder-checkbox">
-        <input type="checkbox" id="urgentObligation">
-        <span id="urgentLabel"></span>
-     </label>
+  <input type="checkbox" id="enableReminder">
+  <span id="reminderLabel">Podsjetnik</span>
+</label>
 
-      <div id="reminderOptions" class="hidden">
-        <select id="reminderTime">
-  <option value="0"></option>
-  <option value="15"></option>
-  <option value="30"></option>
-  <option value="60"></option>
-  <option value="120"></option>
-  <option value="1440"></option>
-</select>
-      </div>
+<div id="reminderOptions" class="hidden">
+  <div class="select-wrapper">
+    <select id="reminderTime">
+      <option value="0"></option>
+      <option value="15"></option>
+      <option value="60"></option>
+      <option value="1440"></option>
+    </select>
+  </div>
+</div>
+
 <label class="repeat-label">
   <span id="repeatLabel"></span>
+</label>
+
+<div class="select-wrapper">
   <select id="repeatType">
     <option value="">Bez ponavljanja</option>
     <option value="daily"></option>
     <option value="weekly"></option>
   </select>
-</label>
-<label class="quiet-hours-label">
-  <span id="quietHoursLabel"></span>
-  <div class="quiet-hours-row">
-    <input type="time" id="quietStart" value="22:00">
-    <span>–</span>
-    <input type="time" id="quietEnd" value="07:00">
-  </div>
-</label>
+</div>
 
       <button id="saveObligation" class="btn-save">💾 Spremi</button>
       <button id="cancelObligation" class="btn-cancel">✖️ Otkaži</button>

@@ -867,14 +867,29 @@ window.forceObligationsListRefresh = async function(reason = '') {
         if (quietHoursLabel) quietHoursLabel.textContent = t.quietHours;
         const reminderSelect = document.getElementById('reminderTime');
         if (reminderSelect) {
-          const options = reminderSelect.querySelectorAll('option');
-          if (options[0]) options[0].textContent = "U trenutku";
-          if (options[1]) options[1].textContent = "15 min";
-          if (options[2]) options[2].textContent = "30 min";
-          if (options[3]) options[3].textContent = "1 h";
-          if (options[4]) options[4].textContent = "2 h";
-          if (options[5]) options[5].textContent = "1 dan";
-        }
+  reminderSelect.querySelectorAll('option').forEach(opt => {
+    switch (opt.value) {
+      case "0":
+        opt.textContent = "U trenutku";
+        break;
+      case "15":
+        opt.textContent = "15 min";
+        break;
+      case "30":
+        opt.textContent = "30 min";
+        break;
+      case "60":
+        opt.textContent = "1 h";
+        break;
+      case "120":
+        opt.textContent = "2 h";
+        break;
+      case "1440":
+        opt.textContent = "1 dan";
+        break;
+    }
+  });
+}
         const repeatType = document.getElementById('repeatType');
         if (repeatType) {
           const options = repeatType.querySelectorAll('option');

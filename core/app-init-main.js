@@ -940,12 +940,32 @@ if (ob.dateTime) {
       }
 
       document.getElementById('btnAddObligation').addEventListener('click', (e) => {
-       document.getElementById('obligationTitle')?.focus(); 
+
   window.lkFocusIntent = 'obligationTitle'; // iOS keyboard intent
 
   screenHistory.push('screen-obligations-list');
   showScreen('screen-add-obligation');
+
+  resetObligationForm();
+
   applyAddObligationI18N();
+
+  // Auto focus title after screen animation
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      const titleInput = document.getElementById('obligationTitle');
+      titleInput?.focus();
+    });
+  });
+
+// Auto-close iOS time picker after selection
+const timePicker = document.getElementById('obligationTime');
+if (timePicker && !timePicker.dataset.blurAttached) {
+  timePicker.dataset.blurAttached = "1";
+  timePicker.addEventListener('change', () => {
+    timePicker.blur();
+  });
+}
 });
       document.getElementById('saveObligation').removeAttribute('data-edit-id');
 
@@ -954,9 +974,35 @@ if (ob.dateTime) {
       if (backToAddObligation) backToAddObligation.addEventListener('click', () => showScreen('screen-menu'));
 
       // PODSJETNIK
-      document.getElementById('enableReminder').addEventListener('change', (e) => {
-        document.getElementById('reminderOptions').classList.toggle('hidden', !e.target.checked);
-      });
+document.getElementById('enableReminder').addEventListener('change', (e) => {
+
+  const enabled = e.target.checked;
+
+  const reminderOptions = document.getElementById('reminderOptions');
+  reminderOptions.classList.toggle('hidden', !enabled);
+
+  if (enabled) {
+
+    const reminderSelect = document.getElementById('reminderTime');
+
+    // Predloži 15 min ako ništa nije odabrano
+    if (!reminderSelect.value) {
+      reminderSelect.value = "15";
+    }
+
+    // Podsjetnik automatski gasi repeat
+    const repeatSelect = document.getElementById('repeatType');
+    if (repeatSelect) repeatSelect.value = '';
+
+  }
+
+});
+
+      // Auto-fill today when date field first opened
+const dateInput = document.getElementById('obligationDate');
+dateInput?.addEventListener('focus', () => {
+  if (!dateInput.value) dateInput.value = getLocalISODate();
+});
 
       // SPREMI ILI AŽURIRAJ
       document.getElementById('saveObligation').addEventListener('click', async () => {
@@ -999,18 +1045,37 @@ const timeVal =
 let dateTime = null;
 
 if (dateVal && timeVal) {
+
   dateTime = `${dateVal}T${timeVal}`;
+
 } else if (dateVal) {
-  dateTime = `${dateVal}T00:00`;
+
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2,'0');
+  const mm = String(now.getMinutes()).padStart(2,'0');
+
+  dateTime = `${dateVal}T${hh}:${mm}`;
+
 } else if (isEdit && existing?.dateTime) {
-  // ✅ KEEP OLD DATE WHEN USER DID NOT CHANGE IT
+
   dateTime = existing.dateTime;
+
+} else {
+
+  // ✅ NEW OBLIGATION WITHOUT DATE → NOW
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth()+1).padStart(2,'0');
+  const dd = String(now.getDate()).padStart(2,'0');
+  const hh = String(now.getHours()).padStart(2,'0');
+  const min = String(now.getMinutes()).padStart(2,'0');
+
+  dateTime = `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+
 }
 // ===== FORM SNAPSHOT (Calm Simplification) =====
 const formData = {
   title: document.getElementById('obligationTitle').value.trim(),
-  note: document.getElementById('obligationNote').value,
-  urgent: document.getElementById('urgentObligation')?.checked || false,
   reminderEnabled: document.getElementById('enableReminder').checked,
   reminderValue: document.getElementById('reminderTime').value,
   repeat: document.getElementById('repeatType')?.value || null
@@ -1020,9 +1085,7 @@ const obligation = {
   id: isEdit ? editId : Date.now(),
   type: 'obligation',
   title: formData.title,
-note: formData.note,
-urgent: formData.urgent,
-dateTime,
+  dateTime,
   reminder: formData.reminderEnabled
   ? formData.reminderValue
   : null,
@@ -1031,7 +1094,9 @@ dateTime,
   repeatPaused: isEdit ? (existing?.repeatPaused || false) : false,
   skipNextRepeat: isEdit ? (existing?.skipNextRepeat || false) : false,
   status: isEdit ? (existing?.status || 'active') : 'active',
-  createdAt: isEdit ? (existing?.createdAt || new Date().toISOString()) : new Date().toISOString(),
+  createdAt: isEdit
+  ? (existing?.createdAt || `${getLocalISODate()}T${getLocalTimeHHMM()}`)
+  : `${getLocalISODate()}T${getLocalTimeHHMM()}`,
   lang
 };
 
@@ -1057,23 +1122,7 @@ requestAnimationFrame(() => {
   });
 });
 
-    // ✅ 3) Očisti formu
-    document.getElementById('obligationTitle').value = '';
-document.getElementById('obligationNote').value = '';
-
-const dateInput = document.getElementById('obligationDate');
-if (dateInput) dateInput.value = '';
-
-const timeInput = document.getElementById('obligationTime');
-if (timeInput) timeInput.value = '';
-
-document.getElementById('enableReminder').checked = false;
-document.getElementById('reminderOptions').classList.add('hidden');
-
-    const repeatSelect = document.getElementById('repeatType');
-    if (repeatSelect) repeatSelect.value = '';
-
-    saveBtn.removeAttribute('data-edit-id');
+    resetObligationForm();
 
 // ✅ 4) Notifikacije: pokušaj + jasni logovi (ne blokira UX)
 (async () => {
@@ -1131,6 +1180,53 @@ document.getElementById('reminderOptions').classList.add('hidden');
 
 });
 
+// ===== LOCAL DATE (NO TIMEZONE SHIFT) =====
+function getLocalISODate() {
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2,'0');
+  const dd = String(now.getDate()).padStart(2,'0');
+
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+// ===== LOCAL TIME =====
+function getLocalTimeHHMM() {
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2,'0');
+  const mm = String(now.getMinutes()).padStart(2,'0');
+
+  return `${hh}:${mm}`;
+}
+
+// ===== RESET OBLIGATION FORM =====
+function resetObligationForm() {
+
+  const title = document.getElementById('obligationTitle');
+  if (title) title.value = '';
+
+  const date = document.getElementById('obligationDate');
+if (date) {
+  date.value = getLocalISODate();
+}
+
+  const time = document.getElementById('obligationTime');
+  if (time) time.value = '';
+
+  const reminder = document.getElementById('enableReminder');
+  if (reminder) reminder.checked = false;
+
+  const reminderOptions = document.getElementById('reminderOptions');
+  if (reminderOptions) reminderOptions.classList.add('hidden');
+
+  const repeat = document.getElementById('repeatType');
+  if (repeat) repeat.value = '';
+
+  const saveBtn = document.getElementById('saveObligation');
+  if (saveBtn) delete saveBtn.dataset.editId;
+
+}
+
 // ===== CANCEL OBLIGATION (SAFE) =====
 const cancelBtn = document.getElementById('cancelObligation');
 if (cancelBtn) {
@@ -1142,26 +1238,12 @@ if (cancelBtn) {
     if (saveBtn) {
       saveBtn.dataset.saving = '0';
       saveBtn.disabled = false;
-      saveBtn.removeAttribute('data-edit-id');
+      delete saveBtn.dataset.editId;
     }
 
-    // očisti formu
-    document.getElementById('obligationTitle').value = '';
-document.getElementById('obligationNote').value = '';
+    resetObligationForm();
 
-const dateInput = document.getElementById('obligationDate');
-if (dateInput) dateInput.value = '';
-
-const timeInput = document.getElementById('obligationTime');
-if (timeInput) timeInput.value = '';
-
-document.getElementById('enableReminder').checked = false;
-document.getElementById('reminderOptions').classList.add('hidden');
-
-    const repeatSelect = document.getElementById('repeatType');
-    if (repeatSelect) repeatSelect.value = '';
-
-    // UX: uvijek natrag na listu
+    // Back to list
     showScreen('screen-obligations-list');
     refreshCurrentObligationsView?.();
   });

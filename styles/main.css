@@ -413,8 +413,18 @@ html, body {
 }
 
 .datetime-label {
-  display: block;
+  display: flex;
+  flex-direction: column;
   margin-top: 16px;
+}
+
+.datetime-row {
+  display: flex;
+  gap: 12px;
+}
+
+.datetime-row .datetime-label {
+  flex: 1;
 }
 
 .datetime-label span,

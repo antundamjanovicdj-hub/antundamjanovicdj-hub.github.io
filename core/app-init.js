@@ -1129,6 +1129,15 @@ function openEditObligation(id) {
     screenHistory.push('screen-obligations-list');
     showScreen('screen-add-obligation');
 
+    // Auto-close iOS time picker after selection
+const timeInputBlur = document.getElementById('obligationTime');
+if (timeInputBlur && !timeInputBlur.dataset.blurAttached) {
+  timeInputBlur.dataset.blurAttached = "1";
+  timeInputBlur.addEventListener('change', () => {
+    timeInputBlur.blur();
+  });
+}
+
     const saveBtn = document.getElementById('saveObligation');
     if (saveBtn) {
     saveBtn.dataset.editId = id;
@@ -1137,11 +1146,15 @@ function openEditObligation(id) {
     const title = document.getElementById('obligationTitle');
     if (title) title.value = obligation.title || '';
 
-    const note = document.getElementById('obligationNote');
-    if (note) note.value = obligation.note || '';
+    const dateInput = document.getElementById('obligationDate');
+const timeInput = document.getElementById('obligationTime');
 
-    const date = document.getElementById('obligationDateTime');
-    if (date) date.value = obligation.dateTime || '';
+if (obligation.dateTime) {
+  const parts = obligation.dateTime.split('T');
+
+  if (dateInput) dateInput.value = parts[0] || '';
+  if (timeInput) timeInput.value = (parts[1] || '').slice(0,5);
+}
 
     // ===== REMINDER: restore state in edit =====
 const enableReminder = document.getElementById('enableReminder');

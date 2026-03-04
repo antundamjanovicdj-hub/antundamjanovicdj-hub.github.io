@@ -228,15 +228,19 @@
     <div class="obligation-form">
       <input type="text" id="obligationTitle" placeholder="Naslov obveze" maxlength="100">
 
-      <label class="datetime-label">
-  <span id="obligationDateTimeLabel">Datum</span>
-  <input type="date" id="obligationDate">
-</label>
+      <div class="datetime-row">
 
-<label class="datetime-label">
-  <span>Vrijeme (opcionalno)</span>
-  <input type="time" id="obligationTime">
-</label>
+  <label class="datetime-label">
+    <span id="obligationDateTimeLabel">Datum</span>
+    <input type="date" id="obligationDate">
+  </label>
+
+  <label class="datetime-label">
+    <span>Vrijeme (opcionalno)</span>
+    <input type="time" id="obligationTime">
+  </label>
+
+</div>
 
       <label class="reminder-checkbox">
   <input type="checkbox" id="enableReminder">

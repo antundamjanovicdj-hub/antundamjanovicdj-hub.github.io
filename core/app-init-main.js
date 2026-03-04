@@ -943,7 +943,6 @@ if (ob.dateTime) {
 
   window.lkFocusIntent = 'obligationTitle'; // iOS keyboard intent
 
-  screenHistory.push('screen-obligations-list');
   showScreen('screen-add-obligation');
 
   resetObligationForm();

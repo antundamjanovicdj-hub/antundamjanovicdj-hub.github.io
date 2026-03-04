@@ -55,5 +55,7 @@
 	<string>LifeKompas uses your photo library only when you choose a contact photo.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>LifeKompas allows you to take or choose a photo for a contact profile image. Photos remain only on your device.</string>
+	<key>FirebaseAnalyticsCollectionEnabled</key>
+	<false/>
 </dict>
 </plist>

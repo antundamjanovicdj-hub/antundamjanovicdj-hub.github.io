@@ -97,7 +97,7 @@ import('./notifications.js')
   .catch(e => console.log('🔔 notifications bootstrap skipped', e));
 
 console.log('[LifeKompas] app-init.js loaded');
-// ===== LIFEKOMPAS TESTER MODE (PROMPT FIRST, THEN RETRY FIREBASE) =====
+/* ===== LIFEKOMPAS TESTER MODE DISABLED DURING STABILIZATION =====
 setTimeout(() => {
 
   // 1) PROMPT + SAVE (ne ovisi o Capacitoru)
@@ -137,9 +137,10 @@ setTimeout(() => {
   })();
 
 }, 1800);
+*/
 
 
-// ===== FIREBASE ANALYTICS BOOTSTRAP (SAFE INIT) =====
+/* ===== FIREBASE ANALYTICS DISABLED DURING STABILIZATION =====
 document.addEventListener('DOMContentLoaded', async () => {
   try {
     const FirebaseAnalytics =
@@ -155,6 +156,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log('Firebase Analytics init skipped', err);
   }
 });
+*/
 
 /* =====================================================
    GLOBAL ERROR GUARD — LIFEOMPAS CORE SAFETY NET
@@ -930,6 +932,11 @@ viewMode = 'list';
 let currentDailyDate = todayISO();
 
 function showListMode() {
+
+  // spriječi dupli poziv
+  if (window.__LK_LIST_MODE__) return;
+  window.__LK_LIST_MODE__ = true;
+
   console.log('📋 [showListMode] CALLED');
   window.AppState.obligations.viewMode = 'list';
   viewMode = 'list';
@@ -945,6 +952,11 @@ function showListMode() {
 
   const lang = getLang();
   if (btn) btn.textContent = I18N[lang].obligationsView.byDay;
+
+  // reset guard
+  setTimeout(() => {
+    window.__LK_LIST_MODE__ = false;
+  }, 50);
 }
 
 function showDailyMode() {

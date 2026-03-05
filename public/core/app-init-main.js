@@ -1079,6 +1079,12 @@ const obligation = {
     // ✅ 1) Spremi odmah
 await obligationDB.add(obligation);
 
+// ✅ FIXED: očisti history da se izbjegne dupli back
+const lastInHistory = screenHistory[screenHistory.length - 1];
+if (lastInHistory === 'screen-obligations-list') {
+  screenHistory.pop();
+}
+
 // ✅ always go back to list screen
 window.AppState.obligations.viewMode = 'list';
 showScreen('screen-obligations-list');

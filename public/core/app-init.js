@@ -1,3 +1,44 @@
+import Temporal from '../src/core/temporal/index.js';
+
+// 🫀 Temporal Brain auto-boot
+void Temporal;
+
+// 🫀 TEMPORAL SUBSCRIBER (source of truth for list)
+window.__temporalRerenderQueued = false;
+
+Temporal.subscribe((state) => {
+
+  // ✅ always keep freshest state
+  window.__TEMPORAL_STATE__ = state;
+
+  console.log('🧭 TEMPORAL STATE', {
+    now: state.now,
+    pointer: state.pointer,
+    past: state.past.length,
+    future: state.future.length,
+    nextChangeAt: state.nextChangeAt
+  });
+
+  // ✅ if we are currently on obligations list + list mode → rerender once
+  const activeId = document.querySelector('.screen.active')?.id;
+  const mode = window.AppState?.obligations?.viewMode || 'list';
+
+  if (activeId !== 'screen-obligations-list') return;
+  if (mode !== 'list') return;
+
+  if (window.__temporalRerenderQueued) return;
+  window.__temporalRerenderQueued = true;
+
+  requestAnimationFrame(() => {
+    window.__temporalRerenderQueued = false;
+    try {
+      renderObligationsList?.();
+    } catch (e) {
+      console.log('[Temporal] list rerender skipped', e);
+    }
+  });
+});
+
 // ===== GLOBAL ERROR GUARD (STABILIZATION WALL) =====
 
 window.addEventListener('error', (e) => {
@@ -15,6 +56,7 @@ window.addEventListener('unhandledrejection', (e) => {
 let clickLocked = false;
 
 document.addEventListener('click', (e) => {
+  if (e.target.closest('#lkTesterBtn')) return;
 
   if (clickLocked) {
     e.stopImmediatePropagation();
@@ -49,7 +91,72 @@ NEXT PHASE:
 // LifeKompas INIT EXTRACTION – STEP 1 (scaffold)
 // Namjerno prazno: u sljedećem koraku selimo veliki dio koda iz index.html ovdje.
 
+// 🔔 LifeKompas notification bootstrap
+import('./notifications.js')
+  .then(() => console.log('🔔 notifications module loaded'))
+  .catch(e => console.log('🔔 notifications bootstrap skipped', e));
+
 console.log('[LifeKompas] app-init.js loaded');
+/* ===== LIFEKOMPAS TESTER MODE DISABLED DURING STABILIZATION =====
+setTimeout(() => {
+
+  // 1) PROMPT + SAVE (ne ovisi o Capacitoru)
+  let testerName = localStorage.getItem('lkTesterName');
+
+  if (!testerName) {
+    testerName = prompt("LifeKompas tester ime (Antun, Ruža, Mama...)");
+    if (!testerName) testerName = "unknown";
+    localStorage.setItem('lkTesterName', testerName);
+  }
+
+  console.log("🧪 Tester name:", testerName);
+
+  // 2) FIREBASE PROPERTY (retry dok plugin ne bude spreman)
+  (async () => {
+    for (let i = 0; i < 12; i++) {
+      try {
+        const FirebaseAnalytics =
+          window.Capacitor?.Plugins?.FirebaseAnalytics;
+
+        if (!FirebaseAnalytics) throw new Error("FirebaseAnalytics plugin not ready yet");
+
+        await FirebaseAnalytics.setUserProperty({
+          name: "tester",
+          value: testerName
+        });
+
+        console.log("🧪 Tester registered (Firebase):", testerName);
+        return;
+
+      } catch (e) {
+        await new Promise(r => setTimeout(r, 500));
+      }
+    }
+
+    console.log("Tester mode: Firebase not ready after retries");
+  })();
+
+}, 1800);
+*/
+
+
+/* ===== FIREBASE ANALYTICS DISABLED DURING STABILIZATION =====
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const FirebaseAnalytics =
+      window.Capacitor?.Plugins?.FirebaseAnalytics;
+
+    if (FirebaseAnalytics) {
+      await FirebaseAnalytics.setEnabled({ enabled: true });
+      console.log('🔥 Firebase Analytics ENABLED');
+    } else {
+      console.log('Firebase Analytics plugin not available (skip)');
+    }
+  } catch (err) {
+    console.log('Firebase Analytics init skipped', err);
+  }
+});
+*/
 
 /* =====================================================
    GLOBAL ERROR GUARD — LIFEOMPAS CORE SAFETY NET
@@ -103,7 +210,7 @@ document.getElementById("appVersion").textContent = "v" + APP_VERSION;
 // ===== GLOBAL CONFIG =====
 const CONFIG = {
   notificationsEnabled: true,
-  serviceWorkerEnabled: true,
+  serviceWorkerEnabled: !window.Capacitor, // ✅ SW samo na webu/localhostu
   debug: false
 };
 // ===== INIT SERVICE WORKER (guarded) =====
@@ -164,12 +271,52 @@ function legacy_showScreen(screenId) {
   });
 
   if (next) {
-    next.classList.add('active');
-    next.style.display = 'block';
-    requestAnimationFrame(() => {
+  next.classList.add('active');
+  next.style.display = 'block';
+
+  requestAnimationFrame(() => {
+
     navigationLock = false;
-  });
+
+   // ===== OBLIGATIONS LIST ENTER =====
+if (screenId === 'screen-obligations-list') {
+
+  // ✅ refresh only when needed
+  if (window.__OBLIGATIONS_DIRTY__) {
+
+    window.__OBLIGATIONS_DIRTY__ = false;
+
+    (async () => {
+
+      const all = await obligationDB.getAll();
+      Temporal.setObligations(all);
+
+      window.__TEMPORAL_STATE__ =
+        Temporal.getState?.() || window.__TEMPORAL_STATE__;
+
+      renderObligationsList?.();
+      window.refreshCurrentObligationsView?.();
+
+    })();
   }
+
+  // ✅ SINGLE SOURCE OF TRUTH — always list after save
+  window.AppState.obligations.viewMode = 'list';
+  showListMode?.();
+}
+
+    // ✅ LifeKompas auto keyboard (iOS + Android safe)
+    if (screenId === 'screen-add-obligation') {
+      const input = document.getElementById('obligationTitle');
+      if (input) {
+        setTimeout(() => {
+          input.focus();
+        }, 80);
+      }
+    }
+
+  });
+}
 
   // ===== FORCE MENU ITEMS VISIBLE (fix blank menu) =====
 if (screenId === 'screen-menu') {
@@ -490,41 +637,213 @@ if (diff < -DELETE_THRESHOLD || velocity > 0.6) {
 
 /* ===== LIST VIEW RENDER ===== */
 async function renderObligationsList() {
-  if (viewMode === 'days') return;
+
+  // 🔥 SINGLE SOURCE OF TRUTH
+  const all = await obligationDB.getAll();
+
+  Temporal.setObligations(all);
+
+  window.__TEMPORAL_STATE__ =
+    Temporal.getState?.() || window.__TEMPORAL_STATE__;
+
+  const temporal = window.__TEMPORAL_STATE__;
 
   const container = document.getElementById('obligationsContainer');
+  console.log('🔍 [renderObligationsList] container:', {
+    exists: !!container,
+    display: container?.style?.display,
+    classList: container?.classList?.value,
+    offsetHeight: container?.offsetHeight,
+    parentDisplay: container?.parentElement?.style?.display
+  });
   const lang = getLang();
-
   const today = todayISO();
-// ⚠️ PERFORMANCE NOTE:
-// Currently doing FULL DB read.
-// Acceptable while dataset is small.
-// Future optimization: indexed queries or in-memory cache.
-const obligations = (await obligationDB.getAll())
-  .filter(o =>
+
+  console.log("📅 LifeKompas today =", today);
+
+  const normalizeISO = (dt) =>
+    getISODateFromDateTime(
+      typeof dt === "string" && dt.length === 10
+        ? dt + "T00:00"
+        : dt
+    );
+
+  console.log(
+    "DEBUG obligations:",
+    all.map(o => ({
+      title: o.title,
+      dateTime: o.dateTime,
+      iso: getISODateFromDateTime(o.dateTime),
+      today: today
+    }))
+  );
+
+  const obligations = all.filter(o =>
     o.type !== 'shopping' &&
     o.status !== 'done' &&
     o.dateTime
   );
 
+/* ===== LEGACY SORT (DISABLED BY TEMPORAL) =====
   obligations.sort((a, b) => {
     if (a.status !== b.status) return a.status === 'active' ? -1 : 1;
     if (!a.dateTime) return 1;
     if (!b.dateTime) return -1;
     return new Date(a.dateTime) - new Date(b.dateTime);
   });
+================================================ */
+// 🫀 TEMPORAL INPUT (shadow read)
 
+let temporalPast = [];
+let temporalFuture = [];
+let temporalPointer = null;
+
+if (temporal) {
+  temporalPast = temporal.past;
+  temporalFuture = temporal.future;
+  temporalPointer = temporal.pointer;
+}
+
+// 🫀 TEMPORAL COMPATIBILITY LAYER
+const todayItems = temporalFuture;
+const overdueItems = temporalPast;
+const upcomingItems = temporalFuture;
+
+/* ===== LEGACY CALENDAR LOGIC (TEMPORARILY DISABLED) =====
 const todayItems = obligations.filter(o =>
-  getISODateFromDateTime(o.dateTime) === today
+  normalizeISO(o.dateTime) === today
 );
 
 const overdueItems = obligations.filter(o =>
-  getISODateFromDateTime(o.dateTime) < today
+  normalizeISO(o.dateTime) < today
 );
 
 const upcomingItems = obligations.filter(o =>
-  getISODateFromDateTime(o.dateTime) > today
+  normalizeISO(o.dateTime) > today
 );
+========================================================== */
+/* ===== DAILY NEXT FOCUS ===== */
+
+const focusEl = document.getElementById("dailyFocus");
+let next = null;
+
+if (focusEl) {
+
+  const now = new Date();
+
+  // 1️⃣ sljedeća današnja u budućnosti
+  const nextTodayFuture = todayItems.find(o =>
+    new Date(o.dateTime) > now
+  );
+
+  // 2️⃣ ili prva nadolazeća
+next = nextTodayFuture || upcomingItems[0];
+
+// 🫀 TEMPORAL OVERRIDE (safe mode)
+if (temporalFuture.length > 0) {
+  next = temporalFuture[0];
+}
+
+  if (next) {
+
+    const dt = new Date(next.dateTime);
+
+    const time = dt.toLocaleTimeString(getLang(), {
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+
+    const newText = `Sljedeće: ${next.title} · ${time}`;
+
+if (focusEl.textContent !== newText) {
+
+  focusEl.classList.add("fade-out");
+
+  setTimeout(() => {
+    focusEl.textContent = newText;
+
+    focusEl.classList.remove("fade-out");
+    focusEl.classList.add("fade-in");
+
+    setTimeout(() => {
+      focusEl.classList.remove("fade-in");
+    }, 350);
+
+  }, 200);
+
+}
+
+    focusEl.onclick = () => {
+
+      const el = document.querySelector(
+        `.obligation-card[data-id="${next.id}"]`
+      );
+
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+
+        el.classList.add("focus-highlight");
+
+        setTimeout(() => {
+          el.classList.remove("focus-highlight");
+        }, 1600);
+      }
+    };
+
+  } else {
+    focusEl.textContent = "Danas nema obveza.";
+  }
+}
+/* ===== DAILY PROGRESS ===== */
+
+const progressEl = document.getElementById("dailyProgress");
+
+if (progressEl) {
+
+  // 🫀 TEMPORAL TOTAL (safe mode)
+const totalToday = temporalPast.length + temporalFuture.length;
+
+  if (totalToday > 0) {
+
+    progressEl.classList.remove("hidden");
+
+    const allToday = (await obligationDB.getAll())
+      .filter(o =>
+        o.type !== "shopping" &&
+        normalizeISO(o.dateTime) === today
+      );
+
+    const doneToday = temporalPast.filter(o => o.status === "done").length;
+
+    const ratio = doneToday / totalToday;
+
+    progressEl.innerHTML = `
+      <div class="daily-progress-bar"
+           style="width:${Math.max(ratio * 100, 6)}%">
+      </div>
+    `;
+
+  } else {
+    progressEl.classList.add("hidden");
+  }
+}
+
+/* ===== DAY COMPLETION ===== */
+
+const titleEl = document.querySelector(".daily-state-title");
+const subEl = document.querySelector(".daily-state-subtitle");
+
+if (titleEl && subEl) {
+
+  if (todayItems.length === 0 && overdueItems.length === 0) {
+
+    titleEl.textContent = "Miran dan";
+    subEl.textContent = "Sve za danas je završeno.";
+
+    if (focusEl) focusEl.textContent = "";
+  }
+
+}
 
 if (todayItems.length === 0 && overdueItems.length === 0 && upcomingItems.length === 0) {
   container.innerHTML = `
@@ -549,6 +868,12 @@ if (todayItems.length === 0 && overdueItems.length === 0 && upcomingItems.length
 
 let html = '';
 
+// 🫀 TEMPORAL CONTINUOUS FLOW
+const allItems = [
+  ...temporalPast,
+  ...temporalFuture
+];
+
 const todayDate = new Date().toLocaleDateString(
   (I18N[lang] && I18N[lang].lang) || 'hr-HR',
   { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' }
@@ -560,21 +885,10 @@ html += `
   </div>
 `;
 
-if (todayItems.length > 0) {
-  html += `
-    <div class="obligations-section-title">Danas</div>
-    ${todayItems.map(ob => buildObligationCard(ob, lang)).join('')}
-  `;
-}
-
-if (overdueItems.length > 0) {
-  html += `
-    <div class="obligations-section-title overdue">
-  Zakašnjelo
-</div>
-    ${overdueItems.map(ob => buildObligationCard(ob, lang)).join('')}
-  `;
-}
+// 🫀 TEMPORAL CONTINUOUS LIST
+html += `
+  ${allItems.map(ob => buildObligationCard(ob, lang)).join('')}
+`;
 
 if (upcomingItems.length > 0) {
   html += `
@@ -587,13 +901,44 @@ if (upcomingItems.length > 0) {
 
 container.innerHTML = html;
 attachObligationHandlers(container);
+
+// 🫀 TEMPORAL POINTER
+
+let markerTarget = null;
+
+if (temporalFuture.length > 0) {
+  markerTarget = temporalFuture[0].id;
+}
+
+updateCurrentMomentMarker(markerTarget);
 }
 
 /* ===== DAILY VIEW LOGIC ===== */
-let viewMode = 'list'; // 'list' | 'days'
+// SINGLE SOURCE OF TRUTH
+Object.defineProperty(window, 'viewMode', {
+  get() {
+    return window.AppState?.obligations?.viewMode || 'list';
+  },
+  set(v) {
+    if (!window.AppState) window.AppState = {};
+    if (!window.AppState.obligations)
+      window.AppState.obligations = {};
+
+    window.AppState.obligations.viewMode = v;
+  }
+});
+
+viewMode = 'list';
 let currentDailyDate = todayISO();
 
 function showListMode() {
+
+  // spriječi dupli poziv
+  if (window.__LK_LIST_MODE__) return;
+  window.__LK_LIST_MODE__ = true;
+
+  console.log('📋 [showListMode] CALLED');
+  window.AppState.obligations.viewMode = 'list';
   viewMode = 'list';
 
   const dailyView = document.getElementById('dailyView');
@@ -607,9 +952,15 @@ function showListMode() {
 
   const lang = getLang();
   if (btn) btn.textContent = I18N[lang].obligationsView.byDay;
+
+  // reset guard
+  setTimeout(() => {
+    window.__LK_LIST_MODE__ = false;
+  }, 50);
 }
 
 function showDailyMode() {
+  window.AppState.obligations.viewMode = 'days';
   viewMode = 'days';
 
   const dailyView = document.getElementById('dailyView');
@@ -633,6 +984,7 @@ function groupObligationsByStatus(items) {
 }
 
 async function loadDailyForDate(isoDate) {
+
   currentDailyDate = isoDate;
 
   const picker = document.getElementById('dailyDatePicker');
@@ -644,11 +996,22 @@ async function loadDailyForDate(isoDate) {
 // Acceptable while dataset is small.
 // Future optimization: indexed queries or in-memory cache.
   const all = (await obligationDB.getAll())
-  .filter(o => o.type !== 'shopping');
+  .filter(o => o.type !== 'shopping')
+  .map(o => {
+    // normalize date-only obligations globally
+    if (o.dateTime && o.dateTime.length === 10) {
+      return { ...o, dateTime: o.dateTime + "T00:00" };
+    }
+    return o;
+  });
 
-const filtered = all.filter(o =>
-  getISODateFromDateTime(o.dateTime) === isoDate
-);
+const filtered = all.filter(o => {
+  if (!o.dateTime) return false;
+
+  // supports date-only AND datetime values
+  const iso = getISODateFromDateTime(o.dateTime);
+  return iso === isoDate;
+});
   const groups = groupObligationsByStatus(filtered);
 
   const openWrap = document.getElementById('dailyOpenWrap');
@@ -698,6 +1061,40 @@ function refreshCurrentObligationsView() {
   }
 }
 
+/* ===== CURRENT MOMENT MARKER ===== */
+function updateCurrentMomentMarker(nextId) {
+
+  const list = document.getElementById("screen-obligations-list");
+  if (!list) return;
+
+  let marker = document.querySelector(".obligation-now-marker");
+
+  if (!marker) {
+    marker = document.createElement("div");
+    marker.className = "obligation-now-marker";
+    list.appendChild(marker);
+  }
+
+  const nextCard = document.querySelector(
+    `.obligation-card[data-id="${nextId}"]`
+  );
+
+  if (!nextCard) {
+    marker.style.opacity = "0";
+    return;
+  }
+
+  const listRect = list.getBoundingClientRect();
+  const cardRect = nextCard.getBoundingClientRect();
+
+  const offset =
+    cardRect.top - listRect.top + cardRect.height / 2;
+
+  marker.style.opacity = "1";
+  marker.style.top = offset + "px";
+}
+
+
 // ===== HEADER TITLE MAP (i18n based) =====
 const SCREEN_TITLES = {
   'screen-obligations-list': lang => I18N[lang].obligationsList?.title,
@@ -744,6 +1141,15 @@ function openEditObligation(id) {
     screenHistory.push('screen-obligations-list');
     showScreen('screen-add-obligation');
 
+    // Auto-close iOS time picker after selection
+const timeInputBlur = document.getElementById('obligationTime');
+if (timeInputBlur && !timeInputBlur.dataset.blurAttached) {
+  timeInputBlur.dataset.blurAttached = "1";
+  timeInputBlur.addEventListener('change', () => {
+    timeInputBlur.blur();
+  });
+}
+
     const saveBtn = document.getElementById('saveObligation');
     if (saveBtn) {
     saveBtn.dataset.editId = id;
@@ -752,11 +1158,32 @@ function openEditObligation(id) {
     const title = document.getElementById('obligationTitle');
     if (title) title.value = obligation.title || '';
 
-    const note = document.getElementById('obligationNote');
-    if (note) note.value = obligation.note || '';
+    const dateInput = document.getElementById('obligationDate');
+const timeInput = document.getElementById('obligationTime');
 
-    const date = document.getElementById('obligationDateTime');
-    if (date) date.value = obligation.dateTime || '';
+if (obligation.dateTime) {
+  const parts = obligation.dateTime.split('T');
+
+  if (dateInput) dateInput.value = parts[0] || '';
+  if (timeInput) timeInput.value = (parts[1] || '').slice(0,5);
+}
+
+    // ===== REMINDER: restore state in edit =====
+const enableReminder = document.getElementById('enableReminder');
+const reminderOptions = document.getElementById('reminderOptions');
+const reminderTime = document.getElementById('reminderTime');
+
+const hasReminder = !!obligation.reminder;
+
+if (enableReminder) enableReminder.checked = hasReminder;
+
+if (reminderOptions) {
+  reminderOptions.classList.toggle('hidden', !hasReminder);
+}
+
+if (reminderTime && hasReminder) {
+  reminderTime.value = obligation.reminder;
+}
 
     window.__editingObligationId = id;
 
@@ -801,3 +1228,29 @@ window.openEditObligation = openEditObligation;
     }
   }
 })();
+
+// ===== OBLIGATIONS ENGINE BRIDGE (Calm Simplification) =====
+
+// toggle status (engine owns DB)
+window.toggleObligationStatus = async function(id, newStatus) {
+  const obligations = await obligationDB.getAll();
+  const obligation = obligations.find(o => o.id === id);
+  if (!obligation) return;
+
+  obligation.status = newStatus;
+  await obligationDB.add(obligation);
+  // 🫀 Temporal sync
+const all = await obligationDB.getAll();
+Temporal.setObligations(all);
+
+  window.refreshCurrentObligationsView?.();
+};
+
+// delete obligation (engine owns DB)
+window.deleteObligation = async function(id) {
+  await obligationDB.delete(id);
+  // 🫀 Temporal sync
+const all = await obligationDB.getAll();
+Temporal.setObligations(all);
+  window.refreshCurrentObligationsView?.();
+};

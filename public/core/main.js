@@ -98,6 +98,18 @@ setTimeout(() => {
   // ✅ force first real paint (prevents "blank until tap")
   await waitForNextPaint();
 
+  // ===== MINI FREEZE: Preload shopping (cold first-hit fix) =====
+setTimeout(async () => {
+  try {
+    if (typeof getShoppingItems === 'function') {
+      await getShoppingItems();
+      console.log('[PRELOAD] Shopping ready');
+    }
+  } catch (e) {
+    console.warn('[PRELOAD] Shopping preload failed', e);
+  }
+}, 0);
+
   // DEVICE LAYER
   const { checkBatteryOptimization } = await import('./battery.js');
 

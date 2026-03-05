@@ -1,68 +1,69 @@
 // core/nativeNotifications.js
-import { Capacitor } from '@capacitor/core';
-import { LocalNotifications } from '@capacitor/local-notifications';
+
+const Capacitor = window.Capacitor;
+const LocalNotifications =
+  window.Capacitor?.Plugins?.LocalNotifications;
 
 function isAndroid() {
   return Capacitor.getPlatform() === 'android';
-}
-
-async function scheduleAlarmManager(id, at, title, body) {
-  const { Plugins } = await import('@capacitor/core');
-  const AlarmNotifications = Plugins.AlarmNotifications;
-  if (!AlarmNotifications) throw new Error('AlarmNotifications plugin not available');
-
-  return AlarmNotifications.schedule({ id, at, title, body });
-}
-
-async function cancelAlarmManager(id) {
-  const { Plugins } = await import('@capacitor/core');
-  const AlarmNotifications = Plugins.AlarmNotifications;
-  if (!AlarmNotifications) throw new Error('AlarmNotifications plugin not available');
-
-  return AlarmNotifications.cancel({ id });
-}
-
-function isAndroid() {
-  return Capacitor.getPlatform() === 'android';
-}
-
-async function scheduleAlarmManager(id, at, title, body) {
-  const { Plugins } = await import('@capacitor/core');
-  const AlarmNotifications = Plugins.AlarmNotifications;
-  if (!AlarmNotifications) throw new Error('AlarmNotifications plugin not available');
-
-  return AlarmNotifications.schedule({ id, at, title, body });
-}
-
-async function cancelAlarmManager(id) {
-  const { Plugins } = await import('@capacitor/core');
-  const AlarmNotifications = Plugins.AlarmNotifications;
-  if (!AlarmNotifications) throw new Error('AlarmNotifications plugin not available');
-
-  return AlarmNotifications.cancel({ id });
 }
 
 export function isNative() {
   return Capacitor.isNativePlatform();
 }
 
+// ===== ANDROID ALARM MANAGER =====
+
+async function scheduleAlarmManager(id, at, title, body) {
+  const AlarmNotifications =
+  window.Capacitor?.Plugins?.AlarmNotifications;
+
+  if (!AlarmNotifications)
+    throw new Error('AlarmNotifications plugin not available');
+
+  return AlarmNotifications.schedule({ id, at, title, body });
+}
+
+async function cancelAlarmManager(id) {
+  const { Plugins } = await import('@capacitor/core');
+  const AlarmNotifications = Plugins.AlarmNotifications;
+
+  if (!AlarmNotifications)
+    throw new Error('AlarmNotifications plugin not available');
+
+  return AlarmNotifications.cancel({ id });
+}
+
+// ===== CHANNEL =====
+
 const CHANNEL_ID = 'lifekompas-obligations';
 
 async function ensureChannel() {
+  if (!isAndroid()) return;
+
   await LocalNotifications.createChannel({
     id: CHANNEL_ID,
     name: 'LifeKompas – Obveze',
     description: 'Podsjetnici za obveze',
-    importance: 5, // HIGH
+    importance: 5,
     sound: 'default',
-    visibility: 1 // PUBLIC
+    visibility: 1
   });
 }
 
-export async function scheduleNativeNotification(obligation, triggerTime) {
-  if (!isNative()) return;
+// ===== SCHEDULE =====
 
-  // ✅ ANDROID: uvijek koristi AlarmManager fallback (radi i na Moto E40)
+console.log("🔥 NATIVE NOTIFICATION RECEIVED", obligation, triggerTime);
+
+export async function scheduleNativeNotification(obligation, triggerTime) {
+
+  console.log("🔥 scheduleNativeNotification CALLED");
+
+  if (!isNative()) {
+    console.log("❌ not native platform");
+    return;
+  }
+
   if (isAndroid()) {
     await scheduleAlarmManager(
       Number(obligation.id),
@@ -73,24 +74,26 @@ export async function scheduleNativeNotification(obligation, triggerTime) {
     return;
   }
 
-  // iOS / ostalo: LocalNotifications
-  await LocalNotifications.requestPermissions();
-  await ensureChannel();
+  // iOS
+  console.log("🔥 requesting notification permission");
+
+await LocalNotifications.requestPermissions();
 
   await LocalNotifications.schedule({
     notifications: [
       {
-        id: obligation.id,
+        id: Number(obligation.id),
         title: '🧭 LifeKompas',
         body: obligation.title,
         schedule: { at: new Date(triggerTime) },
-        channelId: CHANNEL_ID,
         sound: 'default',
         extra: { obligationId: obligation.id }
       }
     ]
   });
 }
+
+// ===== CANCEL =====
 
 export async function cancelNativeNotification(obligationId) {
   if (!isNative()) return;
@@ -101,9 +104,12 @@ export async function cancelNativeNotification(obligationId) {
   }
 
   await LocalNotifications.cancel({
-    notifications: [{ id: obligationId }]
+    notifications: [{ id: Number(obligationId) }]
   });
 }
+
+// ===== TEST =====
+
 export async function testNativeNotification() {
   if (!isNative()) return;
 
@@ -112,22 +118,20 @@ export async function testNativeNotification() {
       333333,
       Date.now() + 2000,
       '🧪 LifeKompas TEST',
-      'Ako ovo vidiš – AlarmManager radi ✅'
+      'AlarmManager radi ✅'
     );
     return;
   }
-}
 
   await LocalNotifications.requestPermissions();
-  await ensureChannel();
+
   await LocalNotifications.schedule({
     notifications: [
       {
         id: 333333,
         title: '🧪 LifeKompas TEST',
-        body: 'Ako ovo vidiš – LocalNotifications rade ✅',
+        body: 'LocalNotifications rade ✅',
         schedule: { at: new Date(Date.now() + 2000) },
-        channelId: CHANNEL_ID,
         sound: 'default'
       }
     ]

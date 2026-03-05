@@ -40,8 +40,8 @@
   <div class="app-header-right">
     <!-- DESNA AKCIJA – UI ONLY -->
     <button class="header-action hidden" id="headerAction" aria-label="action">
-      ➕
-    </button>
+  +
+</button>
   </div>
 </div>
 
@@ -190,13 +190,15 @@
         placeholder="Dodaj stavku i stisni Enter"
       />
     </div>
-<button id="btnScanReceipt" class="scan-receipt-btn">
-  ➕
+<div class="shopping-actions">
+  <button id="btnScanReceipt" class="archive-toggle">
+  Unesi račun
 </button>
 
-    <button id="toggleArchive" class="archive-toggle">
-  Prikaži arhivu
-</button>
+  <button id="toggleArchive" class="archive-toggle">
+    Prikaži arhivu
+  </button>
+</div>
 
 <div id="shoppingSwipeHint" class="swipe-hint hidden">
   ← Povuci ulijevo za brisanje
@@ -222,51 +224,51 @@
   </div>
 
   <!-- EKRAN: DODAVANJE/UREĐIVANJE OBVEZE -->
-  <div id="screen-add-obligation" class="screen">
+  <div id="screen-add-obligation" class="screen" data-autofocus="obligationTitle">
     <div class="obligation-form">
       <input type="text" id="obligationTitle" placeholder="Naslov obveze" maxlength="100">
-      <textarea id="obligationNote" placeholder="Napomena" rows="3"></textarea>
 
-      <label class="datetime-label">
-        <span id="obligationDateTimeLabel">Datum i vrijeme</span>
-        <input type="datetime-local" id="obligationDateTime">
-      </label>
+      <div class="datetime-row">
+
+  <label class="datetime-label">
+    <span id="obligationDateTimeLabel">Datum</span>
+    <input type="date" id="obligationDate">
+  </label>
+
+  <label class="datetime-label">
+    <span>Vrijeme</span>
+    <input type="time" id="obligationTime">
+  </label>
+
+</div>
 
       <label class="reminder-checkbox">
-        <input type="checkbox" id="enableReminder">
-        <span id="reminderLabel">Podsjetnik</span>
-      </label>
-      <label class="reminder-checkbox">
-        <input type="checkbox" id="urgentObligation">
-        <span id="urgentLabel"></span>
-     </label>
+  <input type="checkbox" id="enableReminder">
+  <span id="reminderLabel">Podsjetnik</span>
+</label>
 
-      <div id="reminderOptions" class="hidden">
-        <select id="reminderTime">
-  <option value="0"></option>
-  <option value="15"></option>
-  <option value="30"></option>
-  <option value="60"></option>
-  <option value="120"></option>
-  <option value="1440"></option>
-</select>
-      </div>
+<div id="reminderOptions" class="hidden">
+  <div class="select-wrapper">
+    <select id="reminderTime">
+      <option value="0"></option>
+      <option value="15"></option>
+      <option value="60"></option>
+      <option value="1440"></option>
+    </select>
+  </div>
+</div>
+
 <label class="repeat-label">
   <span id="repeatLabel"></span>
+</label>
+
+<div class="select-wrapper">
   <select id="repeatType">
     <option value="">Bez ponavljanja</option>
     <option value="daily"></option>
     <option value="weekly"></option>
   </select>
-</label>
-<label class="quiet-hours-label">
-  <span id="quietHoursLabel"></span>
-  <div class="quiet-hours-row">
-    <input type="time" id="quietStart" value="22:00">
-    <span>–</span>
-    <input type="time" id="quietEnd" value="07:00">
-  </div>
-</label>
+</div>
 
       <button id="saveObligation" class="btn-save">💾 Spremi</button>
       <button id="cancelObligation" class="btn-cancel">✖️ Otkaži</button>
@@ -277,7 +279,15 @@
   <div id="screen-obligations-list" class="screen">
   <div class="calm-surface">
 
-    <!-- TOOLBAR -->
+  <!-- DAILY STATE -->
+  <div id="dailyState" class="daily-state">
+    <div class="daily-state-title">Miran dan</div>
+    <div class="daily-state-subtitle">Sve je pod kontrolom.</div>
+    <div id="dailyFocus" class="daily-focus"></div>
+    <div id="dailyProgress" class="daily-progress hidden"></div>
+  </div>
+
+  <!-- TOOLBAR -->
     <div class="obligations-toolbar">
       <button id="btnViewByDays" class="toolbar-btn">
         📆 Pregled po danima
@@ -410,8 +420,6 @@
 
 <script src="core/i18n.js"></script>
 <script type="module" src="core/main.js"></script>
-
-</script>
 
 </body>
 </html>

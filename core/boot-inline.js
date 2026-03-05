@@ -211,10 +211,13 @@ function setLanguage(lang) {
     if (searchContacts && c) searchContacts.placeholder = c.search;
   }
 
-  showScreen('screen-menu');
-
-  // UX 1.6 – reset history nakon izbora jezika
-  screenHistory.length = 0;
+  // ✅ FIXED: samo ako smo na screen-lang (izbor jezika)
+  const currentScreen = document.querySelector('.screen.active')?.id;
+  if (currentScreen === 'screen-lang') {
+    showScreen('screen-menu');
+    // UX 1.6 – reset history nakon izbora jezika
+    screenHistory.length = 0;
+  }
 
   setTimeout(() => {
     document.querySelectorAll('.menu-item').forEach((item, i) => {

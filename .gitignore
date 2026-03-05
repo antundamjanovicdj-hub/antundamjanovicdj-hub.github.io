@@ -1,20 +1,40 @@
+# Node
 node_modules/
-public/
 
 # OS junk
 .DS_Store
 Thumbs.db
 
-# Capacitor / Android
-gradle.properties
+# Capacitor config local overrides
+capacitor.config.local.json
+
+# Android build
+android/.gradle
+android/build
+android/app/build
+
+# Android signing
 *.jks
 *.keystore
 *.pem
 *.p12
 key.properties
 
-# Future builds
+# iOS build
+ios/build
+ios/DerivedData
+
+# CocoaPods
+ios/Pods
+ios/Podfile.lock
+
+# Swift package cache
+ios/.build
+
+# Firebase / API keys
+GoogleService-Info.plist
+google-services.json
+
+# Generic builds
 dist/
 build/
-
-capacitor.config.*

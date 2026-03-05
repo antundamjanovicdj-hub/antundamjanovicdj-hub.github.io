@@ -102,10 +102,10 @@
   <h2 class="screen-title">💵 Unos prihoda</h2>
 
   <div class="finance-form">
-    <input type="number" id="incomeAmount" placeholder="Iznos (€)">
-    <input type="text" id="incomeDesc" placeholder="Opis (npr. Plaća)">
+    <input type="number" id="incomeAmount" placeholder="Iznos (€)" min="0" max="999999999" step="0.01" inputmode="decimal">
+    <input type="text" id="incomeDesc" placeholder="Opis (npr. Plaća)" maxlength="100" autocomplete="off">
     <label class="finance-date-label" id="incomeDateLabel">Datum prihoda</label>
-<input type="date" id="incomeDate">
+    <input type="date" id="incomeDate">
     <button id="saveIncome">➕ Dodaj prihod</button>
   </div>
 
@@ -118,8 +118,8 @@
   <h2 class="screen-title">📅 Mjesečni troškovi</h2>
 
   <div class="finance-form">
-    <input type="text" id="fixedDesc" placeholder="Naziv fiksnog troška (npr. Stanarina)">
-    <input type="number" id="fixedAmount" placeholder="Iznos (€)">
+    <input type="text" id="fixedDesc" placeholder="Naziv fiksnog troška (npr. Stanarina)" maxlength="100" autocomplete="off">
+    <input type="number" id="fixedAmount" placeholder="Iznos (€)" min="0" max="999999999" step="0.01" inputmode="decimal">
     <button id="saveFixed">➕ Dodaj fiksni trošak</button>
   </div>
 
@@ -128,41 +128,41 @@
 
 
 <!-- FINANCE: CREDITS SCREEN -->
-  <div id="screen-finance-credits" class="screen finance-background">
+<div id="screen-finance-credits" class="screen finance-background">
   <h2 class="screen-title">🏦 Krediti</h2>
 
   <div class="finance-form">
-    <input type="text" id="creditDesc" placeholder="Naziv kredita (npr. Auto kredit)">
-    <input type="number" id="creditAmount" placeholder="Iznos rate (€)">
+    <input type="text" id="creditDesc" placeholder="Naziv kredita (npr. Auto kredit)" maxlength="100" autocomplete="off">
+    <input type="number" id="creditAmount" placeholder="Iznos rate (€)" min="0" max="999999999" step="0.01" inputmode="decimal">
 
     <label id="creditStartLabel">Početak kredita</label>
-<input type="date" id="creditStart">
+    <input type="date" id="creditStart">
 
-<label id="creditEndLabel">Završetak kredita</label>
-<input type="date" id="creditEnd">
+    <label id="creditEndLabel">Završetak kredita</label>
+    <input type="date" id="creditEnd">
 
-<label id="creditLastPaidLabel">Zadnja uplata</label>
-<input type="date" id="creditLastPaid">
+    <label id="creditLastPaidLabel">Zadnja uplata</label>
+    <input type="date" id="creditLastPaid">
 
     <button id="saveCredit">➕ Dodaj kredit</button>
   </div>
 
   <div id="creditList" class="finance-list"></div>
 </div>
+
 <!-- FINANCE: OTHER COSTS SCREEN -->
 <div id="screen-finance-other" class="screen finance-background">
   <h2 class="screen-title">🧾 Ostali troškovi</h2>
 
-  <!-- OTHER COST FORM -->
   <div class="finance-form">
-    <input type="text" id="otherDesc" placeholder="Opis troška (npr. Gorivo)">
-    <input type="number" id="otherAmount" placeholder="Iznos (€)">
+    <input type="text" id="otherDesc" placeholder="Opis troška (npr. Gorivo)" maxlength="100" autocomplete="off">
+    <input type="number" id="otherAmount" placeholder="Iznos (€)" min="0" max="999999999" step="0.01" inputmode="decimal">
     <button id="saveOther">➕ Dodaj trošak</button>
   </div>
 
-  <!-- OTHER COST LIST -->
   <div id="otherList" class="finance-list"></div>
 </div>
+
 <!-- FINANCE: COSTS OVERVIEW SCREEN -->
 <div id="screen-finance-overview" class="screen finance-background">
   <h2 class="screen-title">📊 Pregled troškova</h2>

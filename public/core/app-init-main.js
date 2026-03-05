@@ -91,30 +91,7 @@ export function initApp() {
 
       // jednostavna povijest ekrana
       window.showScreen = function (screenId) {
-        if (window.legacy_showScreen) {
-           window.legacy_showScreen(screenId);
-        }
         console.log('[NAV]', screenId);
-        // TRUE screen engine
-        document.querySelectorAll('.screen')
-          .forEach(s => {
-            s.classList.remove('active');
-            s.style.display = 'none'; // 🔥 KRITIČNO
-          });
-        const target = document.getElementById(screenId);
-        if (target) {
-  target.classList.add('active');
-  target.style.display = 'block';
-
-  // iOS keyboard fix
-  const autofocusId = target?.dataset.autofocus;
-
-if (autofocusId) {
-  requestAnimationFrame(() => {
-    document.getElementById(autofocusId)?.focus();
-  });
-}
-}
 
         // ===== HEADER TITLE =====
         const headerTitle = document.getElementById('headerTitle');
@@ -243,7 +220,7 @@ if (autofocusId) {
   new CustomEvent('screenShown', { detail: screenId })
 );
 
-// 🔗 LIFEOMPAS ENGINE BRIDGE
+// 🔗 LIFEOMPAS ENGINE BRIDGE (FIXED - samo jednom poziv)
 if (typeof window.legacy_showScreen === 'function') {
   window.legacy_showScreen(screenId);
 }

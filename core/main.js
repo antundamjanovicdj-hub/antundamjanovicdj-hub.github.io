@@ -7,8 +7,7 @@ console.log('[LifeKompas] MAIN ENGINE START');
 const BOOT_FAIL_KEY = 'lifekompas_boot_fail';
 const bootFails = Number(localStorage.getItem(BOOT_FAIL_KEY) || 0);
 
-if (false && bootFails >= 3) {
-
+if (bootFails >= 3) {
   document.body.style.background = '#0d5e32';
 
   document.body.innerHTML = `
@@ -34,16 +33,19 @@ if (false && bootFails >= 3) {
         border:none;
         border-radius:14px;
         font-size:16px;
+        margin-top:20px;
+        cursor:pointer;
       ">
         Pokreni ponovo
       </button>
     </div>
   `;
 
-  throw new Error("BOOT BLOCKED");
+  throw new Error("BOOT BLOCKED - Safe Mode Active");
 }
 
-localStorage.setItem(BOOT_FAIL_KEY, bootFails + 1);
+// Increment boot fail counter
+localStorage.setItem(BOOT_FAIL_KEY, String(bootFails + 1));
 
 // ===== GLOBAL CRASH SHIELD =====
 window.addEventListener('error', (event) => {
@@ -72,53 +74,63 @@ const waitForNextPaint = () =>
   });
 
 async function boot() {
-
   console.log('[LifeKompas] Boot pipeline start');
 
-  // ✅ ensure DOM exists before init touches screens
-  await waitForDomReady();
-
-  // CORE
-  await import('./app-init.js');
-
-  // FEATURE MODULES
-  await import('./contacts.js');
-  await import('./obligations.js');
-
-  // INLINE MIGRATION (mora prije init)
-  await import('./boot-inline.js');
-
-  // APP INIT (controlled start)
-  const { initApp } = await import('./app-init-main.js');
-
-setTimeout(() => {
-  initApp();
-}, 0);
-
-  // ✅ force first real paint (prevents "blank until tap")
-  await waitForNextPaint();
-
-  // ===== MINI FREEZE: Preload shopping (cold first-hit fix) =====
-setTimeout(async () => {
   try {
-    if (typeof getShoppingItems === 'function') {
-      await getShoppingItems();
-      console.log('[PRELOAD] Shopping ready');
-    }
-  } catch (e) {
-    console.warn('[PRELOAD] Shopping preload failed', e);
+    // ✅ ensure DOM exists before init touches screens
+    await waitForDomReady();
+
+    // CORE
+    await import('./app-init.js');
+
+    // FEATURE MODULES
+    await import('./contacts.js');
+    await import('./obligations.js');
+
+    // INLINE MIGRATION (mora prije init)
+    await import('./boot-inline.js');
+
+    // APP INIT (controlled start)
+    const { initApp } = await import('./app-init-main.js');
+
+    setTimeout(() => {
+      initApp();
+    }, 0);
+
+    // ✅ force first real paint (prevents "blank until tap")
+    await waitForNextPaint();
+
+    // ===== MINI FREEZE: Preload shopping (cold first-hit fix) =====
+    setTimeout(async () => {
+      try {
+        if (typeof getShoppingItems === 'function') {
+          await getShoppingItems();
+          console.log('[PRELOAD] Shopping ready');
+        }
+      } catch (e) {
+        console.warn('[PRELOAD] Shopping preload failed', e);
+      }
+    }, 0);
+
+    // DEVICE LAYER
+    const { checkBatteryOptimization } = await import('./battery.js');
+
+    // run after slight delay so UI is visible
+    setTimeout(() => {
+      checkBatteryOptimization();
+    }, 1200);
+
+    // 🔧 FIX: Reset boot fail counter on successful boot
+    localStorage.removeItem(BOOT_FAIL_KEY);
+    
+    console.log('[LifeKompas] Boot pipeline complete ✅');
+
+  } catch (error) {
+    console.error('[LifeKompas] Boot failed:', error);
+    
+    // Don't reset boot fail counter on error
+    // This allows safe mode to kick in after 3 failures
   }
-}, 0);
-
-  // DEVICE LAYER
-  const { checkBatteryOptimization } = await import('./battery.js');
-
-  // run after slight delay so UI is visible
-  setTimeout(() => {
-    checkBatteryOptimization();
-  }, 1200);
-
-  console.log('[LifeKompas] Boot pipeline complete');
 }
 
 window.addEventListener('DOMContentLoaded', boot);

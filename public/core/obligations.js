@@ -1,38 +1,13 @@
 // core/obligations.js
-// LifeKompas — Obligations Module (scaffold)
-// ZERO-RISK STEP 1: no side-effects, no runtime changes.
-// DEV SENTINEL — this module must NEVER execute runtime code on import
+// LifeKompas — Obligations Module
 const __OBLIGATIONS_MODULE__ = true;
-/*
-  ⚠️ ENGINE OWNERSHIP (ZERO-RISK PHASE)
-
-  Obligations runtime is STILL owned by app-init.js.
-
-  This module currently provides:
-  ✔ card builder
-  ✔ safe wrappers
-  ✔ helper exports
-
-  DO NOT move engine logic here yet.
-  DO NOT call DB here.
-  DO NOT attach DOM listeners here.
-
-  Full engine migration happens in a later phase.
-*/
-// In the next steps, we will move code from app-init.js into this module gradually.
-
-// ---- TEMP SAFE WRAPPERS ----
-// These wrappers allow us to import this module later without breaking existing behavior.
 
 import { obligationDB } from "./db.js";
 import Temporal from "../src/core/temporal/index.js";
 import { getISODateFromDateTime, todayISO } from "./date-utils.js";
 
 export async function renderObligationsList_SAFE() {
-
   const obligations = await obligationDB.getAll();
-
-  // 🫀 feed Temporal Brain
   Temporal.setObligations(obligations);
 
   if (typeof window.renderObligationsList === "function") {
@@ -63,32 +38,54 @@ export async function loadDailyForDate(isoDate) {
   throw new Error("[obligations] loadDailyForDate not wired yet");
 }
 
+// 🔧 FIX: Helper function to safely parse date
+function safeParseDate(dateTimeStr) {
+  if (!dateTimeStr) return null;
+  
+  const dt = new Date(dateTimeStr);
+  
+  // 🔧 FIX: Check for Invalid Date
+  if (isNaN(dt.getTime())) {
+    console.warn('[obligations] Invalid date:', dateTimeStr);
+    return null;
+  }
+  
+  return dt;
+}
+
+// 🔧 FIX: Helper to escape HTML (XSS prevention)
+function escapeHtml(text) {
+  if (!text) return '';
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
 export function buildObligationCard(ob, lang) {
   // ===== NORMALIZE OB OBJECT (prevent "undefined") =====
-  const safe = ob;
+  const safe = ob || {};
 
   const t = I18N[lang] || I18N.hr;
-  const ol =
-    t && t.obligationsList ? t.obligationsList : I18N.hr.obligationsList;
+  const ol = t && t.obligationsList ? t.obligationsList : I18N.hr.obligationsList;
 
-  const dt = safe.dateTime ? new Date(safe.dateTime) : null;
-const isoDate = safe.dateTime
-  ? getISODateFromDateTime(safe.dateTime)
-  : null;
-  const dateStr = dt ? dt.toLocaleDateString(t.lang) : "—";
+  // 🔧 FIX: Use safe date parsing
+  const dt = safeParseDate(safe.dateTime);
+  const isoDate = safe.dateTime ? getISODateFromDateTime(safe.dateTime) : null;
+  
+  const dateStr = dt ? dt.toLocaleDateString(t.lang || 'hr-HR') : "—";
   const timeStr = dt
-  ? dt.toLocaleTimeString(t.lang, {
-      hour: "2-digit",
-      minute: "2-digit",
-    })
-  : "—";
+    ? dt.toLocaleTimeString(t.lang || 'hr-HR', {
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : "—";
+  
   const isOverdue = isoDate && isoDate < todayISO();
 
   const overdueText = ol.overdue || "Zakašnjelo";
-
-const overdueHint = isOverdue
-  ? `<div class="obligation-overdue">${overdueText}</div>`
-  : "";
+  const overdueHint = isOverdue
+    ? `<div class="obligation-overdue">${escapeHtml(overdueText)}</div>`
+    : "";
 
   let reminderStr = "";
   if (safe.reminder) {
@@ -116,8 +113,8 @@ const overdueHint = isOverdue
 
   let stateClass = "ob-active";
 
-if (safe.status === "done") stateClass = "ob-done";
-else if (isOverdue) stateClass = "ob-overdue";
+  if (safe.status === "done") stateClass = "ob-done";
+  else if (isOverdue) stateClass = "ob-overdue";
 
   const toggleBtnText =
     safe.status === "done"
@@ -127,126 +124,126 @@ else if (isOverdue) stateClass = "ob-overdue";
   const editText = ol.edit || "Edit";
   const deleteText = ol.delete || "Delete";
 
+  // 🔧 FIX: Escape user content to prevent XSS
+  const safeTitle = escapeHtml(safe.title || '');
+  const safeNote = escapeHtml(safe.note || '');
+
   return `
     <div class="obligation-card ${stateClass}" data-id="${safe.id}">
 
-  <div class="obligation-quick-done" data-id="${safe.id}">
-    ✓
-  </div>
-      <div class="obligation-title" title="${repeatTitle}">
-        ${safe.title}${repeatIcon}
+      <div class="obligation-quick-done" data-id="${safe.id}">
+        ✓
+      </div>
+      
+      <div class="obligation-title" title="${escapeHtml(repeatTitle)}">
+        ${safeTitle}${repeatIcon}
       </div>
 
-      ${safe.note ? `<div class="obligation-note">${safe.note}</div>` : ""}
+      ${safeNote ? `<div class="obligation-note">${safeNote}</div>` : ""}
 
       <div class="obligation-meta">
         <div class="obligation-date">
-  📅 ${dateStr}
-  ${overdueHint}
-</div>
-${dt ? `<div class="obligation-time">⏰ ${timeStr}</div>` : ""}
+          📅 ${dateStr}
+          ${overdueHint}
+        </div>
+        ${dt ? `<div class="obligation-time">⏰ ${timeStr}</div>` : ""}
         ${
           reminderStr
-            ? `<div class="obligation-reminder">🔔 ${reminderStr}</div>`
+            ? `<div class="obligation-reminder">🔔 ${escapeHtml(reminderStr)}</div>`
             : ""
         }
         <div class="obligation-status">${statusText}</div>
       </div>
 
-      <button class="obligation-toggle-status" data-id="${
-        safe.id
-      }" data-status="${safe.status}">
+      <button class="obligation-toggle-status" data-id="${safe.id}" data-status="${safe.status || 'active'}">
         ${toggleBtnText}
       </button>
 
       <div class="obligation-actions">
+        <button class="obligation-edit" data-id="${safe.id}">
+          ✏️ ${escapeHtml(editText)}
+        </button>
 
-  <button class="obligation-edit" data-id="${safe.id}">
-    ✏️ ${editText}
-  </button>
-
-  <button
-    class="obligation-delete"
-    data-id="${safe.id}"
-    title="${deleteText}"
-    aria-label="${deleteText}"
-  >
-    🗑️
-  </button>
-
-</div>
+        <button
+          class="obligation-delete"
+          data-id="${safe.id}"
+          title="${escapeHtml(deleteText)}"
+          aria-label="${escapeHtml(deleteText)}"
+        >
+          🗑️
+        </button>
+      </div>
     </div>
   `;
 }
-export function attachObligationHandlers(container) {
 
+// 🔧 FIX: Use event delegation to prevent memory leaks
+// Track if delegation is already set up
+const delegationSetup = new WeakSet();
+
+export function attachObligationHandlers(container) {
   if (!container) return;
 
-  // TOGGLE STATUS (engine-owned)
-  container.querySelectorAll(".obligation-toggle-status").forEach(btn => {
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
+  // 🔧 FIX: Only attach delegation once per container
+  if (delegationSetup.has(container)) {
+    return;
+  }
+  delegationSetup.add(container);
 
-      const id = parseInt(btn.dataset.id, 10);
-      const currentStatus = btn.dataset.status;
+  // 🔧 FIX: Single event listener using event delegation
+  container.addEventListener("click", (e) => {
+    const target = e.target;
+
+    // TOGGLE STATUS
+    const toggleBtn = target.closest(".obligation-toggle-status");
+    if (toggleBtn) {
+      e.stopPropagation();
+      const id = parseInt(toggleBtn.dataset.id, 10);
+      const currentStatus = toggleBtn.dataset.status;
       const newStatus = currentStatus === "done" ? "active" : "done";
-
       window.toggleObligationStatus?.(id, newStatus);
-    });
-  });
+      return;
+    }
 
-  // DELETE (engine-owned)
-  container.querySelectorAll(".obligation-delete").forEach(btn => {
-    btn.addEventListener("click", (e) => {
+    // DELETE
+    const deleteBtn = target.closest(".obligation-delete");
+    if (deleteBtn) {
       e.stopPropagation();
-
-      const id = parseInt(btn.dataset.id, 10);
-
+      const id = parseInt(deleteBtn.dataset.id, 10);
       window.deleteObligation?.(id);
-    });
-  });
+      return;
+    }
 
-  // QUICK DONE
-container.querySelectorAll(".obligation-quick-done").forEach(btn => {
-  btn.addEventListener("click", (e) => {
-
-    e.stopPropagation(); // IMPORTANT
-
-    const id = parseInt(btn.dataset.id, 10);
-
-    window.toggleObligationStatus?.(id, "done");
-
-  });
-});
-
-  // CARD TAP → EDIT
-container.querySelectorAll(".obligation-card").forEach(card => {
-  card.addEventListener("click", () => {
-    const id = parseInt(card.dataset.id, 10);
-    window.openEditObligation?.(id);
-  });
-});
-
-  // EDIT
-  container.querySelectorAll(".obligation-edit").forEach(btn => {
-    btn.addEventListener("click", (e) => {
+    // QUICK DONE
+    const quickDoneBtn = target.closest(".obligation-quick-done");
+    if (quickDoneBtn) {
       e.stopPropagation();
+      const id = parseInt(quickDoneBtn.dataset.id, 10);
+      window.toggleObligationStatus?.(id, "done");
+      return;
+    }
 
-      const id = parseInt(btn.dataset.id, 10);
-
+    // EDIT button
+    const editBtn = target.closest(".obligation-edit");
+    if (editBtn) {
+      e.stopPropagation();
+      const id = parseInt(editBtn.dataset.id, 10);
       window.openEditObligation?.(id);
-    });
-  });
+      return;
+    }
 
+    // CARD TAP → EDIT (only if clicking on card itself, not buttons)
+    const card = target.closest(".obligation-card");
+    if (card && !target.closest("button")) {
+      const id = parseInt(card.dataset.id, 10);
+      window.openEditObligation?.(id);
+      return;
+    }
+  });
 }
 
 // 🫀 TEMPORAL UI SUBSCRIBER (shadow mode)
-
 Temporal.subscribe((state) => {
-
   window.__TEMPORAL_STATE__ = state;
-
-  // 🫀 calm temporal refresh
   window.refreshCurrentObligationsView?.();
-
 });

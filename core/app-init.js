@@ -244,24 +244,20 @@ export function todayISO() {
   return new Date().toISOString().split('T')[0];
 }
 let navigationLock = false;
-/*
-  ⚠️ NAVIGATION ENGINE (FROZEN)
+let navigationLockTimeout = null;
 
-  This is the active screen engine.
-  Do NOT refactor yet.
-
-  Preconditions before refactor:
-  ✔ obligations fully extracted
-  ✔ shopping stabilized
-  ✔ contacts stable
-  ✔ header behavior finalized
-
-  Refactor will be ONE controlled operation.
-*/
 function legacy_showScreen(screenId) {
-
-  if (navigationLock) return;
+  if (navigationLock) {
+    console.log('[NAV] Navigation locked, ignoring:', screenId);
+    return;
+  }
+  
   navigationLock = true;
+  
+  if (navigationLockTimeout) {
+    clearTimeout(navigationLockTimeout);
+  }
+
   const screens = document.querySelectorAll('.screen');
   const next = document.getElementById(screenId);
 
@@ -271,104 +267,107 @@ function legacy_showScreen(screenId) {
   });
 
   if (next) {
-  next.classList.add('active');
-  next.style.display = 'block';
+    next.classList.add('active');
+    next.style.display = 'block';
 
-  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      try {
+        if (screenId === 'screen-obligations-list') {
+          if (window.__OBLIGATIONS_DIRTY__) {
+            window.__OBLIGATIONS_DIRTY__ = false;
 
+            (async () => {
+              try {
+                const all = await obligationDB.getAll();
+                Temporal.setObligations(all);
+
+                const temporalState = Temporal.getState?.();
+                window.__TEMPORAL_STATE__ = temporalState || window.__TEMPORAL_STATE__ || {
+                  past: [],
+                  future: [],
+                  pointer: null,
+                  now: new Date().toISOString()
+                };
+
+                renderObligationsList?.();
+                window.refreshCurrentObligationsView?.();
+              } catch (err) {
+                console.error('[NAV] Obligations load error:', err);
+              }
+            })();
+          }
+
+          window.AppState.obligations.viewMode = 'list';
+          showListMode?.();
+        }
+
+        if (screenId === 'screen-add-obligation') {
+          const input = document.getElementById('obligationTitle');
+          if (input) {
+            setTimeout(() => {
+              input.focus();
+            }, 80);
+          }
+        }
+
+        document.dispatchEvent(new CustomEvent('screenShown', { 
+          detail: screenId 
+        }));
+
+      } finally {
+        navigationLockTimeout = setTimeout(() => {
+          navigationLock = false;
+          navigationLockTimeout = null;
+        }, 50);
+      }
+    });
+  } else {
     navigationLock = false;
-
-   // ===== OBLIGATIONS LIST ENTER =====
-if (screenId === 'screen-obligations-list') {
-
-  // ✅ refresh only when needed
-  if (window.__OBLIGATIONS_DIRTY__) {
-
-    window.__OBLIGATIONS_DIRTY__ = false;
-
-    (async () => {
-
-      const all = await obligationDB.getAll();
-      Temporal.setObligations(all);
-
-      window.__TEMPORAL_STATE__ =
-        Temporal.getState?.() || window.__TEMPORAL_STATE__;
-
-      renderObligationsList?.();
-      window.refreshCurrentObligationsView?.();
-
-    })();
   }
 
-  // ✅ SINGLE SOURCE OF TRUTH — always list after save
-  window.AppState.obligations.viewMode = 'list';
-  showListMode?.();
-}
+  if (screenId === 'screen-menu') {
+    const items = document.querySelectorAll('#screen-menu .menu-item');
+    items.forEach(el => {
+      el.classList.remove('animate');
+      void el.offsetWidth;
+      el.classList.add('animate');
+      el.style.opacity = '';
+      el.style.transform = '';
+    });
+  }
 
-    // ✅ LifeKompas auto keyboard (iOS + Android safe)
-    if (screenId === 'screen-add-obligation') {
-      const input = document.getElementById('obligationTitle');
-      if (input) {
-        setTimeout(() => {
-          input.focus();
-        }, 80);
-      }
-    }
-
-  });
-}
-
-  // ===== FORCE MENU ITEMS VISIBLE (fix blank menu) =====
-if (screenId === 'screen-menu') {
-  const items = document.querySelectorAll('#screen-menu .menu-item');
-  items.forEach(el => {
-    el.classList.remove('animate');
-    // force reflow
-    void el.offsetWidth;
-    el.classList.add('animate');
-    // safety: if CSS hides them
-    el.style.opacity = '';
-    el.style.transform = '';
-  });
-}
-
-
-  // ===== HEADER TITLE =====
   const headerTitle = document.getElementById('headerTitle');
-if (headerTitle) {
-  const lang = getLang();
-  const titleFn = SCREEN_TITLES[screenId];
+  if (headerTitle) {
+    const lang = getLang();
+    const titleFn = SCREEN_TITLES[screenId];
 
-  headerTitle.textContent =
-    typeof titleFn === 'function'
-      ? (titleFn(lang) || 'LifeKompas')
-      : 'LifeKompas';
-}
+    headerTitle.textContent =
+      typeof titleFn === 'function'
+        ? (titleFn(lang) || 'LifeKompas')
+        : 'LifeKompas';
+  }
 
-  // ===== HEADER RIGHT ACTION (UX 1.6.1) =====
   const headerAction = document.getElementById('headerAction');
   if (headerAction) {
+    const screensWithPlus = [
+      'screen-obligations-list',
+      'screen-contacts'
+    ];
 
-  const screensWithPlus = [
-    'screen-obligations-list',
-    'screen-contacts'
-  ];
-
-  if (screensWithPlus.includes(screenId)) {
-    headerAction.classList.remove('hidden');
-  } else {
-    headerAction.classList.add('hidden');
+    if (screensWithPlus.includes(screenId)) {
+      headerAction.classList.remove('hidden');
+    } else {
+      headerAction.classList.add('hidden');
+    }
   }
-}
 
-  // ===== CONTACTS INIT (only when screen active) =====
   if (screenId === 'screen-contacts') {
     if (typeof loadContacts === 'function') {
       loadContacts();
     }
 
     const lang = getLang();
-    const c = I18N[lang].contacts || I18N.en.contacts;
+    const c = I18N[lang]?.contacts || I18N.en?.contacts;
 
     const contactsTitle = document.getElementById('contactsTitle');
     if (contactsTitle && c) {
@@ -383,43 +382,40 @@ if (headerTitle) {
     if (btnAddContact && c) btnAddContact.textContent = c.add;
 
     const searchContacts = document.getElementById('searchContacts');
-if (searchContacts && c) searchContacts.placeholder = c.search;
-}
+    if (searchContacts && c) searchContacts.placeholder = c.search;
+  }
 
+  if (screenId === 'screen-contact-form') {
+    const lang = getLang();
+    const c = I18N[lang]?.contacts || I18N.en?.contacts;
 
-// ===== CONTACT FORM I18N =====
-if (screenId === 'screen-contact-form') {
+    const first = document.getElementById('contactFirstName');
+    if (first) first.placeholder = c.form?.firstName || '';
 
-  const lang = getLang();
-  const c = I18N[lang].contacts || I18N.en.contacts;
+    const last = document.getElementById('contactLastName');
+    if (last) last.placeholder = c.form?.lastName || '';
 
-  const first = document.getElementById('contactFirstName');
-  if (first) first.placeholder = c.form.firstName;
+    const birth = document.getElementById('contactBirthDate');
+    if (birth) birth.placeholder = c.form?.birthDate || '';
 
-  const last = document.getElementById('contactLastName');
-  if (last) last.placeholder = c.form.lastName;
+    const address = document.getElementById('contactAddress');
+    if (address) address.placeholder = c.form?.address || '';
 
-  const birth = document.getElementById('contactBirthDate');
-  if (birth) birth.placeholder = c.form.birthDate;
+    const email = document.getElementById('contactEmail');
+    if (email) email.placeholder = c.form?.email || '';
 
-  const address = document.getElementById('contactAddress');
-  if (address) address.placeholder = c.form.address;
+    const phone = document.getElementById('contactPhone');
+    if (phone) phone.placeholder = c.form?.phone || '';
 
-  const email = document.getElementById('contactEmail');
-  if (email) email.placeholder = c.form.email;
+    const label = document.getElementById('contactBirthdayTimeLabel');
+    if (label) label.textContent = c.form?.birthdayTime || '';
 
-  const phone = document.getElementById('contactPhone');
-  if (phone) phone.placeholder = c.form.phone;
+    const photo = document.getElementById('btnPickContactPhoto');
+    if (photo) photo.textContent = c.form?.pickPhoto || '';
 
-  const label = document.getElementById('contactBirthdayTimeLabel');
-  if (label) label.textContent = c.form.birthdayTime;
-
-  const photo = document.getElementById('btnPickContactPhoto');
-  if (photo) photo.textContent = c.form.pickPhoto;
-
-  const save = document.getElementById('saveContact');
-  if (save) save.textContent = c.form.save;
-}
+    const save = document.getElementById('saveContact');
+    if (save) save.textContent = c.form?.save || '';
+  }
 }
 /* =====================================================
    OBLIGATIONS ENGINE

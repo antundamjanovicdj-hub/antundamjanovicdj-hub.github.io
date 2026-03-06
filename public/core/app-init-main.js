@@ -1097,10 +1097,18 @@ requestAnimationFrame(() => {
     console.log('🔍 [before forceListRefresh] screen active:', isActive);
     
     if (isActive) {
-      window.forceObligationsListRefresh?.('afterSave');
-    } else {
-      console.warn('⚠️ screen-obligations-list not active, skipping render');
-    }
+  window.forceObligationsListRefresh?.('afterSave');
+
+  // 🌿 UX: highlight nova obveza
+  import('./obligations.js').then(m => {
+    setTimeout(() => {
+  m.highlightNewObligation?.(obligation.id);
+}, 180);
+  });
+
+} else {
+  console.warn('⚠️ screen-obligations-list not active, skipping render');
+}
   });
 });
 
@@ -1292,12 +1300,9 @@ if (dailyDatePicker) {
               if (!ob) return;
               requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
-                  const card = document.querySelector(`.obligation-card[data-id="${ob.id}"]`);
-                  if (card) {
-                    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    card.classList.add('highlight');
-                    setTimeout(() => card.classList.remove('highlight'), 2000);
-                  }
+                  import('./obligations.js').then(m => {
+                    m.highlightNewObligation?.(ob.id);
+                  });
                 });
               });
             });

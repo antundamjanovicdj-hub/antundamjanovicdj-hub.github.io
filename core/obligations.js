@@ -206,13 +206,21 @@ export function attachObligationHandlers(container) {
     }
 
     // DELETE
-    const deleteBtn = target.closest(".obligation-delete");
-    if (deleteBtn) {
-      e.stopPropagation();
-      const id = parseInt(deleteBtn.dataset.id, 10);
-      window.deleteObligation?.(id);
-      return;
-    }
+const deleteBtn = target.closest(".obligation-delete");
+if (deleteBtn) {
+  e.stopPropagation();
+
+  deleteBtn.classList.add("tap");
+
+  const id = parseInt(deleteBtn.dataset.id, 10);
+
+  setTimeout(() => {
+    deleteBtn.classList.remove("tap");
+  }, 150);
+
+  window.deleteObligation?.(id);
+  return;
+}
 
     // QUICK DONE
     const quickDoneBtn = target.closest(".obligation-quick-done");
@@ -232,13 +240,20 @@ export function attachObligationHandlers(container) {
       return;
     }
 
-    // CARD TAP → EDIT (only if clicking on card itself, not buttons)
-    const card = target.closest(".obligation-card");
-    if (card && !target.closest("button")) {
-      const id = parseInt(card.dataset.id, 10);
-      window.openEditObligation?.(id);
-      return;
-    }
+    // CARD TAP → EDIT (only if clicking on card itself, not controls)
+const card = target.closest(".obligation-card");
+
+if (
+  card &&
+  !target.closest("button") &&
+  !target.closest(".obligation-quick-done") &&
+  !target.closest(".obligation-toggle-status") &&
+  !target.closest(".obligation-delete")
+) {
+  const id = parseInt(card.dataset.id, 10);
+  window.openEditObligation?.(id);
+  return;
+}
   });
 }
 
@@ -247,3 +262,33 @@ Temporal.subscribe((state) => {
   window.__TEMPORAL_STATE__ = state;
   window.refreshCurrentObligationsView?.();
 });
+
+// ===== UX: highlight new obligation =====
+export function highlightNewObligation(id) {
+  if (!id) return;
+
+  // wait until DOM render completes
+  requestAnimationFrame(() => {
+
+    const el = document.querySelector(`.obligation-card[data-id="${id}"]`);
+    if (!el) return;
+
+    // smooth scroll to element
+    el.scrollIntoView({
+  behavior: "smooth",
+  block: "center"
+});
+
+// highlight tek kad scroll završi
+setTimeout(() => {
+
+  el.classList.add("obligation-new");
+
+  setTimeout(() => {
+    el.classList.remove("obligation-new");
+  }, 2000);
+
+}, 350);
+
+  });
+}

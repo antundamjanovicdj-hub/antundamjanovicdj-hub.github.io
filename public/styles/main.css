@@ -2276,3 +2276,266 @@ backdrop-filter: blur(10px);
     transform: translateY(0);
   }
 }
+
+
+/* ====================================================================
+   TEMPORAL ENGINE STYLES (NEW)
+   ==================================================================== */
+
+/* ===== PROGRESS LINE (24h) ===== */
+.progress-line-24h {
+  position: relative;
+  height: 4px;
+  margin: 16px 0 20px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.18);
+  overflow: visible;
+}
+
+.progress-line-fill {
+  height: 100%;
+  background: rgba(255,255,255,0.65);
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
+
+.progress-line-marker {
+  position: absolute;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  background: white;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 8px rgba(255,255,255,0.5);
+}
+
+/* ===== TEMPORAL POINTER ===== */
+.temporal-pointer {
+  position: relative;
+  height: 24px;
+  margin: 8px 0;
+  display: flex;
+  align-items: center;
+}
+
+.pointer-dot {
+  position: absolute;
+  left: 20px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.95);
+  box-shadow: 0 0 0 4px rgba(255,255,255,0.08), 0 0 12px rgba(255,255,255,0.35);
+  z-index: 5;
+}
+
+.pointer-line {
+  position: absolute;
+  left: 40px;
+  right: 0;
+  height: 2px;
+  background: rgba(255,255,255,0.25);
+}
+
+/* ===== NOW INDICATOR ===== */
+.now-indicator {
+  position: fixed;
+  bottom: calc(20px + var(--safe-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 20px;
+  background: rgba(0,0,0,0.75);
+  color: white;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  z-index: 100;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  transition: opacity 0.3s ease;
+}
+
+.now-indicator.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ===== OBLIGATIONS SECTIONS ===== */
+.obligations-section-title {
+  color: white;
+  font-weight: 800;
+  font-size: 15px;
+  margin: 18px 4px 8px;
+  letter-spacing: 0.3px;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.55);
+}
+
+.obligations-section-title.done-section {
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.obligations-section-title.collapsed::after {
+  content: ' ▸';
+}
+
+/* ===== OBLIGATIONS LIST WITH TIMELINE ===== */
+.obligations-list.with-timeline {
+  position: relative;
+}
+
+.obligations-list.with-timeline::before {
+  content: "";
+  position: absolute;
+  left: 26px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: rgba(255,255,255,0.16);
+}
+
+.obligations-list.no-timeline::before {
+  display: none;
+}
+
+.done-list.hidden {
+  display: none;
+}
+
+.done-list .obligation-card {
+  opacity: 0.6;
+}
+
+/* ===== COMPLETING ANIMATION ===== */
+.obligation-card.completing {
+  animation: completeSlide 0.5s ease forwards;
+}
+
+@keyframes completeSlide {
+  0% { transform: translateX(0); opacity: 1; }
+  100% { transform: translateX(100%); opacity: 0; }
+}
+
+/* ===== EMPTY STATE (OBLIGATIONS) ===== */
+.obligations-empty-state {
+  margin-top: 40px;
+  padding: 32px 24px;
+  text-align: center;
+  background: rgba(255,255,255,0.14);
+  border-radius: 24px;
+  backdrop-filter: blur(10px);
+}
+
+.empty-calm-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 8px;
+}
+
+.empty-calm-sub,
+.empty-calm-hint,
+.empty-calm-motivation {
+  color: rgba(255,255,255,0.8);
+  margin-bottom: 8px;
+}
+
+.empty-add-btn {
+  margin-top: 20px;
+  padding: 14px 24px;
+  border: none;
+  border-radius: 16px;
+  background: #ffcc80;
+  color: #0d3b25;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.empty-add-btn:active {
+  transform: scale(0.96);
+}
+
+/* ===== YESTERDAY DIALOG ===== */
+.yesterday-dialog {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.yesterday-dialog-content {
+  background: white;
+  border-radius: 24px;
+  padding: 28px;
+  max-width: 340px;
+  text-align: center;
+}
+
+.yesterday-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0d3b25;
+  margin-bottom: 12px;
+}
+
+.yesterday-message {
+  color: #555;
+  margin-bottom: 20px;
+}
+
+.yesterday-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.yesterday-btn {
+  padding: 14px;
+  border: none;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.yesterday-btn.move {
+  background: #0d5e32;
+  color: white;
+}
+
+.yesterday-btn.keep {
+  background: #eee;
+  color: #333;
+}
+
+/* ===== NOTIFICATION BUTTON ===== */
+.notification-enable-btn {
+  margin-top: 12px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.2);
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.notification-enable-btn:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+.notification-status {
+  margin-top: 10px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.7);
+}

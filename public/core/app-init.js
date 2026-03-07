@@ -831,13 +831,12 @@ const subEl = document.querySelector(".daily-state-subtitle");
 
 if (titleEl && subEl) {
 
-  if (todayItems.length === 0 && overdueItems.length === 0) {
+  // empty state handled by obligations module
+if (todayItems.length === 0 && overdueItems.length === 0) {
 
-    titleEl.textContent = "Miran dan";
-    subEl.textContent = "Sve za danas je završeno.";
+  if (focusEl) focusEl.textContent = "";
 
-    if (focusEl) focusEl.textContent = "";
-  }
+}
 
 }
 
@@ -907,6 +906,22 @@ if (temporalFuture.length > 0) {
 }
 
 updateCurrentMomentMarker(markerTarget);
+
+// 🫀 AUTO SCROLL TO POINTER
+requestAnimationFrame(() => {
+  try {
+    const pointer = document.getElementById('temporalPointer');
+
+    if (pointer) {
+      pointer.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+      });
+    }
+  } catch (e) {
+    console.log('[Temporal] auto scroll skipped', e);
+  }
+});
 }
 
 /* ===== DAILY VIEW LOGIC ===== */

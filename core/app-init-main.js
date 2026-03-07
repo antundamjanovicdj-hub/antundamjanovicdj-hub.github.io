@@ -873,6 +873,7 @@ window.forceObligationsListRefresh = async function(reason = '') {
           if (options[0]) options[0].textContent = t.repeatNone;
           if (options[1]) options[1].textContent = t.repeatDaily;
           if (options[2]) options[2].textContent = t.repeatWeekly;
+          if (options[3]) options[3].textContent = t.repeatMonthly;
         }
       }
 

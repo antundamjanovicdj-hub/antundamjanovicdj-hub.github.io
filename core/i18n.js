@@ -115,6 +115,8 @@ notificationPermissionExplanation: "LifeKompas te može podsjetiti na rođendane
       repeatNone: "Bez ponavljanja",
       repeatDaily: "Svaki dan",
       repeatWeekly: "Svaki tjedan",
+      repeatMonthly: "Svaki mjesec",
+      repeatMonthly: "Svaki mjesec",
       save: "💾 Spremi",
       update: "Ažuriraj",
       cancel: "Odustani"
@@ -145,7 +147,24 @@ notificationPermissionExplanation: "LifeKompas te može podsjetiti na rođendane
     obligationsView: {
       byDay: "📆 Pregled po danima",
       asList: "📋 Pregled kao lista",
-      selectDate: "Odaberi datum"
+      selectDate: "Odaberi datum",
+      emptyTitle: "Miran dan",
+      emptySub: "Još nema obveza.",
+      emptyHint: "Dodaj prvu obvezu i rastereti glavu.",
+      emptyMotivation: "LifeKompas će pamtiti umjesto tebe.",
+      addFirst: "+ Dodaj obvezu kad budeš spreman",
+      nowIndicator: "● Sada",
+      sections: {
+        active: "Aktivne obveze",
+        whenYouCan: "Kad stigneš",
+        doneToday: "Završeno danas"
+      }
+    },
+    yesterday: {
+      title: "Jučerašnje obveze",
+      message: "Neke jučerašnje obveze nisu završene.",
+      moveToToday: "Premjesti u danas",
+      keepYesterday: "Ostavi u jučer"
     },
     health: {
       title: "❤️ Zdravlje",
@@ -277,6 +296,7 @@ notificationPermissionExplanation: "LifeKompas te može podsjetiti na rođendane
       repeatNone: "No repeat",
       repeatDaily: "Daily",
       repeatWeekly: "Weekly",
+      repeatMonthly: "Monthly",
       save: "💾 Save",
       update: "Update",
       cancel: "Cancel"
@@ -307,7 +327,24 @@ notificationPermissionExplanation: "LifeKompas te može podsjetiti na rođendane
     obligationsView: {
       byDay: "📆 View by day",
       asList: "📋 View as list",
-      selectDate: "Select date"
+      selectDate: "Select date",
+      emptyTitle: "Peaceful day",
+      emptySub: "No obligations yet.",
+      emptyHint: "Add your first obligation and clear your mind.",
+      emptyMotivation: "LifeKompas will remember for you.",
+      addFirst: "+ Add obligation when ready",
+      nowIndicator: "● Now",
+      sections: {
+        active: "Active obligations",
+        whenYouCan: "When you can",
+        doneToday: "Done today"
+      }
+    },
+    yesterday: {
+      title: "Yesterday's obligations",
+      message: "Some obligations from yesterday are not finished.",
+      moveToToday: "Move to today",
+      keepYesterday: "Keep in yesterday"
     },
     health: {
       title: "❤️ Health",
@@ -440,6 +477,7 @@ notificationPermissionExplanation: "LifeKompas te može podsjetiti na rođendane
       repeatNone: "Keine Wiederholung",
       repeatDaily: "Täglich",
       repeatWeekly: "Wöchentlich",
+      repeatMonthly: "Monatlich",
       save: "💾 Speichern",
       update: "Aktualisieren",
       cancel: "Abbrechen"
@@ -469,7 +507,24 @@ notificationPermissionExplanation: "LifeKompas te može podsjetiti na rođendane
     obligationsView: {
       byDay: "📆 Nach Tagen",
       asList: "📋 Als Liste anzeigen",
-      selectDate: "Datum auswählen"
+      selectDate: "Datum auswählen",
+      emptyTitle: "Ruhiger Tag",
+      emptySub: "Noch keine Verpflichtungen.",
+      emptyHint: "Füge deine erste Verpflichtung hinzu.",
+      emptyMotivation: "LifeKompas wird für dich erinnern.",
+      addFirst: "+ Verpflichtung hinzufügen",
+      nowIndicator: "● Jetzt",
+      sections: {
+        active: "Aktive Verpflichtungen",
+        whenYouCan: "Wenn du Zeit hast",
+        doneToday: "Heute erledigt"
+      }
+    },
+    yesterday: {
+      title: "Gestrige Verpflichtungen",
+      message: "Einige gestrige Verpflichtungen sind nicht erledigt.",
+      moveToToday: "Nach heute verschieben",
+      keepYesterday: "In gestern lassen"
     },
     health: {
       title: "❤️ Gesundheit",
@@ -601,6 +656,7 @@ notificationPermissionExplanation: "LifeKompas te može podsjetiti na rođendane
       repeatNone: "Без повтора",
       repeatDaily: "Ежедневно",
       repeatWeekly: "Еженедельно",
+      repeatMonthly: "Ежемесячно",
       save: "💾 Сохранить",
       update: "Обновить",
       cancel: "Отмена"
@@ -628,7 +684,24 @@ notificationPermissionExplanation: "LifeKompas te može podsjetiti na rođendane
     obligationsView: {
       byDay: "📆 По дням",
       asList: "📋 Список",
-      selectDate: "Выберите дату"
+      selectDate: "Выберите дату",
+      emptyTitle: "Спокойный день",
+      emptySub: "Пока нет обязанностей.",
+      emptyHint: "Добавьте первую обязанность.",
+      emptyMotivation: "LifeKompas запомнит за вас.",
+      addFirst: "+ Добавить обязанность",
+      nowIndicator: "● Сейчас",
+      sections: {
+        active: "Активные обязанности",
+        whenYouCan: "Когда будет время",
+        doneToday: "Выполнено сегодня"
+      }
+    },
+    yesterday: {
+      title: "Вчерашние обязанности",
+      message: "Некоторые вчерашние обязанности не выполнены.",
+      moveToToday: "Перенести на сегодня",
+      keepYesterday: "Оставить во вчера"
     },
     health: {
       title: "❤️ Здоровье",
@@ -760,6 +833,7 @@ notificationPermissionExplanation: "LifeKompas te može podsjetiti na rođendane
       repeatNone: "Sem repetição",
       repeatDaily: "Diariamente",
       repeatWeekly: "Semanalmente",
+      repeatMonthly: "Mensalmente",
       save: "💾 Salvar",
       update: "Atualizar",
       cancel: "Cancelar"
@@ -787,7 +861,24 @@ notificationPermissionExplanation: "LifeKompas te može podsjetiti na rođendane
     obligationsView: {
       byDay: "📆 Ver por dia",
       asList: "📋 Ver como lista",
-      selectDate: "Selecionar data"
+      selectDate: "Selecionar data",
+      emptyTitle: "Dia tranquilo",
+      emptySub: "Ainda não há obrigações.",
+      emptyHint: "Adicione sua primeira obrigação.",
+      emptyMotivation: "LifeKompas lembrará por você.",
+      addFirst: "+ Adicionar obrigação",
+      nowIndicator: "● Agora",
+      sections: {
+        active: "Obrigações ativas",
+        whenYouCan: "Quando puder",
+        doneToday: "Feito hoje"
+      }
+    },
+    yesterday: {
+      title: "Obrigações de ontem",
+      message: "Algumas obrigações de ontem não foram concluídas.",
+      moveToToday: "Mover para hoje",
+      keepYesterday: "Manter em ontem"
     },
     health: {
       title: "❤️ Saúde",
@@ -919,6 +1010,7 @@ notificationPermissionExplanation: "LifeKompas te može podsjetiti na rođendane
       repeatNone: "Tekrar yok",
       repeatDaily: "Günlük",
       repeatWeekly: "Haftalık",
+      repeatMonthly: "Aylık",
       save: "💾 Kaydet",
       update: "Güncelle",
       cancel: "İptal"
@@ -946,7 +1038,24 @@ notificationPermissionExplanation: "LifeKompas te može podsjetiti na rođendane
     obligationsView: {
       byDay: "📆 Güne göre",
       asList: "📋 Liste olarak",
-      selectDate: "Tarih seç"
+      selectDate: "Tarih seç",
+      emptyTitle: "Sakin bir gün",
+      emptySub: "Henüz yükümlülük yok.",
+      emptyHint: "İlk yükümlülüğünü ekle.",
+      emptyMotivation: "LifeKompas senin için hatırlayacak.",
+      addFirst: "+ Yükümlülük ekle",
+      nowIndicator: "● Şimdi",
+      sections: {
+        active: "Aktif yükümlülükler",
+        whenYouCan: "Vakit bulunca",
+        doneToday: "Bugün tamamlandı"
+      }
+    },
+    yesterday: {
+      title: "Dünkü yükümlülükler",
+      message: "Bazı dünkü yükümlülükler tamamlanmadı.",
+      moveToToday: "Bugüne taşı",
+      keepYesterday: "Dünde bırak"
     },
     health: {
       title: "❤️ Sağlık",
@@ -1078,6 +1187,7 @@ notificationPermissionExplanation: "LifeKompas te može podsjetiti na rođendane
       repeatNone: "Aucune répétition",
       repeatDaily: "Chaque jour",
       repeatWeekly: "Chaque semaine",
+      repeatMonthly: "Chaque mois",
       save: "💾 Enregistrer",
       update: "Mettre à jour",
       cancel: "Annuler"
@@ -1105,7 +1215,24 @@ notificationPermissionExplanation: "LifeKompas te može podsjetiti na rođendane
     obligationsView: {
       byDay: "📆 Par jour",
       asList: "📋 Voir en liste",
-      selectDate: "Choisir une date"
+      selectDate: "Choisir une date",
+      emptyTitle: "Journée calme",
+      emptySub: "Pas encore d'obligations.",
+      emptyHint: "Ajoutez votre première obligation.",
+      emptyMotivation: "LifeKompas se souviendra pour vous.",
+      addFirst: "+ Ajouter une obligation",
+      nowIndicator: "● Maintenant",
+      sections: {
+        active: "Obligations actives",
+        whenYouCan: "Quand tu peux",
+        doneToday: "Terminé aujourd'hui"
+      }
+    },
+    yesterday: {
+      title: "Obligations d'hier",
+      message: "Certaines obligations d'hier ne sont pas terminées.",
+      moveToToday: "Déplacer vers aujourd'hui",
+      keepYesterday: "Laisser hier"
     },
     health: {
       title: "❤️ Santé",
@@ -1237,6 +1364,7 @@ notificationPermissionExplanation: "LifeKompas te može podsjetiti na rođendane
       repeatNone: "Sin repetición",
       repeatDaily: "Cada día",
       repeatWeekly: "Cada semana",
+      repeatMonthly: "Cada mes",
       save: "💾 Guardar",
       update: "Actualizar",
       cancel: "Cancelar"
@@ -1264,7 +1392,24 @@ notificationPermissionExplanation: "LifeKompas te može podsjetiti na rođendane
     obligationsView: {
       byDay: "📆 Por día",
       asList: "📋 Ver como lista",
-      selectDate: "Seleccionar fecha"
+      selectDate: "Seleccionar fecha",
+      emptyTitle: "Día tranquilo",
+      emptySub: "Aún no hay obligaciones.",
+      emptyHint: "Añade tu primera obligación.",
+      emptyMotivation: "LifeKompas recordará por ti.",
+      addFirst: "+ Añadir obligación",
+      nowIndicator: "● Ahora",
+      sections: {
+        active: "Obligaciones activas",
+        whenYouCan: "Cuando puedas",
+        doneToday: "Hecho hoy"
+      }
+    },
+    yesterday: {
+      title: "Obligaciones de ayer",
+      message: "Algunas obligaciones de ayer no se completaron.",
+      moveToToday: "Mover a hoy",
+      keepYesterday: "Dejar en ayer"
     },
     health: {
       title: "❤️ Salud",
@@ -1396,6 +1541,7 @@ notificationPermissionExplanation: "LifeKompas te može podsjetiti na rođendane
       repeatNone: "Nincs ismétlés",
       repeatDaily: "Minden nap",
       repeatWeekly: "Minden héten",
+      repeatMonthly: "Minden hónapban",
       save: "💾 Mentés",
       update: "Frissítés",
       cancel: "Mégse"
@@ -1423,7 +1569,24 @@ notificationPermissionExplanation: "LifeKompas te može podsjetiti na rođendane
     obligationsView: {
       byDay: "📆 Napi nézet",
       asList: "📋 Lista nézet",
-      selectDate: "Dátum kiválasztása"
+      selectDate: "Dátum kiválasztása",
+      emptyTitle: "Nyugodt nap",
+      emptySub: "Még nincs kötelezettség.",
+      emptyHint: "Add hozzá az első kötelezettségedet.",
+      emptyMotivation: "A LifeKompas emlékezni fog helyetted.",
+      addFirst: "+ Kötelezettség hozzáadása",
+      nowIndicator: "● Most",
+      sections: {
+        active: "Aktív kötelezettségek",
+        whenYouCan: "Amikor ráérsz",
+        doneToday: "Ma kész"
+      }
+    },
+    yesterday: {
+      title: "Tegnapi kötelezettségek",
+      message: "Néhány tegnapi kötelezettség nincs kész.",
+      moveToToday: "Áthelyezés mára",
+      keepYesterday: "Maradjon tegnapnál"
     },
     health: {
       title: "❤️ Egészség",
@@ -1555,6 +1718,7 @@ notificationPermissionExplanation: "LifeKompas te može podsjetiti na rođendane
       repeatNone: "Nessuna ripetizione",
       repeatDaily: "Ogni giorno",
       repeatWeekly: "Ogni settimana",
+      repeatMonthly: "Ogni mese",
       save: "💾 Salva",
       update: "Aggiorna",
       cancel: "Annulla"
@@ -1582,7 +1746,24 @@ notificationPermissionExplanation: "LifeKompas te može podsjetiti na rođendane
     obligationsView: {
       byDay: "📆 Per giorno",
       asList: "📋 Vista elenco",
-      selectDate: "Seleziona data"
+      selectDate: "Seleziona data",
+      emptyTitle: "Giornata tranquilla",
+      emptySub: "Ancora nessun obbligo.",
+      emptyHint: "Aggiungi il tuo primo obbligo.",
+      emptyMotivation: "LifeKompas ricorderà per te.",
+      addFirst: "+ Aggiungi obbligo",
+      nowIndicator: "● Adesso",
+      sections: {
+        active: "Obblighi attivi",
+        whenYouCan: "Quando puoi",
+        doneToday: "Fatto oggi"
+      }
+    },
+    yesterday: {
+      title: "Obblighi di ieri",
+      message: "Alcuni obblighi di ieri non sono completati.",
+      moveToToday: "Sposta a oggi",
+      keepYesterday: "Lascia ieri"
     },
     health: {
       title: "❤️ Salute",

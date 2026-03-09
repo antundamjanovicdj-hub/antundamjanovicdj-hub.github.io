@@ -55,6 +55,9 @@ export async function scheduleObligationNotification(obligation) {
   const LN = await getLocalNotifications();
   if (!LN) return;
 
+  // 🛡️ PRODUCTION FIX: prevent duplicate notifications
+await cancelObligationNotification(obligation);
+
   if (!obligation?.dateTime) return;
 
   // 🔧 FIX: Safe date parsing
@@ -117,26 +120,33 @@ export async function scheduleObligationNotification(obligation) {
   }
 }
 
-export async function cancelObligationNotification(id) {
+export async function cancelObligationNotification(obligation) {
+
+  if (!obligation?.id) return;
+
   const LN = await getLocalNotifications();
   if (!LN) return;
 
-  // 🔧 FIX: Safe ID generation
-  const intId = safeNotificationId(id);
-
-  console.log("🧹 cancelObligationNotification", { intId, id });
+  const id = Math.floor(Number(obligation.id) % 2147483647);
 
   try {
+
     await LN.cancel({
-      notifications: [{ id: intId }]
+      notifications: [{ id }]
     });
-  } catch (err) {
-    console.warn("Cancel notification error:", err);
+
+    console.log("🔕 notification cancelled", id);
+
+  } catch (e) {
+
+    console.log("🔕 cancel failed", e);
+
   }
+
 }
 
 export async function rescheduleObligationNotification(obligation) {
-  await cancelObligationNotification(obligation.id);
+  await cancelObligationNotification(obligation);
   await scheduleObligationNotification(obligation);
 }
 

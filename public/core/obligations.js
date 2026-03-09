@@ -97,13 +97,22 @@ export function buildSections(obligations, temporalState) {
     o.status !== 'done' && 
     o.dateTime && 
     getISODateFromDateTime(o.dateTime) === today
-  ).sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime));
+  ).sort((a, b) => {
+
+  const timeDiff = new Date(a.dateTime) - new Date(b.dateTime);
+
+  if (timeDiff !== 0) return timeDiff;
+
+  // stabilni fallback za identično vrijeme
+  return (a.id || 0) - (b.id || 0);
+
+});
 
   // SECTION: Kad stigneš (no time, status = active)
   const whenYouCanObligations = obligations.filter(o => 
-    o.status !== 'done' && 
-    !o.dateTime
-  );
+  o.status !== 'done' &&
+  (!o.dateTime || String(o.dateTime).trim() === '')
+);
 
   // SECTION: Završeno danas (done today)
   const doneTodayObligations = obligations.filter(o => {
@@ -129,16 +138,28 @@ export function buildEmptyState(lang = 'hr') {
   const t = window.I18N?.[lang]?.obligationsView || window.I18N?.hr?.obligationsView;
 
   return `
-    <div class="obligations-empty-state" data-testid="empty-state">
-      <div class="empty-calm-title">${t?.emptyTitle || 'Miran dan'}</div>
-      <div class="empty-calm-sub">${t?.emptySub || 'Još nema obveza.'}</div>
-      <div class="empty-calm-hint">${t?.emptyHint || 'Dodaj prvu obvezu i rastereti glavu.'}</div>
-      <div class="empty-calm-motivation">${t?.emptyMotivation || 'LifeKompas će pamtiti umjesto tebe.'}</div>
-      <button class="empty-add-btn" id="emptyAddBtn" data-testid="empty-add-btn">
-        ${t?.addFirst || '+ Dodaj obvezu kad budeš spreman'}
-      </button>
+  <div class="obligations-empty-state" data-testid="empty-state">
+
+    <div class="empty-calm-icon">🌿</div>
+
+    <div class="empty-calm-title">
+      ${t?.emptyTitle || 'Miran dan'}
     </div>
-  `;
+
+    <div class="empty-calm-sub">
+      ${t?.emptySub || 'Sve je pod kontrolom.'}
+    </div>
+
+    <div class="empty-calm-hint">
+      ${t?.emptyHint || 'Dodaj obvezu kad god se pojavi.'}
+    </div>
+
+    <button class="empty-add-btn" id="emptyAddBtn" data-testid="empty-add-btn">
+      ${t?.addFirst || '+ Dodaj obvezu'}
+    </button>
+
+  </div>
+`;
 }
 
 // ===== NOW INDICATOR =====
@@ -250,19 +271,19 @@ export function renderAllSections(obligations, temporalState, lang = 'hr') {
   const sections = buildSections(obligations, temporalState);
   const t = window.I18N?.[lang]?.obligationsView || window.I18N?.hr?.obligationsView;
 
-  let html = '';
+  const htmlParts = [];
 
 // 🫀 NOW INDICATOR (initially hidden)
-html += buildNowIndicator(false, lang);
+htmlParts.push(buildNowIndicator(false, lang));
 
   // Progress line (24h)
   // 🫀 DAILY PROGRESS LINE (24h timeline)
 if (temporalState && typeof temporalState.progressPercent === "number") {
-  html += `
+  htmlParts.push(`
     <div class="daily-progress-wrap">
       ${buildProgressLine(temporalState.progressPercent)}
     </div>
-  `;
+  `);
 }
 
   const hasTimedObligations = sections.active.length > 0;
@@ -275,73 +296,89 @@ const hasAnyActive = hasTimedObligations || sections.whenYouCan.length > 0;
   // SECTION: Active obligations with temporal pointer
   // SECTION: Active obligations (timed → temporal timeline)
 if (hasTimedObligations) {
-    html += `<div class="obligations-section-title">${sections.labels.active || 'Aktivne obveze'}</div>`;
-    html += `<div class="obligations-list with-timeline" data-testid="active-obligations">`;
+    htmlParts.push(`<div class="obligations-section-title">${sections.labels.active || 'Aktivne obveze'}</div>`);
+    htmlParts.push(`<div class="obligations-list with-timeline" data-testid="active-obligations">`);
     
-    const pointer = temporalState?.pointer;
-    const pointerPosition = temporalState?.pointerPosition;
+   const pointer = Number.isInteger(temporalState?.pointer)
+  ? temporalState.pointer
+  : -1;
 
-    sections.active.forEach((ob, index) => {
+let pointerPosition = temporalState?.pointerPosition;
+
+// 🛡️ TEMPORAL EDGE CASE FIX
+// ako nema future obveza pointer mora biti "after"
+if (
+  temporalState &&
+  Array.isArray(temporalState.future) &&
+  temporalState.future.length === 0 &&
+  sections.active.length > 0
+) {
+  pointerPosition = "after";
+}
+
+const activeSnapshot = [...sections.active];
+
+activeSnapshot.forEach((ob, index) => {
 
   // pointer BEFORE first obligation
   if (index === 0 && pointerPosition === 'before') {
-    html += buildTemporalPointer();
-  }
+  htmlParts.push(buildTemporalPointer());
+}
 
   // pointer BETWEEN obligations
-  if (pointerPosition === 'between' && pointer === index - 1) {
-    html += buildTemporalPointer();
-  }
+  if (index === 0 && pointerPosition === 'before') {
+  htmlParts.push(buildTemporalPointer());
+}
 
   // pointer ON obligation
-  if (pointerPosition === 'on' && pointer === index) {
-    html += buildTemporalPointer();
-  }
+  if (index === 0 && pointerPosition === 'before') {
+  htmlParts.push(buildTemporalPointer());
+}
 
-  html += buildObligationCard(ob, lang);
+  htmlParts.push(buildObligationCard(ob, lang));
 
   // pointer AFTER last obligation
   if (
-    pointerPosition === 'after' &&
-    index === sections.active.length - 1
-  ) {
-    html += buildTemporalPointer();
-  }
+  pointerPosition === 'after' &&
+  index === sections.active.length - 1
+) {
+  htmlParts.push(buildTemporalPointer());
+}
 
-});
+}); 
 
-    html += `</div>`;
+    htmlParts.push(`</div>`);
   }
 
   // SECTION: Kad stigneš (NO temporal pointer)
   if (sections.whenYouCan.length > 0) {
-    html += `<div class="obligations-section-title">${sections.labels.whenYouCan || 'Kad stigneš'}</div>`;
-    html += `<div class="obligations-list no-timeline" data-testid="when-you-can">`;
+    htmlParts.push(`<div class="obligations-section-title">${sections.labels.whenYouCan || 'Kad stigneš'}</div>`);
+    htmlParts.push(`<div class="obligations-list no-timeline" data-testid="when-you-can">`);
     
     sections.whenYouCan.forEach(ob => {
-      html += buildObligationCard(ob, lang);
+      htmlParts.push(buildObligationCard(ob, lang));
     });
 
-    html += `</div>`;
+    htmlParts.push(`</div>`);
   }
 
   // SECTION: Završeno danas (collapsed by default)
   if (sections.doneToday.length > 0) {
-    html += `
+    htmlParts.push(`
       <div class="obligations-section-title done-section collapsed" id="doneTodayHeader" data-testid="done-today-header">
         ${sections.labels.doneToday || 'Završeno danas'} (${sections.doneToday.length})
       </div>
       <div class="obligations-list done-list hidden" id="doneTodayList" data-testid="done-today-list">
-    `;
+    `);
     
     sections.doneToday.forEach(ob => {
-      html += buildObligationCard(ob, lang);
+      htmlParts.push(buildObligationCard(ob, lang));
     });
 
-    html += `</div>`;
+    htmlParts.push(`</div>`);
   }
 
-  return html;
+  return htmlParts.join('');
 }
 
 // ===== EVENT DELEGATION =====
@@ -417,14 +454,21 @@ export function attachObligationHandlers(container) {
 
 // ===== DONE ACTION (0.5s animation) =====
 async function handleDoneAction(id) {
+
   const card = document.querySelector(`.obligation-card[data-id="${id}"]`);
   if (!card) return;
+
+  if (card.dataset.processing === "1") return;
+  card.dataset.processing = "1";
 
   card.classList.add('completing');
 
   await new Promise(resolve => setTimeout(resolve, 500));
 
   window.toggleObligationStatus?.(id, "done");
+
+  delete card.dataset.processing;
+
 }
 
 // ===== TOGGLE DONE SECTION =====
@@ -630,11 +674,8 @@ window.addEventListener('temporalMidnight', async () => {
 });
 
 // ===== TEMPORAL SUBSCRIBER =====
-Temporal.subscribe((state) => {
-  window.__TEMPORAL_STATE__ = state;
-  window.refreshCurrentObligationsView?.();
-  requestAnimationFrame(() => updateNowIndicatorVisibility());
-});
+// Temporal subscriber moved to app-init.js
+// obligations module remains renderer-only
 
 // ===== INIT MOBILE LIFECYCLE =====
 setupMobileLifecycle();

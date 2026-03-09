@@ -975,11 +975,8 @@ document.getElementById('enableReminder').addEventListener('change', (e) => {
 
 });
 
-      // Auto-fill today when date field first opened
+      // date is optional — no auto fill
 const dateInput = document.getElementById('obligationDate');
-dateInput?.addEventListener('focus', () => {
-  if (!dateInput.value) dateInput.value = getLocalISODate();
-});
 
       // SPREMI ILI AŽURIRAJ
       document.getElementById('saveObligation').addEventListener('click', async () => {
@@ -1023,31 +1020,18 @@ let dateTime = null;
 
 if (dateVal && timeVal) {
 
+  // timed obligation → goes to timeline
   dateTime = `${dateVal}T${timeVal}`;
-
-} else if (dateVal) {
-
-  const now = new Date();
-  const hh = String(now.getHours()).padStart(2,'0');
-  const mm = String(now.getMinutes()).padStart(2,'0');
-
-  dateTime = `${dateVal}T${hh}:${mm}`;
 
 } else if (isEdit && existing?.dateTime) {
 
+  // keep existing dateTime during edit if user cleared fields
   dateTime = existing.dateTime;
 
 } else {
 
-  // ✅ NEW OBLIGATION WITHOUT DATE → NOW
-  const now = new Date();
-  const yyyy = now.getFullYear();
-  const mm = String(now.getMonth()+1).padStart(2,'0');
-  const dd = String(now.getDate()).padStart(2,'0');
-  const hh = String(now.getHours()).padStart(2,'0');
-  const min = String(now.getMinutes()).padStart(2,'0');
-
-  dateTime = `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+  // no date/time → "Kad stigneš"
+  dateTime = null;
 
 }
 // ===== FORM SNAPSHOT (Calm Simplification) =====
@@ -1080,6 +1064,24 @@ const obligation = {
     // ✅ 1) Spremi odmah
 await obligationDB.add(obligation);
 
+// update Temporal engine immediately
+const all = await obligationDB.getAll();
+Temporal.setObligations(all);
+
+// force render pipeline immediately
+window.__temporalRerenderQueued = false;
+window.forceObligationsListRefresh?.('savePipeline');
+// reset form fields after save (safe)
+const titleInput = document.getElementById('obligationTitle');
+const noteInput = document.getElementById('obligationNote');
+const dateInput = document.getElementById('obligationDate');
+const timeInput = document.getElementById('obligationTime');
+
+if (titleInput) titleInput.value = '';
+if (noteInput) noteInput.value = '';
+if (dateInput) dateInput.value = '';
+if (timeInput) timeInput.value = '';
+
 // ✅ FIXED: očisti history da se izbjegne dupli back
 const lastInHistory = screenHistory[screenHistory.length - 1];
 if (lastInHistory === 'screen-obligations-list') {
@@ -1094,10 +1096,10 @@ showScreen('screen-obligations-list');
 requestAnimationFrame(() => {
   requestAnimationFrame(() => {
     // 🧪 Provjeri da li smo na list screenu PRIJE rendera
-    const isActive = document.getElementById('screen-obligations-list')?.classList?.contains('active');
-    console.log('🔍 [before forceListRefresh] screen active:', isActive);
-    
-    if (isActive) {
+const isActive = document.getElementById('screen-obligations-list')?.classList?.contains('active');
+
+if (isActive) {
+  window.__temporalRerenderQueued = false;
   window.forceObligationsListRefresh?.('afterSave');
 
   // 🌿 UX: highlight nova obveza

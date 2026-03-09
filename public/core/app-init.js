@@ -5,11 +5,12 @@ void Temporal;
 
 // 🫀 TEMPORAL SUBSCRIBER (source of truth for list)
 window.__temporalRerenderQueued = false;
+window.__obligationsRenderLock = false;
 
 Temporal.subscribe((state) => {
 
   // ✅ always keep freshest state
-  window.__TEMPORAL_STATE__ = state;
+  // temporal state is read directly from engine
 
   console.log('🧭 TEMPORAL STATE', {
     now: state.now,
@@ -47,6 +48,8 @@ window.addEventListener('error', (e) => {
 
 window.addEventListener('unhandledrejection', (e) => {
   console.error('UNHANDLED PROMISE:', e.reason);
+  console.error('STACK:', e.reason?.stack);
+  console.error('FULL EVENT:', e);
 });
 
 /* =====================================================
@@ -201,7 +204,7 @@ import {
   updateShoppingItem,
   deleteShoppingItem
 } from './db.js';
-import { buildObligationCard } from './obligations.js';
+import { buildObligationCard, renderAllSections } from './obligations.js';
 import { attachObligationHandlers } from "./obligations.js";
 
 // ZERO-RISK SHADOW IMPORT (obligations module)
@@ -675,10 +678,9 @@ async function renderObligationsList() {
   );
 
   const obligations = all.filter(o =>
-    o.type !== 'shopping' &&
-    o.status !== 'done' &&
-    o.dateTime
-  );
+  o.type !== 'shopping' &&
+  o.status !== 'done'
+);
 
 /* ===== LEGACY SORT (DISABLED BY TEMPORAL) =====
   obligations.sort((a, b) => {
@@ -864,10 +866,6 @@ if (todayItems.length === 0 && overdueItems.length === 0 && upcomingItems.length
 let html = '';
 
 // 🫀 TEMPORAL CONTINUOUS FLOW
-const allItems = [
-  ...temporalPast,
-  ...temporalFuture
-];
 
 const todayDate = new Date().toLocaleDateString(
   (I18N[lang] && I18N[lang].lang) || 'hr-HR',
@@ -880,19 +878,31 @@ html += `
   </div>
 `;
 
-// 🫀 TEMPORAL CONTINUOUS LIST
-html += `
-  ${allItems.map(ob => buildObligationCard(ob, lang)).join('')}
-`;
+// 🫀 RENDER VIA OBLIGATIONS MODULE
+const temporalState = Temporal.getState?.() || null;
 
-if (upcomingItems.length > 0) {
-  html += `
-    <div class="obligations-section-title">
-      📅 Nadolazeće (${upcomingItems.length})
-    </div>
-    ${upcomingItems.map(ob => buildObligationCard(ob, lang)).join('')}
-  `;
-}
+const obligationsForRender = all.filter(o =>
+  o.type !== 'shopping'
+);
+
+// 🫀 include obligations without dateTime ("Kad stigneš")
+const anytimeItems = obligationsForRender.filter(o => !o.dateTime);
+
+// 🫀 temporal timeline items (ONLY timed obligations)
+const temporalItems = [
+  ...temporalPast,
+  ...temporalFuture
+];
+
+// combine
+const allItems = [
+  ...temporalItems,
+  ...anytimeItems
+];
+
+html += renderAllSections(allItems, temporalState, lang);
+
+// upcoming section removed — handled by temporal timeline
 
 container.innerHTML = html;
 attachObligationHandlers(container);
@@ -989,7 +999,7 @@ function showDailyMode() {
 
 function groupObligationsByStatus(items) {
   return {
-    open: items.filter(i => i.status !== 'done'),
+    open: items.filter(i => !i.status || i.status === 'active'),
     done: items.filter(i => i.status === 'done')
   };
 }
@@ -1016,13 +1026,50 @@ async function loadDailyForDate(isoDate) {
     return o;
   });
 
-const filtered = all.filter(o => {
-  if (!o.dateTime) return false;
+// 🫀 USE TEMPORAL FOR ACTIVE + DB FOR DONE
+const temporalState = Temporal.getState?.();
 
-  // supports date-only AND datetime values
-  const iso = getISODateFromDateTime(o.dateTime);
-  return iso === isoDate;
-});
+let filtered = [];
+
+if (temporalState) {
+
+  const temporalItems = [
+    ...(temporalState.past || []),
+    ...(temporalState.future || [])
+  ];
+
+  const anytimeItems = all.filter(o => !o.dateTime && o.status !== 'done');
+
+  const doneItems = all.filter(o => {
+    if (o.status !== 'done') return false;
+    if (!o.dateTime) return true;
+    const iso = getISODateFromDateTime(o.dateTime);
+    return iso === isoDate;
+  });
+
+  filtered = [
+    ...temporalItems.filter(o => {
+      if (!o.dateTime) return false;
+      const iso = getISODateFromDateTime(o.dateTime);
+      return iso === isoDate;
+    }),
+    ...anytimeItems,
+    ...doneItems
+  ];
+
+} else {
+
+  // fallback (safety)
+  filtered = all.filter(o => {
+
+    if (!o.dateTime) return true;
+
+    const iso = getISODateFromDateTime(o.dateTime);
+    return iso === isoDate;
+
+  });
+
+}
   const groups = groupObligationsByStatus(filtered);
 
   const openWrap = document.getElementById('dailyOpenWrap');
@@ -1243,6 +1290,26 @@ window.openEditObligation = openEditObligation;
 // ===== OBLIGATIONS ENGINE BRIDGE (Calm Simplification) =====
 
 // toggle status (engine owns DB)
+// ===== NOTIFICATION CANCEL HELPER =====
+async function cancelNotificationSafe(obligation) {
+
+  if (!obligation) return;
+
+  try {
+
+    const m = await import('./notifications.js');
+
+    if (m.cancelObligationNotification) {
+      await m.cancelObligationNotification(obligation);
+    }
+
+  } catch (e) {
+
+    console.log('🔔 cancel notification skipped', e);
+
+  }
+
+}
 window.toggleObligationStatus = async function(id, newStatus) {
   const obligations = await obligationDB.getAll();
   const obligation = obligations.find(o => o.id === id);
@@ -1250,18 +1317,37 @@ window.toggleObligationStatus = async function(id, newStatus) {
 
   obligation.status = newStatus;
   await obligationDB.add(obligation);
-  // 🫀 Temporal sync
-const all = await obligationDB.getAll();
-Temporal.setObligations(all);
 
-  window.refreshCurrentObligationsView?.();
+  // 🔔 cancel notification if obligation is completed
+if (newStatus === "done") {
+  await cancelNotificationSafe(obligation);
+}
+
+  // 🫀 Temporal sync
+  const all = await obligationDB.getAll();
+  Temporal.setObligations(all);
+
+window.__temporalRerenderQueued = false;
+window.forceObligationsListRefresh?.('toggleStatus');
 };
 
 // delete obligation (engine owns DB)
 window.deleteObligation = async function(id) {
-  await obligationDB.delete(id);
+
+  const allItems = await obligationDB.getAll();
+  const obligation = allItems.find(o => o.id === id);
+
+  // 🔔 cancel notification before delete
+// prvo ugasi notifikaciju
+await cancelNotificationSafe(obligation);
+
+// zatim izbriši obvezu
+await obligationDB.delete(id);
+
   // 🫀 Temporal sync
-const all = await obligationDB.getAll();
-Temporal.setObligations(all);
-  window.refreshCurrentObligationsView?.();
+  const all = await obligationDB.getAll();
+  Temporal.setObligations(all);
+
+window.__temporalRerenderQueued = false;
+window.forceObligationsListRefresh?.('delete');
 };

@@ -634,6 +634,8 @@ html, body {
   display: flex;
   flex-direction: column;
   gap: 18px;
+  position: relative;
+  transform: translateZ(0);
 }
 
 .obligation-card {
@@ -2313,29 +2315,28 @@ backdrop-filter: blur(10px);
 /* ===== TEMPORAL POINTER ===== */
 .temporal-pointer {
   position: relative;
-  height: 24px;
+  display: block;
+  width: 100%;
+  min-height: 24px;
   margin: 8px 0;
-  display: flex;
-  align-items: center;
+  z-index: 2;
 }
 
 .pointer-dot {
   position: absolute;
+  top: 50%;
   left: 20px;
   width: 14px;
   height: 14px;
   border-radius: 50%;
   background: rgba(255,255,255,0.95);
+  transform: translateY(-50%);
   box-shadow: 0 0 0 4px rgba(255,255,255,0.08), 0 0 12px rgba(255,255,255,0.35);
   z-index: 5;
 }
 
 .pointer-line {
-  position: absolute;
-  left: 40px;
-  right: 0;
-  height: 2px;
-  background: rgba(255,255,255,0.25);
+  display: none;
 }
 
 /* ===== NOW INDICATOR ===== */
@@ -2538,4 +2539,41 @@ backdrop-filter: blur(10px);
   margin-top: 10px;
   font-size: 12px;
   color: rgba(255,255,255,0.7);
+}
+
+.pointer-line {
+  display: block !important;
+}
+
+.temporal-pointer::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 34px;
+  right: 0;
+  height: 2px;
+  background: rgba(255,255,255,0.25);
+  transform: translateY(-50%);
+}
+
+.temporal-now {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #4da3ff;
+}
+
+.temporal-now-dot {
+  width: 8px;
+  height: 8px;
+  background: #4da3ff;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.temporal-now-text {
+  font-weight: 600;
 }

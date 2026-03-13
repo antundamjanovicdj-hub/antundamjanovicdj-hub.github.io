@@ -162,17 +162,6 @@ export function buildEmptyState(lang = 'hr') {
 `;
 }
 
-// ===== NOW INDICATOR =====
-export function buildNowIndicator(visible = false, lang = 'hr') {
-  const t = window.I18N?.[lang]?.obligationsView || window.I18N?.hr?.obligationsView;
-  
-  return `
-    <div class="now-indicator ${visible ? '' : 'hidden'}" id="nowIndicator" data-testid="now-indicator">
-      ${t?.nowIndicator || '● Sada'}
-    </div>
-  `;
-}
-
 // ===== PROGRESS LINE (24h) =====
 export function buildProgressLine(percent = 0) {
   return `
@@ -186,7 +175,7 @@ export function buildProgressLine(percent = 0) {
 // ===== TEMPORAL POINTER ELEMENT =====
 export function buildTemporalPointer() {
   return `
-    <div class="temporal-pointer" id="temporalPointer" data-testid="temporal-pointer">
+    <div class="temporal-pointer" data-testid="temporal-pointer">
       <div class="pointer-dot"></div>
       <div class="pointer-line"></div>
     </div>
@@ -273,9 +262,6 @@ export function renderAllSections(obligations, temporalState, lang = 'hr') {
 
   const htmlParts = [];
 
-// 🫀 NOW INDICATOR (initially hidden)
-htmlParts.push(buildNowIndicator(false, lang));
-
   // Progress line (24h)
   // 🫀 DAILY PROGRESS LINE (24h timeline)
 if (temporalState && typeof temporalState.progressPercent === "number") {
@@ -299,53 +285,95 @@ if (hasTimedObligations) {
     htmlParts.push(`<div class="obligations-section-title">${sections.labels.active || 'Aktivne obveze'}</div>`);
     htmlParts.push(`<div class="obligations-list with-timeline" data-testid="active-obligations">`);
     
-   const pointer = Number.isInteger(temporalState?.pointer)
-  ? temporalState.pointer
-  : -1;
+   const activeSnapshot = Array.isArray(sections.active)
+  ? [...sections.active]
+  : [];
 
-let pointerPosition = temporalState?.pointerPosition;
-
-// 🛡️ TEMPORAL EDGE CASE FIX
-// ako nema future obveza pointer mora biti "after"
-if (
-  temporalState &&
-  Array.isArray(temporalState.future) &&
-  temporalState.future.length === 0 &&
-  sections.active.length > 0
-) {
-  pointerPosition = "after";
+// 🫀 ensure pointer uses temporal timeline order
+if (Array.isArray(temporalState?.timedObligations)) {
+  const temporalIds = temporalState.timedObligations.map(o => o.id);
+  activeSnapshot.sort((a, b) => temporalIds.indexOf(a.id) - temporalIds.indexOf(b.id));
 }
 
-const activeSnapshot = [...sections.active];
+// 🫀 POINTER FROM TEMPORAL ENGINE
+let pointer = Number.isInteger(temporalState?.pointer)
+  ? temporalState.pointer
+  : null;
+
+let pointerPosition = temporalState?.pointerPosition ?? null;
+
+// 🛡️ FALLBACK ako temporal još nije spreman
+if (pointerPosition === null && activeSnapshot.length > 0) {
+
+  const nowTs = Date.now();
+
+  const timed = activeSnapshot
+    .map((ob, i) => {
+      const dt = safeParseDate(ob.dateTime);
+      return { index: i, ts: dt ? dt.getTime() : null };
+    })
+    .filter(o => Number.isFinite(o.ts));
+
+  const firstFuture = timed.find(o => o.ts >= nowTs);
+
+  if (!firstFuture) {
+    pointerPosition = 'after';
+    pointer = activeSnapshot.length - 1;
+  }
+  else if (firstFuture.index === 0) {
+    pointerPosition = 'before';
+    pointer = 0;
+  }
+  else {
+    pointerPosition = 'between';
+    pointer = firstFuture.index;
+  }
+
+}
+
+// 🛡️ CLAMP sigurnost
+if (Number.isInteger(pointer)) {
+  if (pointer < 0) pointer = 0;
+  if (pointer >= activeSnapshot.length) pointer = activeSnapshot.length - 1;
+}
 
 activeSnapshot.forEach((ob, index) => {
 
-  // pointer BEFORE first obligation
-  if (index === 0 && pointerPosition === 'before') {
-  htmlParts.push(buildTemporalPointer());
-}
+  try {
 
-  // pointer BETWEEN obligations
-  if (index === 0 && pointerPosition === 'before') {
-  htmlParts.push(buildTemporalPointer());
-}
+    // BEFORE first obligation
+    if (pointerPosition === 'before' && index === 0) {
+      htmlParts.push(buildTemporalPointer());
+    }
 
-  // pointer ON obligation
-  if (index === 0 && pointerPosition === 'before') {
-  htmlParts.push(buildTemporalPointer());
-}
+    // render obligation
+    htmlParts.push(buildObligationCard(ob, lang));
 
-  htmlParts.push(buildObligationCard(ob, lang));
+    // BETWEEN obligations
+    if (pointerPosition === 'between' && index === pointer) {
+      htmlParts.push(buildTemporalPointer());
+    }
 
-  // pointer AFTER last obligation
-  if (
-  pointerPosition === 'after' &&
-  index === sections.active.length - 1
-) {
-  htmlParts.push(buildTemporalPointer());
-}
+    // ON obligation
+    if (pointerPosition === 'on' && index === pointer) {
+      htmlParts.push(buildTemporalPointer());
+    }
 
-}); 
+    // AFTER last obligation
+    if (
+      pointerPosition === 'after' &&
+      index === activeSnapshot.length - 1
+    ) {
+      htmlParts.push(buildTemporalPointer());
+    }
+
+  } catch (err) {
+
+    console.error("OBLIGATION RENDER ERROR", err, ob);
+
+  }
+
+});
 
     htmlParts.push(`</div>`);
   }

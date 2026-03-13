@@ -1064,6 +1064,9 @@ const obligation = {
     // ✅ 1) Spremi odmah
 await obligationDB.add(obligation);
 
+// 🫀 flag for smart scroll
+window.__NEW_OBLIGATION_ADDED__ = true;
+
 // update Temporal engine immediately
 const all = await obligationDB.getAll();
 Temporal.setObligations(all);

@@ -204,6 +204,8 @@ import {
   updateShoppingItem,
   deleteShoppingItem
 } from './db.js';
+// DEBUG: expose DB to console
+window.obligationDB = obligationDB;
 import { buildObligationCard, renderAllSections } from './obligations.js';
 import { attachObligationHandlers } from "./obligations.js";
 
@@ -302,6 +304,9 @@ function legacy_showScreen(screenId) {
 
           window.AppState.obligations.viewMode = 'list';
           showListMode?.();
+
+          // 🫀 scroll to pointer when screen opens
+          window.__SCROLL_TO_POINTER_ON_OPEN__ = true;
         }
 
         if (screenId === 'screen-add-obligation') {
@@ -640,12 +645,11 @@ async function renderObligationsList() {
   // 🔥 SINGLE SOURCE OF TRUTH
   const all = await obligationDB.getAll();
 
-  Temporal.setObligations(all);
+// 🫀 SYNC TEMPORAL ENGINE
+Temporal.setObligations(all);
 
-  window.__TEMPORAL_STATE__ =
-    Temporal.getState?.() || window.__TEMPORAL_STATE__;
-
-  const temporal = window.__TEMPORAL_STATE__;
+// 🫀 ALWAYS USE FRESH TEMPORAL STATE
+const temporalState = Temporal.getState?.() || null;
 
   const container = document.getElementById('obligationsContainer');
   console.log('🔍 [renderObligationsList] container:', {
@@ -690,19 +694,12 @@ async function renderObligationsList() {
     return new Date(a.dateTime) - new Date(b.dateTime);
   });
 ================================================ */
-// 🫀 TEMPORAL INPUT (shadow read)
+// 🫀 TEMPORAL INPUT
+const temporalPast = temporalState?.past || [];
+const temporalFuture = temporalState?.future || [];
+const temporalPointer = temporalState?.pointer ?? null;
 
-let temporalPast = [];
-let temporalFuture = [];
-let temporalPointer = null;
-
-if (temporal) {
-  temporalPast = temporal.past;
-  temporalFuture = temporal.future;
-  temporalPointer = temporal.pointer;
-}
-
-// 🫀 TEMPORAL COMPATIBILITY LAYER
+// compatibility variables (used later in renderer)
 const todayItems = temporalFuture;
 const overdueItems = temporalPast;
 const upcomingItems = temporalFuture;
@@ -834,7 +831,7 @@ const subEl = document.querySelector(".daily-state-subtitle");
 if (titleEl && subEl) {
 
   // empty state handled by obligations module
-if (todayItems.length === 0 && overdueItems.length === 0) {
+if (temporalFuture.length === 0 && temporalPast.length === 0) {
 
   if (focusEl) focusEl.textContent = "";
 
@@ -842,7 +839,7 @@ if (todayItems.length === 0 && overdueItems.length === 0) {
 
 }
 
-if (todayItems.length === 0 && overdueItems.length === 0 && upcomingItems.length === 0) {
+if (temporalFuture.length === 0 && temporalPast.length === 0) {
   container.innerHTML = `
     <div class="empty-list">
       <div style="font-size:26px; margin-bottom:8px;">🌱</div>
@@ -879,7 +876,7 @@ html += `
 `;
 
 // 🫀 RENDER VIA OBLIGATIONS MODULE
-const temporalState = Temporal.getState?.() || null;
+// temporalState already defined above
 
 const obligationsForRender = all.filter(o =>
   o.type !== 'shopping'
@@ -904,34 +901,53 @@ html += renderAllSections(allItems, temporalState, lang);
 
 // upcoming section removed — handled by temporal timeline
 
+// 🫀 SMART SCROLL RESTORE
+const prevScroll = container.scrollTop;
+
 container.innerHTML = html;
 attachObligationHandlers(container);
 
-// 🫀 TEMPORAL POINTER
-
-let markerTarget = null;
-
-if (temporalFuture.length > 0) {
-  markerTarget = temporalFuture[0].id;
-}
-
-updateCurrentMomentMarker(markerTarget);
-
-// 🫀 AUTO SCROLL TO POINTER
 requestAnimationFrame(() => {
-  try {
-    const pointer = document.getElementById('temporalPointer');
+
+  const pointer = document.querySelector('.temporal-pointer');
+
+  // 🫀 AUTO SCROLL ON FIRST OPEN
+  if (window.__SCROLL_TO_POINTER_ON_OPEN__) {
+
+    window.__SCROLL_TO_POINTER_ON_OPEN__ = false;
 
     if (pointer) {
       pointer.scrollIntoView({
         behavior: "smooth",
         block: "center"
       });
+      return;
     }
-  } catch (e) {
-    console.log('[Temporal] auto scroll skipped', e);
+
   }
+
+  // ako je nova obveza dodana → fokus na pointer
+  if (window.__NEW_OBLIGATION_ADDED__) {
+
+    window.__NEW_OBLIGATION_ADDED__ = false;
+
+    if (pointer) {
+      pointer.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+      });
+      return;
+    }
+
+  }
+
+  // inače zadrži scroll
+  container.scrollTop = prevScroll;
+
 });
+
+// 🫀 AUTO SCROLL HANDLED BY obligations module (on screen open)
+// prevents scroll jump on every temporal rerender
 }
 
 /* ===== DAILY VIEW LOGIC ===== */
@@ -1119,40 +1135,6 @@ function refreshCurrentObligationsView() {
   }
 }
 
-/* ===== CURRENT MOMENT MARKER ===== */
-function updateCurrentMomentMarker(nextId) {
-
-  const list = document.getElementById("screen-obligations-list");
-  if (!list) return;
-
-  let marker = document.querySelector(".obligation-now-marker");
-
-  if (!marker) {
-    marker = document.createElement("div");
-    marker.className = "obligation-now-marker";
-    list.appendChild(marker);
-  }
-
-  const nextCard = document.querySelector(
-    `.obligation-card[data-id="${nextId}"]`
-  );
-
-  if (!nextCard) {
-    marker.style.opacity = "0";
-    return;
-  }
-
-  const listRect = list.getBoundingClientRect();
-  const cardRect = nextCard.getBoundingClientRect();
-
-  const offset =
-    cardRect.top - listRect.top + cardRect.height / 2;
-
-  marker.style.opacity = "1";
-  marker.style.top = offset + "px";
-}
-
-
 // ===== HEADER TITLE MAP (i18n based) =====
 const SCREEN_TITLES = {
   'screen-obligations-list': lang => I18N[lang].obligationsList?.title,
@@ -1287,6 +1269,31 @@ window.openEditObligation = openEditObligation;
   }
 })();
 
+// ===== NOW INDICATOR VISIBILITY =====
+window.updateNowIndicatorVisibility = function () {
+
+  const indicator = document.querySelector('.now-indicator');
+
+  if (!indicator) return;
+
+  const pointer = document.querySelector('.temporal-pointer');
+
+  if (!pointer) {
+    indicator.style.display = 'none';
+    return;
+  }
+
+  // postavi indikator odmah iznad pointera
+  const list = pointer.closest('.obligations-list');
+
+if (!list) return;
+
+list.insertBefore(indicator, pointer);
+
+  indicator.style.display = 'flex';
+
+};
+
 // ===== OBLIGATIONS ENGINE BRIDGE (Calm Simplification) =====
 
 // toggle status (engine owns DB)
@@ -1351,3 +1358,176 @@ await obligationDB.delete(id);
 window.__temporalRerenderQueued = false;
 window.forceObligationsListRefresh?.('delete');
 };
+
+/* =====================================================
+   LIFEKOMPAS DEV TOOLS v1
+   ===================================================== */
+
+let lkDevVisible = false;
+
+// toggle dev panel
+(function initDevToggle() {
+
+  const header = document.querySelector('.app-header');
+  if (!header) return;
+
+  let taps = 0;
+
+  header.addEventListener('click', () => {
+
+    taps++;
+
+    if (taps >= 3) {
+      lkDevVisible = !lkDevVisible;
+
+      const panel = document.getElementById('lkDevPanel');
+      if (panel) panel.style.display = lkDevVisible ? 'block' : 'none';
+
+      if (lkDevVisible) renderDevPanel();
+
+      taps = 0;
+    }
+
+    setTimeout(() => taps = 0, 900);
+
+  });
+
+})();
+
+// render dev info
+function renderDevPanel() {
+
+  const panel = document.getElementById('lkDevContent');
+  if (!panel) return;
+
+  const state = Temporal.getState?.();
+
+  if (!state) {
+    panel.innerHTML = 'Temporal state unavailable';
+    return;
+  }
+
+  panel.innerHTML = `
+now: ${state.now}
+
+pointer: ${state.pointer ?? '-'}
+pointerPosition: ${state.pointerPosition ?? '-'}
+
+past: ${state.past?.length ?? 0}
+future: ${state.future?.length ?? 0}
+
+timedObligations: ${state.timedObligations?.length ?? 0}
+
+nextChangeAt:
+${state.nextChangeAt ?? '-'}
+
+progress:
+${state.progressPercent ?? '-'}%
+`;
+
+}
+
+function devLog(message) {
+
+  const log = document.getElementById('lkDevLog');
+  if (!log) return;
+
+  const time = new Date().toLocaleTimeString();
+
+  const line = document.createElement('div');
+  line.textContent = time + ' ' + message;
+
+  log.prepend(line);
+
+  // limit log size
+  while (log.children.length > 12) {
+    log.removeChild(log.lastChild);
+  }
+
+}
+
+// update dev panel when temporal changes
+Temporal.subscribe((state) => {
+
+  if (lkDevVisible) {
+
+    renderDevPanel();
+
+    devLog(
+      "pointer=" + state.pointer +
+      " past=" + state.past.length +
+      " future=" + state.future.length
+    );
+
+  }
+
+});
+
+// ===== FORCE CLOCK =====
+
+function shiftTime(hours) {
+
+  const state = Temporal.getState?.();
+  if (!state) return;
+
+  const now = new Date(state.now);
+  now.setHours(now.getHours() + hours);
+
+  Temporal.overrideNow?.(now);
+
+  renderDevPanel();
+
+}
+
+function jumpMidnight() {
+
+  const state = Temporal.getState?.();
+  if (!state) return;
+
+  const now = new Date(state.now);
+  now.setHours(24,0,0,0);
+
+  Temporal.overrideNow?.(now);
+
+  renderDevPanel();
+
+}
+
+// attach buttons
+document.addEventListener('click', async (e) => {
+
+  if (e.target.id === 'lkDevPlus1h') shiftTime(1);
+  if (e.target.id === 'lkDevPlus3h') shiftTime(3);
+  if (e.target.id === 'lkDevMidnight') jumpMidnight();
+
+  if (e.target.id === 'lkDevResetDB') {
+
+    if (!confirm("Reset LifeKompas database?")) return;
+
+    try {
+
+      const all = await obligationDB.getAll();
+
+      for (const ob of all) {
+        await obligationDB.delete(ob.id);
+      }
+
+      Temporal.setObligations([]);
+
+      window.__temporalRerenderQueued = false;
+
+      window.forceObligationsListRefresh?.('dev-reset');
+
+      devLog("DB RESET");
+
+      alert("Database cleared");
+
+    } catch (err) {
+
+      console.error("DEV DB reset failed", err);
+
+    }
+
+  }
+
+});

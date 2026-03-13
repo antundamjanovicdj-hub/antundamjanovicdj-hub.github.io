@@ -108,37 +108,46 @@ if (midnightAt && this._scheduledMidnight !== midnightAt) {
   const time = new Date(sorted[i].dateTime).getTime();
 
   if (time < now) {
-    past.push(sorted[i]);
-  } else {
-    future.push(sorted[i]);
+  past.push(sorted[i]);
+} else {
+  future.push(sorted[i]);
 
-    // first obligation >= now becomes pointer candidate
-    if (pointer === null) {
-      pointer = i;
-    }
+  if (pointer === null) {
+    pointer = i;
+  }
+}
+}
+
+    // ===== POINTER RULE =====
+
+if (sorted.length === 0) {
+  pointer = null;
+  pointerPosition = null;
+}
+
+else if (past.length === 0) {
+  // Before first obligation
+  pointer = 0;
+  pointerPosition = 'before';
+
+  if (future.length > 0) {
+    nextChangeAt = new Date(future[0].dateTime).getTime();
   }
 }
 
-    // POINTER RULE: first obligation >= now OR last obligation of the day
-    if (future.length > 0) {
-      // We have future obligations
-      const firstFutureTime = new Date(future[0].dateTime).getTime();
-      
-      if (past.length === 0) {
-        // Before first obligation
-        pointer = 0;
-        pointerPosition = 'before';
-        nextChangeAt = firstFutureTime;
-      } else {
-        // Between obligations
-        pointerPosition = 'between';
-        nextChangeAt = firstFutureTime;
-      }
-    } else if (past.length > 0) {
-      // After all obligations
-      pointer = past.length - 1;
-      pointerPosition = 'after';
-    }
+else if (future.length > 0) {
+  // Between obligations
+  pointer = past.length - 1;
+  pointerPosition = 'between';
+
+  nextChangeAt = new Date(future[0].dateTime).getTime();
+}
+
+else {
+  // After last obligation
+  pointer = sorted.length - 1;
+  pointerPosition = 'after';
+}
 
     // POINTER SAFETY: clamp to valid range
     // POINTER SAFETY: clamp to valid range

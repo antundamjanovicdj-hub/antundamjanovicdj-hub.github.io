@@ -821,11 +821,16 @@ window.forceObligationsListRefresh = async function(reason = '') {
 
       // OBVEZE → DIREKTNO PREGLED
       document.getElementById('btnObligations').addEventListener('click', () => {
-        screenHistory.push('screen-menu');
-        showScreen('screen-obligations-list');
-        showListMode();
-        renderObligationsList();
-      });
+  screenHistory.push('screen-menu');
+  showScreen('screen-obligations-list');
+  showListMode();
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      renderObligationsList_SAFE();
+    });
+  });
+});
 
       // ===== SAFE TEXT HELPER =====
       function safeText(id, text) { const el = document.getElementById(id); if (el) el.textContent = text; }
@@ -1255,7 +1260,7 @@ if (cancelBtn) {
         const headerBack = document.getElementById('headerBack');
         if (headerBack) headerBack.classList.remove('hidden');
         showListMode();
-        renderObligationsList();
+        renderObligationsList_SAFE();
       });
 
       // BACK IZ LISTE
@@ -1300,7 +1305,12 @@ if (dailyDatePicker) {
             const id = Number(data.obligationId);
             showScreen('screen-obligations-list');
             showListMode();
-            renderObligationsList();
+
+           requestAnimationFrame(() => {
+           requestAnimationFrame(() => {
+            renderObligationsList_SAFE();
+           });
+          });
             obligationDB.getAll().then(items => {
               const ob = items.find(o => Number(o.id) === id);
               if (!ob) return;
@@ -1328,10 +1338,16 @@ if (dailyDatePicker) {
         const DEV_FORCE_SCREEN = false;
         if (DEV_FORCE_SCREEN) {
           setTimeout(() => {
-            showScreen('screen-obligations-list');
-            showListMode();
-            renderObligationsList();
-          }, 0);
+          showScreen('screen-obligations-list');
+          showListMode();
+
+         requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+           renderObligationsList_SAFE();
+          });
+        });
+
+      }, 0);
         }
       } // ✅ DODANO: zatvara Capacitor if block
 

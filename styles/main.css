@@ -2577,3 +2577,82 @@ backdrop-filter: blur(10px);
 .temporal-now-text {
   font-weight: 600;
 }
+
+.pointer-now {
+  position: absolute;
+  left: 60px;
+  top: -9px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: rgba(255,255,255,0.85);
+  background: rgba(0,0,0,0.25);
+  padding: 2px 6px;
+  border-radius: 6px;
+  backdrop-filter: blur(4px);
+}
+
+.free-time-block {
+  margin-left: 48px;
+  margin-top: 6px;
+  margin-bottom: 12px;
+
+  padding: 8px 12px;
+  padding-left: 14px;
+
+  border-left: 2px solid rgba(255,255,255,0.15);
+  border-radius: 6px;
+
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(4px);
+
+  font-size: 13px;
+  color: rgba(255,255,255,0.85);
+
+  transition: background 0.2s ease;
+}
+
+.free-time-suggestions {
+  margin-top: 4px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.65);
+}
+
+.free-time-text {
+  font-size: 13px;
+  color: rgba(255,255,255,0.85);
+  margin-bottom: 4px;
+}
+
+.free-time-suggestions {
+  font-size: 12px;
+  color: rgba(255,255,255,0.65);
+}
+
+.free-time-item {
+  margin-top: 2px;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.free-time-item:active {
+  opacity: 0.6;
+}
+
+.free-time-item:hover {
+  text-decoration: underline;
+}
+
+.day-state {
+  margin: 10px 0 14px 48px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.day-state.calm {
+  color: rgba(120,220,140,0.9);
+}
+
+.day-state.busy {
+  color: rgba(255,200,80,0.9);
+}

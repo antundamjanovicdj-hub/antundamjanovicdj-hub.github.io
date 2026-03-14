@@ -7,6 +7,8 @@ const __OBLIGATIONS_MODULE__ = true;
 import { obligationDB } from "./db.js";
 import Temporal from "../src/core/temporal/index.js";
 import { getISODateFromDateTime, todayISO } from "./date-utils.js";
+// cache za already scheduled reminders
+const scheduledReminderCache = new Set();
 
 // ===== SAFE RENDER WRAPPER (CRASH-SAFE) =====
 export async function renderObligationsList_SAFE() {
@@ -25,6 +27,8 @@ export async function renderObligationsList_SAFE() {
   }
 }
 
+window.renderObligationsList_SAFE = renderObligationsList_SAFE;
+
 // ===== FALLBACK STATE (CRASH-SAFE) =====
 function renderFallbackState() {
   const container = document.getElementById('obligationsContainer');
@@ -32,6 +36,35 @@ function renderFallbackState() {
 
   const lang = window.getLang?.() || 'hr';
   container.innerHTML = buildEmptyState(lang);
+}
+
+// ===== MAIN LIST RENDER =====
+export function renderObligationsList(obligations = []) {
+  const container = document.getElementById('obligationsContainer');
+  if (!container) return;
+
+  const lang = window.getLang?.() || 'hr';
+  const temporalState = Temporal.getState?.() || {};
+
+  container.innerHTML = renderAllSections(obligations, temporalState, lang);
+
+  if (!window.__LK_POINTER_SCROLLED__) {
+
+  setTimeout(() => {
+  scrollToPointer();
+  window.__LK_POINTER_SCROLLED__ = true;
+}, 80);
+
+}
+
+  attachObligationHandlers(container);
+  updateNowIndicatorVisibility();
+
+  requestAnimationFrame(() => {
+    updateNowIndicatorVisibility();
+  });
+
+  return container.innerHTML;
 }
 
 export function showListMode() {
@@ -94,9 +127,10 @@ export function buildSections(obligations, temporalState) {
 
   // SECTION: Active (timed obligations, status = active, today)
   const activeObligations = obligations.filter(o => 
-    o.status !== 'done' && 
-    o.dateTime && 
-    getISODateFromDateTime(o.dateTime) === today
+  o.status !== 'done' && 
+  o.dateTime &&
+  String(o.dateTime).match(/T\d{2}:\d{2}/) &&
+  getISODateFromDateTime(o.dateTime) === today
   ).sort((a, b) => {
 
   const timeDiff = new Date(a.dateTime) - new Date(b.dateTime);
@@ -109,10 +143,22 @@ export function buildSections(obligations, temporalState) {
 });
 
   // SECTION: Kad stigneš (no time, status = active)
-  const whenYouCanObligations = obligations.filter(o => 
-  o.status !== 'done' &&
-  (!o.dateTime || String(o.dateTime).trim() === '')
-);
+  const whenYouCanObligations = obligations.filter(o => {
+
+  if (o.status === "done") return false;
+
+  const dt = o.dateTime;
+
+  if (!dt) return true;
+
+  const str = String(dt).trim();
+
+  // nema vremena → Kad stigneš
+  if (!str.includes("T")) return true;
+
+  return false;
+
+});
 
   // SECTION: Završeno danas (done today)
   const doneTodayObligations = obligations.filter(o => {
@@ -175,9 +221,10 @@ export function buildProgressLine(percent = 0) {
 // ===== TEMPORAL POINTER ELEMENT =====
 export function buildTemporalPointer() {
   return `
-    <div class="temporal-pointer" data-testid="temporal-pointer">
+    <div class="temporal-pointer" id="temporalPointer" data-testid="temporal-pointer">
       <div class="pointer-dot"></div>
       <div class="pointer-line"></div>
+      <div class="pointer-now">SADA</div>
     </div>
   `;
 }
@@ -255,12 +302,103 @@ export function buildObligationCard(ob, lang) {
   `;
 }
 
+function buildFreeTimeMessage(temporalState, sections) {
+  if (!temporalState?.nextChangeAt) return null;
+
+// nema više obveza danas → ne prikazuj free time
+if (!temporalState?.future?.length) return null;
+
+  const now = temporalState.now || Date.now();
+  const diff = temporalState.nextChangeAt - now;
+
+  const minutes = Math.floor(diff / 60000);
+
+  if (minutes < 10) return null;
+
+  let text = "⏳ ";
+
+  if (minutes >= 60) {
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+
+    if (m === 0) {
+      text = `🌿 Imaš ${h}h slobodno`;
+    } else {
+      text = `🌿 Imaš ${h}h ${m}min slobodno`;
+    }
+  } else {
+    text = `🌿 Imaš ${minutes} min slobodno`;
+  }
+
+  // Kad stigneš prijedlog (max 2)
+  let suggestions = "";
+
+  if (sections?.whenYouCan?.length) {
+    const items = sections.whenYouCan.slice(0, 2);
+
+    suggestions = `
+  <div class="free-time-suggestions">
+    Možda sada:
+    ${items.map(i => `<div class="free-time-item" data-id="${i.id}">• ${escapeHtml(i.title)}</div>`).join("")}
+  </div>
+`;
+  }
+
+  return `
+    <div class="free-time-block" data-testid="free-time-block">
+      <div class="free-time-text">${text}</div>
+      ${suggestions}
+    </div>
+  `;
+}
+
+
 // ===== RENDER ALL SECTIONS =====
 export function renderAllSections(obligations, temporalState, lang = 'hr') {
   const sections = buildSections(obligations, temporalState);
+
+const {
+  active = [],
+  whenYouCan = [],
+  doneToday = [],
+  labels = {}
+} = sections;
+  console.log("SECTIONS RESULT", {
+  active: sections.active.length,
+  whenYouCan: sections.whenYouCan.length,
+  doneToday: sections.doneToday.length
+});
   const t = window.I18N?.[lang]?.obligationsView || window.I18N?.hr?.obligationsView;
 
+  console.log("DEBUG SECTIONS", {
+    obligations,
+    active: sections?.active,
+    whenYouCan: sections?.whenYouCan,
+    doneToday: sections?.doneToday,
+    temporalTimed: temporalState?.timedObligations,
+    pointer: temporalState?.pointer,
+    pointerPosition: temporalState?.pointerPosition
+  });
+
   const htmlParts = [];
+
+  // ===== UPDATE DAILY STATE =====
+const dailyTitle = document.querySelector(".daily-state-title");
+const dailySubtitle = document.querySelector(".daily-state-subtitle");
+
+if (dailyTitle && dailySubtitle) {
+
+  const count = sections.active?.length || 0;
+
+  if (count >= 5) {
+    dailyTitle.textContent = "⚡ Gust raspored";
+    dailySubtitle.textContent = "Danas imaš puno obveza.";
+  } else {
+    dailyTitle.textContent = "🌿 Miran dan";
+    dailySubtitle.textContent = "Sve je pod kontrolom.";
+  }
+
+}
 
   // Progress line (24h)
   // 🫀 DAILY PROGRESS LINE (24h timeline)
@@ -273,11 +411,15 @@ if (temporalState && typeof temporalState.progressPercent === "number") {
 }
 
   const hasTimedObligations = sections.active.length > 0;
-const hasAnyActive = hasTimedObligations || sections.whenYouCan.length > 0;
 
-  if (!hasAnyActive && sections.doneToday.length === 0) {
-    return buildEmptyState(lang);
-  }
+const whenYouCanList = sections.whenYouCan;
+
+const hasWhenYouCan = whenYouCanList.length > 0;
+const hasDone = doneToday.length > 0;
+
+if (!hasTimedObligations && !hasWhenYouCan && !hasDone) {
+  return buildEmptyState(lang);
+}
 
   // SECTION: Active obligations with temporal pointer
   // SECTION: Active obligations (timed → temporal timeline)
@@ -292,15 +434,29 @@ if (hasTimedObligations) {
 // 🫀 ensure pointer uses temporal timeline order
 if (Array.isArray(temporalState?.timedObligations)) {
   const temporalIds = temporalState.timedObligations.map(o => o.id);
-  activeSnapshot.sort((a, b) => temporalIds.indexOf(a.id) - temporalIds.indexOf(b.id));
+  activeSnapshot.sort((a, b) => {
+  const ai = temporalIds.indexOf(a.id);
+const bi = temporalIds.indexOf(b.id);
+
+if (ai === -1 || bi === -1) {
+  return (a.id || 0) - (b.id || 0);
+}
+
+  if (ai !== bi) return ai - bi;
+
+  // fallback stabilnost ako su indeksi isti
+  return (a.id || 0) - (b.id || 0);
+});
 }
 
 // 🫀 POINTER FROM TEMPORAL ENGINE
-let pointer = Number.isInteger(temporalState?.pointer)
+let pointer = hasTimedObligations && Number.isInteger(temporalState?.pointer)
   ? temporalState.pointer
   : null;
 
-let pointerPosition = temporalState?.pointerPosition ?? null;
+let pointerPosition = hasTimedObligations
+  ? (temporalState?.pointerPosition ?? null)
+  : null;
 
 // 🛡️ FALLBACK ako temporal još nije spreman
 if (pointerPosition === null && activeSnapshot.length > 0) {
@@ -343,29 +499,38 @@ activeSnapshot.forEach((ob, index) => {
 
     // BEFORE first obligation
     if (pointerPosition === 'before' && index === 0) {
-      htmlParts.push(buildTemporalPointer());
-    }
+  htmlParts.push(buildTemporalPointer());
+
+  const freeBlock = buildFreeTimeMessage(temporalState, sections);
+  if (freeBlock) htmlParts.push(freeBlock);
+}
 
     // render obligation
     htmlParts.push(buildObligationCard(ob, lang));
 
     // BETWEEN obligations
     if (pointerPosition === 'between' && index === pointer) {
-      htmlParts.push(buildTemporalPointer());
-    }
+  htmlParts.push(buildTemporalPointer());
+
+  const freeBlock = buildFreeTimeMessage(temporalState, sections);
+  if (freeBlock) htmlParts.push(freeBlock);
+}
 
     // ON obligation
     if (pointerPosition === 'on' && index === pointer) {
-      htmlParts.push(buildTemporalPointer());
-    }
+  htmlParts.push(buildTemporalPointer());
+
+  const freeBlock = buildFreeTimeMessage(temporalState, sections);
+  if (freeBlock) htmlParts.push(freeBlock);
+}
 
     // AFTER last obligation
-    if (
-      pointerPosition === 'after' &&
-      index === activeSnapshot.length - 1
-    ) {
-      htmlParts.push(buildTemporalPointer());
-    }
+    if (pointerPosition === 'after' && index === activeSnapshot.length - 1) {
+  htmlParts.push(buildTemporalPointer());
+
+  const freeBlock = buildFreeTimeMessage(temporalState, sections);
+  if (freeBlock) htmlParts.push(freeBlock);
+}
 
   } catch (err) {
 
@@ -379,16 +544,16 @@ activeSnapshot.forEach((ob, index) => {
   }
 
   // SECTION: Kad stigneš (NO temporal pointer)
-  if (sections.whenYouCan.length > 0) {
-    htmlParts.push(`<div class="obligations-section-title">${sections.labels.whenYouCan || 'Kad stigneš'}</div>`);
-    htmlParts.push(`<div class="obligations-list no-timeline" data-testid="when-you-can">`);
-    
-    sections.whenYouCan.forEach(ob => {
-      htmlParts.push(buildObligationCard(ob, lang));
-    });
+  if (hasWhenYouCan) {
+  htmlParts.push(`<div class="obligations-section-title">${sections.labels.whenYouCan || 'Kad stigneš'}</div>`);
+  htmlParts.push(`<div class="obligations-list no-timeline" data-testid="when-you-can">`);
 
-    htmlParts.push(`</div>`);
-  }
+  whenYouCanList.forEach(ob => {
+    htmlParts.push(buildObligationCard(ob, lang));
+  });
+
+  htmlParts.push(`</div>`);
+}
 
   // SECTION: Završeno danas (collapsed by default)
   if (sections.doneToday.length > 0) {
@@ -471,6 +636,15 @@ export function attachObligationHandlers(container) {
       return;
     }
 
+    // Free time suggestion click → scroll to obligation
+const suggestion = target.closest(".free-time-item");
+if (suggestion) {
+  const id = suggestion.dataset.id;
+  const el = document.querySelector(`.obligation-card[data-id="${id}"]`);
+  el?.scrollIntoView({ behavior: "smooth", block: "center" });
+  return;
+}
+
     // Now indicator click
     const nowIndicator = target.closest("#nowIndicator");
     if (nowIndicator) {
@@ -495,6 +669,16 @@ async function handleDoneAction(id) {
 
   window.toggleObligationStatus?.(id, "done");
 
+  const obligations = await obligationDB.getAll();
+const ob = obligations.find(o => o.id === id);
+
+if (ob) {
+  const next = await processRecurringObligation(ob);
+  if (next) {
+    Temporal.setObligations(await obligationDB.getAll());
+  }
+}
+
   delete card.dataset.processing;
 
 }
@@ -510,29 +694,190 @@ function toggleDoneSection() {
   }
 }
 
-// ===== SCROLL TO POINTER =====
 export function scrollToPointer() {
+  const temporalState =
+    Temporal.getState?.() ||
+    window.__TEMPORAL_STATE__ ||
+    {};
+
   const pointer = document.getElementById('temporalPointer');
-  if (pointer) {
-    pointer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+  const candidates = [];
+  const directContainer = document.getElementById('obligationsContainer');
+  if (directContainer) candidates.push(directContainer);
+
+  let el = (pointer || directContainer)?.parentElement;
+  while (el && el !== document.body) {
+    candidates.push(el);
+    el = el.parentElement;
   }
+
+  const docScrollEl = document.scrollingElement || document.documentElement;
+  if (docScrollEl) candidates.push(docScrollEl);
+
+  const uniqueCandidates = [...new Set(candidates)];
+
+  const container = uniqueCandidates.find((node) => {
+    if (!node || node === window) return false;
+    const style = window.getComputedStyle(node);
+    const overflowY = style.overflowY;
+    return /(auto|scroll)/.test(overflowY) && node.scrollHeight > node.clientHeight;
+  });
+
+  const scrollTarget = container || window;
+
+  // fallback: no DOM pointer, but temporal state says before/after
+  if (!pointer) {
+    if (temporalState?.pointerPosition === 'before') {
+      if (scrollTarget === window) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        scrollTarget.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      return;
+    }
+
+    if (temporalState?.pointerPosition === 'after') {
+      if (scrollTarget === window) {
+        const doc = document.scrollingElement || document.documentElement;
+        window.scrollTo({
+          top: doc.scrollHeight,
+          behavior: 'smooth'
+        });
+      } else {
+        scrollTarget.scrollTo({
+          top: scrollTarget.scrollHeight,
+          behavior: 'smooth'
+        });
+      }
+      return;
+    }
+
+    console.log('[scrollToPointer] no pointer and no before/after fallback');
+    return;
+  }
+
+  const pointerRect = pointer.getBoundingClientRect();
+
+  if (container) {
+    const containerRect = container.getBoundingClientRect();
+
+    const targetTop =
+      pointerRect.top -
+      containerRect.top +
+      container.scrollTop -
+      (container.clientHeight / 2) +
+      (pointerRect.height / 2);
+
+    container.scrollTo({
+      top: Math.max(0, targetTop),
+      behavior: 'smooth'
+    });
+
+    return;
+  }
+
+  const winTargetTop =
+    pointerRect.top +
+    window.pageYOffset -
+    (window.innerHeight / 2) +
+    (pointerRect.height / 2);
+
+  window.scrollTo({
+    top: Math.max(0, winTargetTop),
+    behavior: 'smooth'
+  });
 }
 
 // ===== AUTO SCROLL ON SCREEN OPEN =====
-export function autoScrollOnOpen(temporalState) {
-  const container = document.getElementById('obligationsContainer');
+export function autoScrollOnOpen(temporalState, attempt = 0) {
+  const directContainer =
+  document.getElementById('obligationsContainer') ||
+  document.querySelector('.obligations-list');
   if (!container) return;
 
-  requestAnimationFrame(() => {
-    const pointer = document.getElementById('temporalPointer');
-    
-    if (pointer) {
-      pointer.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    } else if (temporalState?.pointerPosition === 'before') {
-      container.scrollTop = 0;
-    } else if (temporalState?.pointerPosition === 'after') {
-      container.scrollTop = container.scrollHeight;
+  const pointer = document.getElementById('temporalPointer');
+
+  const scrollParent = (() => {
+    let el = pointer || container;
+
+    while (el && el !== document.body) {
+      const style = window.getComputedStyle(el);
+      const canScroll =
+        /(auto|scroll)/.test(style.overflowY) &&
+        el.scrollHeight > el.clientHeight;
+
+      if (canScroll) return el;
+      el = el.parentElement;
     }
+
+    return container;
+  })();
+
+  const layoutReady =
+    container.offsetHeight > 0 &&
+    scrollParent.clientHeight > 0 &&
+    scrollParent.scrollHeight >= scrollParent.clientHeight;
+
+  const pointerReady =
+    !!pointer &&
+    pointer.getBoundingClientRect().height >= 0;
+
+  if ((!layoutReady || !pointerReady) && attempt < 12) {
+    setTimeout(() => autoScrollOnOpen(temporalState, attempt + 1), 80);
+    return;
+  }
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      const livePointer = document.getElementById('temporalPointer');
+
+      if (livePointer) {
+        const pointerRect = livePointer.getBoundingClientRect();
+        const parentRect = scrollParent.getBoundingClientRect();
+
+        const currentScrollTop =
+          scrollParent === window
+            ? window.pageYOffset || document.documentElement.scrollTop || 0
+            : scrollParent.scrollTop;
+
+        const pointerTop =
+          pointerRect.top - parentRect.top + currentScrollTop;
+
+        const targetScroll = Math.max(
+          0,
+          pointerTop - (scrollParent.clientHeight / 2)
+        );
+
+        if (scrollParent === window) {
+          window.scrollTo({
+            top: targetScroll,
+            behavior: 'smooth'
+          });
+        } else {
+          scrollParent.scrollTo({
+            top: targetScroll,
+            behavior: 'smooth'
+          });
+        }
+
+        console.log('[autoScrollOnOpen]', {
+          attempt,
+          scrollParentId: scrollParent.id || '(no-id)',
+          containerHeight: container.clientHeight,
+          parentHeight: scrollParent.clientHeight,
+          parentScrollHeight: scrollParent.scrollHeight,
+          pointerTop,
+          targetScroll
+        });
+
+      } else if (temporalState?.pointerPosition === 'before') {
+        scrollParent.scrollTop = 0;
+
+      } else if (temporalState?.pointerPosition === 'after') {
+        scrollParent.scrollTop = scrollParent.scrollHeight;
+      }
+    });
   });
 }
 
@@ -663,6 +1008,7 @@ export async function processRecurringObligation(obligation) {
   
   await obligationDB.add(newObligation);
   console.log(`[Recurring] Created next: "${obligation.title}" at ${newObligation.dateTime}`);
+  window.scheduleReminder?.(newObligation);
   
   return newObligation;
 }
@@ -672,6 +1018,7 @@ export function setupMobileLifecycle() {
   document.addEventListener('visibilitychange', async () => {
     if (document.visibilityState === 'visible') {
       console.log('[Lifecycle] App resumed');
+      recoverReminders();
       const obligations = await obligationDB.getAll();
       Temporal.setObligations(obligations);
       Temporal.triggerUIRender?.();
@@ -694,7 +1041,36 @@ export function setupMobileLifecycle() {
 // ===== MIDNIGHT HANDLER =====
 window.addEventListener('temporalMidnight', async () => {
   console.log('[Midnight] Day transition');
+  scheduledReminderCache.clear();
   const obligations = await obligationDB.getAll();
+  // generate next recurring obligations automatically
+for (const ob of obligations) {
+
+  if (!ob.repeat) continue;
+  if (ob.status === "done") continue;
+  if (!ob.dateTime) continue;
+
+  const iso = getISODateFromDateTime(ob.dateTime);
+
+  if (iso === todayISO()) {
+
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  const nextISO = tomorrow.toISOString().slice(0, 10);
+
+  const exists = obligations.some(o =>
+    o.parentId === ob.id &&
+    getISODateFromDateTime(o.dateTime) === nextISO
+  );
+
+  if (!exists) {
+    await processRecurringObligation(ob);
+  }
+
+}
+
+}
   Temporal.setObligations(obligations);
   window.refreshCurrentObligationsView?.();
   setTimeout(() => autoScrollOnOpen(Temporal.getState()), 100);
@@ -705,5 +1081,38 @@ window.addEventListener('temporalMidnight', async () => {
 // Temporal subscriber moved to app-init.js
 // obligations module remains renderer-only
 
+// ===== REMINDER RECOVERY ENGINE =====
+export async function recoverReminders() {
+
+  if (!window.scheduleReminder) return;
+
+  const obligations = await obligationDB.getAll();
+  const now = Date.now();
+
+  for (const ob of obligations) {
+
+    if (!ob.reminder) continue;
+    if (!ob.dateTime) continue;
+    if (ob.status === "done") continue;
+
+    const eventTime = new Date(ob.dateTime).getTime();
+    const reminderTime = eventTime - (ob.reminder * 60000);
+
+    if (reminderTime <= now) continue;
+
+    const key = `${ob.id}-${ob.dateTime}`;
+
+if (scheduledReminderCache.has(key)) continue;
+
+scheduledReminderCache.add(key);
+window.scheduleReminder(ob);
+
+  }
+
+  console.log("[ReminderEngine] recovery scan complete");
+
+}
+
 // ===== INIT MOBILE LIFECYCLE =====
 setupMobileLifecycle();
+recoverReminders();

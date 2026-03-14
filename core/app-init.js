@@ -246,14 +246,19 @@ export function getISODateFromDateTime(dateTimeStr) {
 }
 
 export function todayISO() {
-  return new Date().toISOString().split('T')[0];
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
 }
 let navigationLock = false;
 let navigationLockTimeout = null;
 
 function legacy_showScreen(screenId) {
   if (navigationLock) {
-    console.log('[NAV] Navigation locked, ignoring:', screenId);
+    console.debug('[NAV] Ignored tap (navigation lock):', screenId);
     return;
   }
   
@@ -425,6 +430,25 @@ function legacy_showScreen(screenId) {
     if (save) save.textContent = c.form?.save || '';
   }
 }
+
+// 🫀 iOS / mobile resume fix — refresh Temporal state when app returns
+document.addEventListener("visibilitychange", async () => {
+  if (document.visibilityState === "visible") {
+    try {
+      const all = await obligationDB.getAll();
+      Temporal.setObligations(all);
+
+      window.__TEMPORAL_STATE__ = Temporal.getState?.() || window.__TEMPORAL_STATE__;
+
+      if (document.getElementById('screen-obligations-list')?.classList.contains('active')) {
+  renderObligationsList?.();
+}
+    } catch (err) {
+      console.warn("[Temporal] Resume refresh failed:", err);
+    }
+  }
+});
+
 /* =====================================================
    OBLIGATIONS ENGINE
    ===================================================== */
@@ -685,6 +709,31 @@ const temporalState = Temporal.getState?.() || null;
   o.type !== 'shopping' &&
   o.status !== 'done'
 );
+
+container.innerHTML = renderAllSections(obligations, temporalState, lang);
+attachObligationHandlers(container);
+
+// 🫀 AUTO SCROLL TO TEMPORAL POINTER
+if (window.__SCROLL_TO_POINTER_ON_OPEN__) {
+
+  window.__SCROLL_TO_POINTER_ON_OPEN__ = false;
+
+  requestAnimationFrame(() => {
+
+    const pointer = document.querySelector('.temporal-pointer');
+
+    if (pointer) {
+      pointer.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+      });
+    }
+
+  });
+
+}
+
+return;
 
 /* ===== LEGACY SORT (DISABLED BY TEMPORAL) =====
   obligations.sort((a, b) => {
@@ -1357,6 +1406,39 @@ await obligationDB.delete(id);
 
 window.__temporalRerenderQueued = false;
 window.forceObligationsListRefresh?.('delete');
+};
+
+// ===== BULLETPROOF SCROLL TO TEMPORAL POINTER =====
+window.scrollToTemporalPointerSafe = function () {
+
+  let attempts = 0;
+  const MAX_ATTEMPTS = 6;
+
+  function tryScroll() {
+
+    const pointer = document.querySelector('.temporal-pointer');
+
+    if (pointer) {
+
+      pointer.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+      });
+
+      return;
+
+    }
+
+    attempts++;
+
+    if (attempts < MAX_ATTEMPTS) {
+      requestAnimationFrame(tryScroll);
+    }
+
+  }
+
+  tryScroll();
+
 };
 
 /* =====================================================

@@ -745,10 +745,7 @@ async function renderObligationsList() {
   // 🔥 SINGLE SOURCE OF TRUTH
   const all = await obligationDB.getAll();
 
-// 🫀 SYNC TEMPORAL ENGINE
-Temporal.setObligations(all);
-
-// 🫀 ALWAYS USE FRESH TEMPORAL STATE
+// 🫀 READ CURRENT TEMPORAL STATE
 const temporalState = Temporal.getState?.() || null;
 
   const container = document.getElementById('obligationsContainer');
@@ -781,8 +778,8 @@ const temporalState = Temporal.getState?.() || null;
     }))
   );
 
-  // 🫀 Temporal is source of truth
-const obligations = temporalState?.timedObligations || all.filter(o =>
+  // 🫀 RENDER ALWAYS USES ALL OBLIGATIONS
+const obligations = all.filter(o =>
   o.type !== 'shopping'
 );
 
@@ -1040,12 +1037,18 @@ html += `
 // 🫀 RENDER VIA OBLIGATIONS MODULE
 // temporalState already defined above
 
-const obligationsForRender = all.filter(o =>
-  o.type !== 'shopping'
-);
+const obligationsForRender = (await obligationDB.getAll())
+  .filter(o => o.type !== 'shopping');
 
-// 🫀 include obligations without dateTime ("Kad stigneš")
-const anytimeItems = obligationsForRender.filter(o => !o.dateTime);
+// 🫀 include obligations without time ("Kad stigneš")
+const anytimeItems = obligationsForRender.filter(o => {
+  if (!o.dateTime) return true;
+
+  const str = String(o.dateTime).trim();
+
+  // nema vremena u stringu
+  return !str.includes("T");
+});
 
 // 🫀 temporal timeline items (ONLY timed obligations)
 const temporalItems = [
@@ -1053,13 +1056,8 @@ const temporalItems = [
   ...temporalFuture
 ];
 
-// combine
-const allItems = [
-  ...temporalItems,
-  ...anytimeItems
-];
-
-html += renderAllSections(allItems, temporalState, lang);
+// render koristi originalne obveze
+html += renderAllSections(obligationsForRender, temporalState, lang);
 
 // upcoming section removed — handled by temporal timeline
 

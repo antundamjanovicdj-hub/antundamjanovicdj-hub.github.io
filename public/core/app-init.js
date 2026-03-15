@@ -190,7 +190,7 @@ window.addEventListener('unhandledrejection', (event) => {
 });
 
 // ===== APP VERSION =====
-const APP_VERSION = "0.1.0";
+const APP_VERSION = "0.1.1-family-test";
 
 // ===== UX 1.6 – SCREEN HISTORY (GLOBAL) =====
 const screenHistory = [];
@@ -441,13 +441,89 @@ document.addEventListener("visibilitychange", async () => {
       window.__TEMPORAL_STATE__ = Temporal.getState?.() || window.__TEMPORAL_STATE__;
 
       if (document.getElementById('screen-obligations-list')?.classList.contains('active')) {
-  renderObligationsList?.();
+
+  // 🫀 force clean rerender after resume
+  window.__temporalRerenderQueued = false;
+
+  requestAnimationFrame(() => {
+    renderObligationsList?.();
+  });
+
 }
     } catch (err) {
       console.warn("[Temporal] Resume refresh failed:", err);
     }
   }
 });
+
+// ===== TEMPORAL MIDNIGHT EVENT =====
+window.addEventListener('temporalMidnight', () => {
+
+  console.log('[Temporal] Midnight UI refresh');
+
+  try {
+
+    window.__SCROLL_TO_POINTER_ON_OPEN__ = true;
+    window.__temporalRerenderQueued = false;
+
+    if (document.getElementById('screen-obligations-list')?.classList.contains('active')) {
+
+      requestAnimationFrame(() => {
+        renderObligationsList?.();
+      });
+
+    }
+
+  } catch (err) {
+    console.warn('[Temporal] Midnight UI refresh failed:', err);
+  }
+
+});
+
+// ===== CAPACITOR APP RESUME GUARD =====
+try {
+
+  const CapApp = window.Capacitor?.Plugins?.App;
+
+  if (CapApp) {
+
+    CapApp.addListener('appStateChange', async ({ isActive }) => {
+
+      if (!isActive) return;
+
+      console.log('[Lifecycle] App resumed');
+
+      try {
+
+        const all = await obligationDB.getAll();
+        Temporal.setObligations(all);
+
+        window.__TEMPORAL_STATE__ =
+          Temporal.getState?.() || window.__TEMPORAL_STATE__;
+
+        if (document.getElementById('screen-obligations-list')?.classList.contains('active')) {
+
+          window.__temporalRerenderQueued = false;
+
+          requestAnimationFrame(() => {
+            renderObligationsList?.();
+          });
+
+        }
+
+      } catch (err) {
+        console.warn('[Lifecycle] Resume refresh failed:', err);
+      }
+
+    });
+
+  }
+
+} catch (e) {
+
+  console.log('[Lifecycle] Capacitor App plugin not available');
+
+}
 
 /* =====================================================
    OBLIGATIONS ENGINE
@@ -705,13 +781,50 @@ const temporalState = Temporal.getState?.() || null;
     }))
   );
 
-  const obligations = all.filter(o =>
-  o.type !== 'shopping' &&
-  o.status !== 'done'
+  // 🫀 Temporal is source of truth
+const obligations = temporalState?.timedObligations || all.filter(o =>
+  o.type !== 'shopping'
 );
 
 container.innerHTML = renderAllSections(obligations, temporalState, lang);
 attachObligationHandlers(container);
+
+// 🫀 pointer stabilization tick (fix for iOS layout delay)
+requestAnimationFrame(() => {
+  requestAnimationFrame(() => {
+
+    const pointer = document.querySelector('.temporal-pointer');
+
+    if (!pointer) return;
+
+    // force reflow so pointer position recalculates
+    pointer.getBoundingClientRect();
+
+    // update NOW indicator if exists
+    window.updateNowIndicatorVisibility?.();
+
+  });
+});
+
+// 🫀 iOS layout stabilization for temporal pointer
+requestAnimationFrame(() => {
+  requestAnimationFrame(() => {
+
+    const pointer = document.querySelector('.temporal-pointer');
+
+    if (pointer && window.__SCROLL_TO_POINTER_ON_OPEN__) {
+
+      window.__SCROLL_TO_POINTER_ON_OPEN__ = false;
+
+      pointer.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+      });
+
+    }
+
+  });
+});
 
 // 🫀 AUTO SCROLL TO TEMPORAL POINTER
 if (window.__SCROLL_TO_POINTER_ON_OPEN__) {

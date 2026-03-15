@@ -43,19 +43,27 @@ export function renderObligationsList(obligations = []) {
   const container = document.getElementById('obligationsContainer');
   if (!container) return;
 
+  const safeObligations = Array.isArray(obligations) ? obligations : [];
+
+  // 🫀 uvijek recalculiraj temporal state iz točno ovog render inputa
+  Temporal.setObligations(safeObligations);
+
   const lang = window.getLang?.() || 'hr';
   const temporalState = Temporal.getState?.() || {};
 
-  container.innerHTML = renderAllSections(obligations, temporalState, lang);
+  container.innerHTML = renderAllSections(safeObligations, temporalState, lang);
+
+  // reset scroll flag na svaki novi render liste
+  window.__LK_POINTER_SCROLLED__ = false;
 
   if (!window.__LK_POINTER_SCROLLED__) {
-
-  setTimeout(() => {
-  scrollToPointer();
-  window.__LK_POINTER_SCROLLED__ = true;
-}, 80);
-
-}
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        scrollToPointer();
+        window.__LK_POINTER_SCROLLED__ = true;
+      });
+    });
+  }
 
   attachObligationHandlers(container);
   updateNowIndicatorVisibility();
@@ -305,8 +313,8 @@ export function buildObligationCard(ob, lang) {
 function buildFreeTimeMessage(temporalState, sections) {
   if (!temporalState?.nextChangeAt) return null;
 
-// nema više obveza danas → ne prikazuj free time
-if (!temporalState?.future?.length) return null;
+  // nema više obveza danas → ne prikazuj free time
+  if (!temporalState?.future || temporalState.future <= 0) return null;
 
   const now = temporalState.now || Date.now();
   const diff = temporalState.nextChangeAt - now;
@@ -449,42 +457,41 @@ if (ai === -1 || bi === -1) {
 });
 }
 
-// 🫀 POINTER FROM TEMPORAL ENGINE
-let pointer = hasTimedObligations && Number.isInteger(temporalState?.pointer)
-  ? temporalState.pointer
-  : null;
+// 🫀 POINTER RESOLUTION FROM LIVE SNAPSHOT
+// Ne vjerujemo slijepo starom temporal pointer indexu.
+// Pointer računamo iz trenutno renderanog activeSnapshot niza.
+let pointer = null;
+let pointerPosition = null;
 
-let pointerPosition = hasTimedObligations
-  ? (temporalState?.pointerPosition ?? null)
-  : null;
-
-// 🛡️ FALLBACK ako temporal još nije spreman
-if (pointerPosition === null && activeSnapshot.length > 0) {
-
-  const nowTs = Date.now();
+if (activeSnapshot.length > 0) {
+  const nowTs = Number.isFinite(temporalState?.now) ? temporalState.now : Date.now();
 
   const timed = activeSnapshot
     .map((ob, i) => {
       const dt = safeParseDate(ob.dateTime);
       return { index: i, ts: dt ? dt.getTime() : null };
     })
-    .filter(o => Number.isFinite(o.ts));
+    .filter(item => Number.isFinite(item.ts));
 
-  const firstFuture = timed.find(o => o.ts >= nowTs);
+  const firstFuture = timed.find(item => item.ts > nowTs);
+  const onNow = timed.find(item => item.ts === nowTs);
 
-  if (!firstFuture) {
+  if (onNow) {
+    pointerPosition = 'on';
+    pointer = onNow.index;
+  } else if (!firstFuture) {
+    // nema više budućih obveza → pointer ide nakon zadnje
     pointerPosition = 'after';
     pointer = activeSnapshot.length - 1;
-  }
-  else if (firstFuture.index === 0) {
+  } else if (firstFuture.index === 0) {
+    // prva obveza je još buduća → pointer prije prve
     pointerPosition = 'before';
     pointer = 0;
-  }
-  else {
+  } else {
+    // pointer između zadnje prošle i prve buduće
     pointerPosition = 'between';
     pointer = firstFuture.index;
   }
-
 }
 
 // 🛡️ CLAMP sigurnost
@@ -497,6 +504,14 @@ activeSnapshot.forEach((ob, index) => {
 
   try {
 
+    // BETWEEN obligations
+if (pointerPosition === 'between' && index === pointer) {
+  htmlParts.push(buildTemporalPointer());
+
+  const freeBlock = buildFreeTimeMessage(temporalState, sections);
+  if (freeBlock) htmlParts.push(freeBlock);
+}
+
     // BEFORE first obligation
     if (pointerPosition === 'before' && index === 0) {
   htmlParts.push(buildTemporalPointer());
@@ -507,14 +522,6 @@ activeSnapshot.forEach((ob, index) => {
 
     // render obligation
     htmlParts.push(buildObligationCard(ob, lang));
-
-    // BETWEEN obligations
-    if (pointerPosition === 'between' && index === pointer) {
-  htmlParts.push(buildTemporalPointer());
-
-  const freeBlock = buildFreeTimeMessage(temporalState, sections);
-  if (freeBlock) htmlParts.push(freeBlock);
-}
 
     // ON obligation
     if (pointerPosition === 'on' && index === pointer) {

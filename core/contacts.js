@@ -6,7 +6,7 @@ import {
   getContacts,
   addContact,
   deleteContact
-} from './db.js';
+} from './services/db.js';
 
 const ContactsPlugin = window.Capacitor?.Plugins?.Contacts;
 

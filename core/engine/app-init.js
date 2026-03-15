@@ -1,4 +1,9 @@
-import Temporal from '../src/core/temporal/index.js';
+import Temporal from '../../src/core/temporal/index.js';
+import '../dev/dev-tools.js';
+import './shopping-engine.js';
+import './navigation.js';
+import { getLang } from '../utils/utils.js';
+import('../services/notifications.js')
 
 // 🫀 Temporal Brain auto-boot
 void Temporal;
@@ -9,31 +14,29 @@ window.__obligationsRenderLock = false;
 
 Temporal.subscribe((state) => {
 
-  // ✅ always keep freshest state
-  // temporal state is read directly from engine
-
   console.log('🧭 TEMPORAL STATE', {
     now: state.now,
     pointer: state.pointer,
-    past: state.past.length,
-    future: state.future.length,
+    past: Array.isArray(state.past) ? state.past.length : 0,
+    future: Array.isArray(state.future) ? state.future.length : 0,
     nextChangeAt: state.nextChangeAt
   });
 
-  // ✅ if we are currently on obligations list + list mode → rerender once
   const activeId = document.querySelector('.screen.active')?.id;
   const mode = window.AppState?.obligations?.viewMode || 'list';
 
   if (activeId !== 'screen-obligations-list') return;
   if (mode !== 'list') return;
 
+  if (window.__obligationsRenderLock) return;
   if (window.__temporalRerenderQueued) return;
+
   window.__temporalRerenderQueued = true;
 
   requestAnimationFrame(() => {
     window.__temporalRerenderQueued = false;
     try {
-      renderObligationsList?.();
+      renderObligationsList();
     } catch (e) {
       console.log('[Temporal] list rerender skipped', e);
     }
@@ -95,7 +98,7 @@ NEXT PHASE:
 // Namjerno prazno: u sljedećem koraku selimo veliki dio koda iz index.html ovdje.
 
 // 🔔 LifeKompas notification bootstrap
-import('./notifications.js')
+import('../services/notifications.js')
   .then(() => console.log('🔔 notifications module loaded'))
   .catch(e => console.log('🔔 notifications bootstrap skipped', e));
 
@@ -196,18 +199,18 @@ const APP_VERSION = "0.1.1-family-test";
 const screenHistory = [];
 
 // ===== BATTERY OPTIMIZATION CHECK =====
-import { checkBatteryOptimization } from './battery.js';
+import { checkBatteryOptimization } from '../services/battery.js';
 import {
   obligationDB,
   addShoppingItem,
   getShoppingItems,
   updateShoppingItem,
   deleteShoppingItem
-} from './db.js';
+} from '../services/db.js';
 // DEBUG: expose DB to console
 window.obligationDB = obligationDB;
-import { buildObligationCard, renderAllSections } from './obligations.js';
-import { attachObligationHandlers } from "./obligations.js";
+import { buildObligationCard, renderAllSections } from '../modules/obligations/obligations.js';
+import { attachObligationHandlers } from "../modules/obligations/obligations.js";
 
 // ZERO-RISK SHADOW IMPORT (obligations module)
 window.checkBatteryOptimization = checkBatteryOptimization;
@@ -227,13 +230,6 @@ if (CONFIG.serviceWorkerEnabled) {
   }
 }
 /* ===== HELPERS ===== */
-export function getLang() {
-  let lang = localStorage.getItem('userLang') || 'hr';
-  if (!I18N[lang]) {
-    lang = lang.split('-')[0];
-  }
-  return lang;
-}
 
 // ✅ DETEKCIJA TOUCH UREĐAJA (MOBITEL / TABLET)
 const IS_TOUCH_DEVICE =
@@ -252,183 +248,6 @@ export function todayISO() {
   const day = String(now.getDate()).padStart(2, '0');
 
   return `${year}-${month}-${day}`;
-}
-let navigationLock = false;
-let navigationLockTimeout = null;
-
-function legacy_showScreen(screenId) {
-  if (navigationLock) {
-    console.debug('[NAV] Ignored tap (navigation lock):', screenId);
-    return;
-  }
-  
-  navigationLock = true;
-  
-  if (navigationLockTimeout) {
-    clearTimeout(navigationLockTimeout);
-  }
-
-  const screens = document.querySelectorAll('.screen');
-  const next = document.getElementById(screenId);
-
-  screens.forEach(screen => {
-    screen.classList.remove('active');
-    screen.style.display = 'none';
-  });
-
-  if (next) {
-    next.classList.add('active');
-    next.style.display = 'block';
-
-    requestAnimationFrame(() => {
-      try {
-        if (screenId === 'screen-obligations-list') {
-          if (window.__OBLIGATIONS_DIRTY__) {
-            window.__OBLIGATIONS_DIRTY__ = false;
-
-            (async () => {
-              try {
-                const all = await obligationDB.getAll();
-                Temporal.setObligations(all);
-
-                const temporalState = Temporal.getState?.();
-                window.__TEMPORAL_STATE__ = temporalState || window.__TEMPORAL_STATE__ || {
-                  past: [],
-                  future: [],
-                  pointer: null,
-                  now: new Date().toISOString()
-                };
-
-                renderObligationsList?.();
-                window.refreshCurrentObligationsView?.();
-              } catch (err) {
-                console.error('[NAV] Obligations load error:', err);
-              }
-            })();
-          }
-
-          window.AppState.obligations.viewMode = 'list';
-          showListMode?.();
-
-          // 🫀 scroll to pointer when screen opens
-          window.__SCROLL_TO_POINTER_ON_OPEN__ = true;
-        }
-
-        if (screenId === 'screen-add-obligation') {
-          const input = document.getElementById('obligationTitle');
-          if (input) {
-            setTimeout(() => {
-              input.focus();
-            }, 80);
-          }
-        }
-
-        document.dispatchEvent(new CustomEvent('screenShown', { 
-          detail: screenId 
-        }));
-
-      } finally {
-        navigationLockTimeout = setTimeout(() => {
-          navigationLock = false;
-          navigationLockTimeout = null;
-        }, 50);
-      }
-    });
-  } else {
-    navigationLock = false;
-  }
-
-  if (screenId === 'screen-menu') {
-    const items = document.querySelectorAll('#screen-menu .menu-item');
-    items.forEach(el => {
-      el.classList.remove('animate');
-      void el.offsetWidth;
-      el.classList.add('animate');
-      el.style.opacity = '';
-      el.style.transform = '';
-    });
-  }
-
-  const headerTitle = document.getElementById('headerTitle');
-  if (headerTitle) {
-    const lang = getLang();
-    const titleFn = SCREEN_TITLES[screenId];
-
-    headerTitle.textContent =
-      typeof titleFn === 'function'
-        ? (titleFn(lang) || 'LifeKompas')
-        : 'LifeKompas';
-  }
-
-  const headerAction = document.getElementById('headerAction');
-  if (headerAction) {
-    const screensWithPlus = [
-      'screen-obligations-list',
-      'screen-contacts'
-    ];
-
-    if (screensWithPlus.includes(screenId)) {
-      headerAction.classList.remove('hidden');
-    } else {
-      headerAction.classList.add('hidden');
-    }
-  }
-
-  if (screenId === 'screen-contacts') {
-    if (typeof loadContacts === 'function') {
-      loadContacts();
-    }
-
-    const lang = getLang();
-    const c = I18N[lang]?.contacts || I18N.en?.contacts;
-
-    const contactsTitle = document.getElementById('contactsTitle');
-    if (contactsTitle && c) {
-      contactsTitle.innerHTML =
-        `<img src="images/contacts-icon.png" class="contacts-title-icon"> ${c.title}`;
-    }
-
-    const btnImport = document.getElementById('btnImportContacts');
-    if (btnImport && c) btnImport.textContent = c.import;
-
-    const btnAddContact = document.getElementById('btnAddContact');
-    if (btnAddContact && c) btnAddContact.textContent = c.add;
-
-    const searchContacts = document.getElementById('searchContacts');
-    if (searchContacts && c) searchContacts.placeholder = c.search;
-  }
-
-  if (screenId === 'screen-contact-form') {
-    const lang = getLang();
-    const c = I18N[lang]?.contacts || I18N.en?.contacts;
-
-    const first = document.getElementById('contactFirstName');
-    if (first) first.placeholder = c.form?.firstName || '';
-
-    const last = document.getElementById('contactLastName');
-    if (last) last.placeholder = c.form?.lastName || '';
-
-    const birth = document.getElementById('contactBirthDate');
-    if (birth) birth.placeholder = c.form?.birthDate || '';
-
-    const address = document.getElementById('contactAddress');
-    if (address) address.placeholder = c.form?.address || '';
-
-    const email = document.getElementById('contactEmail');
-    if (email) email.placeholder = c.form?.email || '';
-
-    const phone = document.getElementById('contactPhone');
-    if (phone) phone.placeholder = c.form?.phone || '';
-
-    const label = document.getElementById('contactBirthdayTimeLabel');
-    if (label) label.textContent = c.form?.birthdayTime || '';
-
-    const photo = document.getElementById('btnPickContactPhoto');
-    if (photo) photo.textContent = c.form?.pickPhoto || '';
-
-    const save = document.getElementById('saveContact');
-    if (save) save.textContent = c.form?.save || '';
-  }
 }
 
 // 🫀 iOS / mobile resume fix — refresh Temporal state when app returns
@@ -543,212 +362,27 @@ try {
   Until then — engine is FROZEN.
 */
 
-   /* =====================================================
-   SHOPPING ENGINE
-   ===================================================== */
-   let shoppingItems = [];
-let showArchivedShopping = false;
-
-function ensureShoppingArchiveButton() {
-
-  const btn = document.getElementById('toggleArchive');
-
-  // ako gumb ne postoji — ne radimo ništa
-  if (!btn) return;
-
-  // sprječava dupli listener
-  if (btn.dataset.bound === '1') {
-    btn.textContent = showArchivedShopping
-      ? 'Sakrij arhivu'
-      : 'Prikaži arhivu';
-    return;
-  }
-
-  btn.dataset.bound = '1';
-
-  btn.textContent = showArchivedShopping
-    ? 'Sakrij arhivu'
-    : 'Prikaži arhivu';
-
-  btn.addEventListener('click', () => {
-
-    showArchivedShopping = !showArchivedShopping;
-
-    btn.textContent = showArchivedShopping
-      ? 'Sakrij arhivu'
-      : 'Prikaži arhivu';
-
-    renderShoppingList();
-  });
-}
-
-   /* ===== SHOPPING (IndexedDB + Archive) ===== */
-async function renderShoppingList() {
-
-  shoppingItems = await getShoppingItems();
-
-  const list = document.getElementById('shoppingList');
-  const empty = document.getElementById('shoppingEmpty');
-
-  if (!list || !empty) return;
-
-  ensureShoppingArchiveButton();
-
-  list.innerHTML = '';
-
-  const visibleItems = showArchivedShopping
-    ? shoppingItems.filter(item => item.checked)
-    : shoppingItems.filter(item => !item.checked);
-
-  if (visibleItems.length === 0) {
-    empty.innerHTML = `
-      <div style="font-size:26px; margin-bottom:8px;">🛒</div>
-
-      <div style="font-weight:800; font-size:16px;">
-        Nema stavki
-      </div>
-
-      <div style="opacity:0.7; font-size:14px; margin-top:6px;">
-        Popis je trenutačno prazan.
-      </div>
-
-      <div style="margin-top:14px; font-size:14px; opacity:0.85;">
-        • Enter – brzo dodavanje stavke
-      </div>
-    `;
-
-    empty.style.display = 'block';
-    return;
-  }
-
-  empty.style.display = 'none';
-
-  visibleItems.forEach(item => {
-    const li = document.createElement('li');
-    li.className = 'shopping-item';
-
-    li.innerHTML = `
-      <div class="shopping-item-delete">🗑️</div>
-      <div class="shopping-item-content">${item.title}</div>
-    `;
-    const swipeContent = li.querySelector('.shopping-item-content');
-
-    if (item.checked) li.classList.add('checked');
-
-    li.addEventListener('click', async () => {
-      item.checked = !item.checked;
-      await updateShoppingItem(item); // 🔥 važnije od add
-      renderShoppingList();
-    });
-
-// ===== MOBILE ONLY: swipe to delete (FINAL) =====
-if (IS_TOUCH_DEVICE) {
-  let startX = 0;
-let currentX = 0;
-let startTime = 0;
-let swiping = false;
-  const DELETE_THRESHOLD = 120; // px
-
-  li.addEventListener('touchstart', e => {
-  startX = e.touches[0].clientX;
-  currentX = startX;
-  startTime = Date.now();
-  swiping = true;
-  li.classList.add('swiping');
-}, { passive: true });
-
-// 🔎 MICRO HINT – show on first swipe only
-const hint = document.getElementById('shoppingSwipeHint');
-const hintSeen = localStorage.getItem('shoppingSwipeHintSeen');
-
-if (IS_TOUCH_DEVICE && hint && !hintSeen) {
-  hint.classList.remove('hidden');
-
-  setTimeout(() => {
-    hint.style.opacity = '0';
-    setTimeout(() => {
-      hint.classList.add('hidden');
-      hint.style.opacity = '';
-    }, 300);
-  }, 2500);
-
-  localStorage.setItem('shoppingSwipeHintSeen', '1');
-}
-
-  li.addEventListener('touchmove', e => {
-  li.classList.add('swiping');
-    if (!swiping) return;
-
-    currentX = e.touches[0].clientX;
-    const diff = currentX - startX;
-const elapsed = Date.now() - startTime;
-const velocity = Math.abs(diff) / elapsed;
-
-// 🔥 flick delete
-if (diff < -DELETE_THRESHOLD || velocity > 0.6) {
-
-  const MAX_SWIPE = 84;
-
-  // 🔥 ELASTIC
-  let limited = diff;
-
-  if (diff < -MAX_SWIPE) {
-    const extra = diff + MAX_SWIPE;
-    limited = -MAX_SWIPE + (extra * 0.35); 
-  }
-
-  swipeContent.style.transform = `translateX(${limited}px)`;
-}
-  }, { passive: true });
-
-  li.addEventListener('touchend', () => {
-    if (!swiping) return;
-    swiping = false;
-  li.classList.remove('swiping');
-
-    const diff = currentX - startX;
-
-    if (diff < -DELETE_THRESHOLD) {
-      // ✅ DELETE
-      shoppingItems = shoppingItems.filter(i => i.id !== item.id);
-      renderShoppingList();
-      deleteShoppingItem(item.id);
-    } else {
-      // ⬅️ SNAP BACK
-      swipeContent.style.transition = 'transform 0.15s ease-out';
-      swipeContent.style.transform = 'translateX(0)';
-
-      setTimeout(() => {
-  swipeContent.style.transition = '';
-    }, 150);
-    }
-  });
-}
-
-// swipe disabled for stability
-
-    // DESKTOP: right-click delete
-    li.addEventListener('contextmenu', e => {
-      e.preventDefault();
-      shoppingItems = shoppingItems.filter(i => i.id !== item.id);
-      renderShoppingList();
-      deleteShoppingItem(item.id);
-    });
-
-    list.appendChild(li);
-});
-}
-
 /* ===== LIST VIEW RENDER ===== */
 async function renderObligationsList() {
 
-  // 🔥 SINGLE SOURCE OF TRUTH
-  const all = await obligationDB.getAll();
+  if (window.__obligationsRenderLock) return;
+  window.__obligationsRenderLock = true;
 
-// 🫀 READ CURRENT TEMPORAL STATE
+  try {
+
+    // 🔥 SINGLE SOURCE OF TRUTH
+    const all = await obligationDB.getAll();
+
+    // 🫀 ALWAYS SYNC TEMPORAL BEFORE READING STATE
+const obligations = all.filter(o => o.type !== 'shopping');
+
+// 🫀 update Temporal engine with latest obligations
+Temporal.setObligations(obligations);
+
+// 🫀 READ FRESH TEMPORAL STATE
 const temporalState = Temporal.getState?.() || null;
 
-  const container = document.getElementById('obligationsContainer');
+    const container = document.getElementById('obligationsContainer');
   console.log('🔍 [renderObligationsList] container:', {
     exists: !!container,
     display: container?.style?.display,
@@ -778,12 +412,7 @@ const temporalState = Temporal.getState?.() || null;
     }))
   );
 
-  // 🫀 RENDER ALWAYS USES ALL OBLIGATIONS
-const obligations = all.filter(o =>
-  o.type !== 'shopping'
-);
-
-container.innerHTML = renderAllSections(obligations, temporalState, lang);
+  container.innerHTML = renderAllSections(obligations, temporalState, lang);
 attachObligationHandlers(container);
 
 // 🫀 pointer stabilization tick (fix for iOS layout delay)
@@ -844,6 +473,10 @@ if (window.__SCROLL_TO_POINTER_ON_OPEN__) {
 }
 
 return;
+
+  } finally {
+    window.__obligationsRenderLock = false;
+  }
 
 /* ===== LEGACY SORT (DISABLED BY TEMPORAL) =====
   obligations.sort((a, b) => {
@@ -1296,25 +929,6 @@ function refreshCurrentObligationsView() {
 }
 
 // ===== HEADER TITLE MAP (i18n based) =====
-const SCREEN_TITLES = {
-  'screen-obligations-list': lang => I18N[lang].obligationsList?.title,
-  'screen-shopping':         lang => I18N[lang].shopping?.title,
-  'screen-contacts':         lang => I18N[lang].contacts?.title,
-  'screen-finances-menu':    lang => I18N[lang].menu?.finances,
-
-  'screen-finance-income':   lang => I18N[lang].finances?.income?.title,
-  'screen-finance-fixed':    lang => I18N[lang].finances?.fixed?.title,
-  'screen-finance-credits':  lang => I18N[lang].finances?.credits?.title,
-  'screen-finance-other':    lang => I18N[lang].finances?.other?.title,
-  'screen-finance-overview': lang => I18N[lang].finances?.overview?.title,
-
-  'screen-add-obligation':   lang => I18N[lang].popup?.newObligationTitle,
-  'screen-contact-form':     lang => I18N[lang].contacts?.form?.title,
-  'screen-contact-details':  lang => I18N[lang].contacts?.details?.title,
-
-  'screen-menu':             () => 'LifeKompas',
-  'screen-lang':             () => 'LifeKompas'
-};
 
 const btnShoppingArchive = document.getElementById('btnShoppingArchive');
 
@@ -1411,11 +1025,10 @@ window.openEditObligation = openEditObligation;
 (function lockEngineExports() {
   const defs = {
 
-    legacy_showScreen: { value: legacy_showScreen, writable: false, configurable: true },
+    legacy_showScreen: { value: window.legacy_showScreen, writable: false, configurable: true },
     renderObligationsList: { value: renderObligationsList, writable: false, configurable: true },
     refreshCurrentObligationsView: { value: refreshCurrentObligationsView, writable: false, configurable: true },
     showListMode: { value: showListMode, writable: false, configurable: true },
-    renderShoppingList: { value: renderShoppingList, writable: false, configurable: true },
     showDailyMode: { value: showDailyMode, writable: false, configurable: true },
     loadDailyForDate: { value: loadDailyForDate, writable: false, configurable: true },
 
@@ -1464,7 +1077,7 @@ async function cancelNotificationSafe(obligation) {
 
   try {
 
-    const m = await import('./notifications.js');
+    const m = await import('../services/notifications.js');
 
     if (m.cancelObligationNotification) {
       await m.cancelObligationNotification(obligation);
@@ -1551,176 +1164,3 @@ window.scrollToTemporalPointerSafe = function () {
   tryScroll();
 
 };
-
-/* =====================================================
-   LIFEKOMPAS DEV TOOLS v1
-   ===================================================== */
-
-let lkDevVisible = false;
-
-// toggle dev panel
-(function initDevToggle() {
-
-  const header = document.querySelector('.app-header');
-  if (!header) return;
-
-  let taps = 0;
-
-  header.addEventListener('click', () => {
-
-    taps++;
-
-    if (taps >= 3) {
-      lkDevVisible = !lkDevVisible;
-
-      const panel = document.getElementById('lkDevPanel');
-      if (panel) panel.style.display = lkDevVisible ? 'block' : 'none';
-
-      if (lkDevVisible) renderDevPanel();
-
-      taps = 0;
-    }
-
-    setTimeout(() => taps = 0, 900);
-
-  });
-
-})();
-
-// render dev info
-function renderDevPanel() {
-
-  const panel = document.getElementById('lkDevContent');
-  if (!panel) return;
-
-  const state = Temporal.getState?.();
-
-  if (!state) {
-    panel.innerHTML = 'Temporal state unavailable';
-    return;
-  }
-
-  panel.innerHTML = `
-now: ${state.now}
-
-pointer: ${state.pointer ?? '-'}
-pointerPosition: ${state.pointerPosition ?? '-'}
-
-past: ${state.past?.length ?? 0}
-future: ${state.future?.length ?? 0}
-
-timedObligations: ${state.timedObligations?.length ?? 0}
-
-nextChangeAt:
-${state.nextChangeAt ?? '-'}
-
-progress:
-${state.progressPercent ?? '-'}%
-`;
-
-}
-
-function devLog(message) {
-
-  const log = document.getElementById('lkDevLog');
-  if (!log) return;
-
-  const time = new Date().toLocaleTimeString();
-
-  const line = document.createElement('div');
-  line.textContent = time + ' ' + message;
-
-  log.prepend(line);
-
-  // limit log size
-  while (log.children.length > 12) {
-    log.removeChild(log.lastChild);
-  }
-
-}
-
-// update dev panel when temporal changes
-Temporal.subscribe((state) => {
-
-  if (lkDevVisible) {
-
-    renderDevPanel();
-
-    devLog(
-      "pointer=" + state.pointer +
-      " past=" + state.past.length +
-      " future=" + state.future.length
-    );
-
-  }
-
-});
-
-// ===== FORCE CLOCK =====
-
-function shiftTime(hours) {
-
-  const state = Temporal.getState?.();
-  if (!state) return;
-
-  const now = new Date(state.now);
-  now.setHours(now.getHours() + hours);
-
-  Temporal.overrideNow?.(now);
-
-  renderDevPanel();
-
-}
-
-function jumpMidnight() {
-
-  const state = Temporal.getState?.();
-  if (!state) return;
-
-  const now = new Date(state.now);
-  now.setHours(24,0,0,0);
-
-  Temporal.overrideNow?.(now);
-
-  renderDevPanel();
-
-}
-
-// attach buttons
-document.addEventListener('click', async (e) => {
-
-  if (e.target.id === 'lkDevPlus1h') shiftTime(1);
-  if (e.target.id === 'lkDevPlus3h') shiftTime(3);
-  if (e.target.id === 'lkDevMidnight') jumpMidnight();
-
-  if (e.target.id === 'lkDevResetDB') {
-
-    if (!confirm("Reset LifeKompas database?")) return;
-
-    try {
-
-      const all = await obligationDB.getAll();
-
-      for (const ob of all) {
-        await obligationDB.delete(ob.id);
-      }
-
-      Temporal.setObligations([]);
-
-      window.__temporalRerenderQueued = false;
-
-      window.forceObligationsListRefresh?.('dev-reset');
-
-      devLog("DB RESET");
-
-      alert("Database cleared");
-
-    } catch (err) {
-
-      console.error("DEV DB reset failed", err);
-
-    }
-
-  }
-
-});

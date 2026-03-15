@@ -1,12 +1,16 @@
-// core/obligations.js
+// modules/obligations/obligations.js
 // LifeKompas — Obligations Module with ALL Features
-// TEMPORAL ENGINE + SEKCIJE + EMPTY STATE + NOW INDICATOR + DONE ACTION
 
 const __OBLIGATIONS_MODULE__ = true;
 
-import { obligationDB } from "./db.js";
-import Temporal from "../src/core/temporal/index.js";
-import { getISODateFromDateTime, todayISO } from "./date-utils.js";
+import { obligationDB } from "../../services/db.js";
+
+import {
+  getISODateFromDateTime,
+  todayISO,
+  getLang
+} from "../../utils/utils.js";
+
 // cache za already scheduled reminders
 const scheduledReminderCache = new Set();
 
@@ -14,7 +18,6 @@ const scheduledReminderCache = new Set();
 export async function renderObligationsList_SAFE() {
   try {
     const obligations = await obligationDB.getAll();
-    Temporal.setObligations(obligations);
 
     if (typeof window.renderObligationsList === "function") {
       return window.renderObligationsList(obligations);
@@ -44,9 +47,6 @@ export function renderObligationsList(obligations = []) {
   if (!container) return;
 
   const safeObligations = Array.isArray(obligations) ? obligations : [];
-
-  // 🫀 uvijek recalculiraj temporal state iz točno ovog render inputa
-  Temporal.setObligations(safeObligations);
 
   const lang = window.getLang?.() || 'hr';
   const temporalState = Temporal.getState?.() || {};
@@ -311,13 +311,22 @@ export function buildObligationCard(ob, lang) {
 }
 
 function buildFreeTimeMessage(temporalState, sections) {
-  if (!temporalState?.nextChangeAt) return null;
+  if (!temporalState?.nextChangeAt || !temporalState?.now) return null;
 
-  // nema više obveza danas → ne prikazuj free time
-  if (!temporalState?.future || temporalState.future <= 0) return null;
+  // ako nema sljedeće promjene → nema free time bloka
+if (!temporalState?.nextChangeAt) {
+  return null;
+}
 
-  const now = temporalState.now || Date.now();
-  const diff = temporalState.nextChangeAt - now;
+  const now = typeof temporalState.now === "number"
+  ? temporalState.now
+  : new Date(temporalState.now).getTime();
+
+const next = typeof temporalState.nextChangeAt === "number"
+  ? temporalState.nextChangeAt
+  : new Date(temporalState.nextChangeAt).getTime();
+
+const diff = next - now;
 
   const minutes = Math.floor(diff / 60000);
 
@@ -363,7 +372,18 @@ function buildFreeTimeMessage(temporalState, sections) {
 
 // ===== RENDER ALL SECTIONS =====
 export function renderAllSections(obligations, temporalState, lang = 'hr') {
-  const sections = buildSections(obligations, temporalState);
+  // 🫀 use temporal timeline as source of truth
+const temporalTimed = Array.isArray(temporalState?.timedObligations)
+  ? temporalState.timedObligations
+  : [];
+
+const sections = buildSections(
+  obligations.map(o => {
+    const temporalMatch = temporalTimed.find(t => t.id === o.id);
+    return temporalMatch || o;
+  }),
+  temporalState
+);
 
 const {
   active = [],
@@ -457,87 +477,73 @@ if (ai === -1 || bi === -1) {
 });
 }
 
-// 🫀 POINTER RESOLUTION FROM LIVE SNAPSHOT
-// Ne vjerujemo slijepo starom temporal pointer indexu.
-// Pointer računamo iz trenutno renderanog activeSnapshot niza.
-let pointer = null;
-let pointerPosition = null;
+// 🫀 POINTER FROM TEMPORAL ENGINE (stable)
 
-if (activeSnapshot.length > 0) {
-  const nowTs = Number.isFinite(temporalState?.now) ? temporalState.now : Date.now();
+let pointerPosition = temporalState?.pointerPosition ?? null;
+let pointerIndex = null;
 
-  const timed = activeSnapshot
-    .map((ob, i) => {
-      const dt = safeParseDate(ob.dateTime);
-      return { index: i, ts: dt ? dt.getTime() : null };
-    })
-    .filter(item => Number.isFinite(item.ts));
+// resolve pointer index via obligation id
+if (Number.isInteger(temporalState?.pointer)) {
 
-  const firstFuture = timed.find(item => item.ts > nowTs);
-  const onNow = timed.find(item => item.ts === nowTs);
+  const temporalList = Array.isArray(temporalState?.timedObligations)
+    ? temporalState.timedObligations
+    : [];
 
-  if (onNow) {
-    pointerPosition = 'on';
-    pointer = onNow.index;
-  } else if (!firstFuture) {
-    // nema više budućih obveza → pointer ide nakon zadnje
-    pointerPosition = 'after';
-    pointer = activeSnapshot.length - 1;
-  } else if (firstFuture.index === 0) {
-    // prva obveza je još buduća → pointer prije prve
-    pointerPosition = 'before';
-    pointer = 0;
-  } else {
-    // pointer između zadnje prošle i prve buduće
-    pointerPosition = 'between';
-    pointer = firstFuture.index;
+  const target = temporalList[temporalState.pointer];
+
+  if (target) {
+    pointerIndex = activeSnapshot.findIndex(o => o.id === target.id);
   }
+
 }
 
-// 🛡️ CLAMP sigurnost
-if (Number.isInteger(pointer)) {
-  if (pointer < 0) pointer = 0;
-  if (pointer >= activeSnapshot.length) pointer = activeSnapshot.length - 1;
-}
+// safety
+if (pointerIndex === -1) pointerIndex = null;
 
 activeSnapshot.forEach((ob, index) => {
 
   try {
 
-    // BETWEEN obligations
-if (pointerPosition === 'between' && index === pointer) {
+    // BEFORE first obligation
+if (pointerPosition === 'before' && index === 0) {
+
   htmlParts.push(buildTemporalPointer());
 
-  const freeBlock = buildFreeTimeMessage(temporalState, sections);
-  if (freeBlock) htmlParts.push(freeBlock);
+  const freeBlock = buildFreeTimeMessage(
+  temporalState,
+  sections || { whenYouCan: [] }
+);
+
+if (freeBlock) htmlParts.push(freeBlock);
+
 }
 
-    // BEFORE first obligation
-    if (pointerPosition === 'before' && index === 0) {
+    // BETWEEN obligations (before first future)
+if (pointerPosition === 'between' && index === pointerIndex) {
+
   htmlParts.push(buildTemporalPointer());
 
-  const freeBlock = buildFreeTimeMessage(temporalState, sections);
+  const freeBlock = buildFreeTimeMessage(
+    temporalState,
+    sections || { whenYouCan: [] }
+  );
+
   if (freeBlock) htmlParts.push(freeBlock);
+
 }
 
     // render obligation
     htmlParts.push(buildObligationCard(ob, lang));
 
     // ON obligation
-    if (pointerPosition === 'on' && index === pointer) {
-  htmlParts.push(buildTemporalPointer());
-
-  const freeBlock = buildFreeTimeMessage(temporalState, sections);
-  if (freeBlock) htmlParts.push(freeBlock);
-}
+    if (pointerPosition === 'on' && index === pointerIndex) {
+      htmlParts.push(buildTemporalPointer());
+    }
 
     // AFTER last obligation
     if (pointerPosition === 'after' && index === activeSnapshot.length - 1) {
-  htmlParts.push(buildTemporalPointer());
-
-  const freeBlock = buildFreeTimeMessage(temporalState, sections);
-  if (freeBlock) htmlParts.push(freeBlock);
-}
+      htmlParts.push(buildTemporalPointer());
+    }
 
   } catch (err) {
 
@@ -547,7 +553,7 @@ if (pointerPosition === 'between' && index === pointer) {
 
 });
 
-    htmlParts.push(`</div>`);
+htmlParts.push(`</div>`);
   }
 
   // SECTION: Kad stigneš (NO temporal pointer)
@@ -682,7 +688,7 @@ const ob = obligations.find(o => o.id === id);
 if (ob) {
   const next = await processRecurringObligation(ob);
   if (next) {
-    Temporal.setObligations(await obligationDB.getAll());
+    window.renderObligationsList?.();
   }
 }
 

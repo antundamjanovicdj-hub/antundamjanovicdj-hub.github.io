@@ -35,10 +35,11 @@ import {
   deleteFinanceItem,
   getShoppingItems,
   addShoppingItem
-} from './db.js';
-import Temporal from '../src/core/temporal/index.js';
-import * as notifications from './notifications.js';
-import { getContacts } from './db.js';
+} from './services/db.js';
+
+import * as notifications from './services/notifications.js';
+
+import { getContacts } from './services/db.js';
 
 export function initApp() {
   // ===== INIT GUARD =====
@@ -239,11 +240,10 @@ if (window.lkFocusIntent) {
 window.forceObligationsListRefresh = async function(reason = '') {
   try {
     const all = await obligationDB.getAll();
-    Temporal.setObligations([]);  // 1. isprazni
-    setTimeout(() => {
-      Temporal.setObligations(all);  // 2. postavi prave podatke
-      window.__TEMPORAL_STATE__ = Temporal.getState?.() || window.__TEMPORAL_STATE__;
-    }, 0);
+
+    // refresh UI only (Temporal engine already owns state)
+    window.__TEMPORAL_STATE__ =
+      Temporal.getState?.() || window.__TEMPORAL_STATE__;
     window.__TEMPORAL_STATE__ =
       Temporal.getState?.() || window.__TEMPORAL_STATE__;
     
@@ -1073,8 +1073,12 @@ await obligationDB.add(obligation);
 window.__NEW_OBLIGATION_ADDED__ = true;
 
 // update Temporal engine immediately
+await obligationDB.add(obligation);
+
 const all = await obligationDB.getAll();
-Temporal.setObligations(all);
+
+// refresh UI
+window.renderObligationsList?.(all);
 
 // force render pipeline immediately
 window.__temporalRerenderQueued = false;
@@ -1111,7 +1115,7 @@ if (isActive) {
   window.forceObligationsListRefresh?.('afterSave');
 
   // 🌿 UX: highlight nova obveza
-  import('./obligations.js').then(m => {
+  import('./modules/obligations/obligations.js').then(m => {
     setTimeout(() => {
   m.highlightNewObligation?.(obligation.id);
 }, 180);
@@ -1138,7 +1142,7 @@ if (isActive) {
 
     console.log("🔔 [notif] importing notifications.js ...");
 
-    const m = await import('./notifications.js');
+    const m = await import('./services/notifications.js');
 
     console.log("🔔 [notif] imported OK", Object.keys(m));
 
@@ -1289,7 +1293,7 @@ if (dailyDatePicker) {
       obligationDB.getAll().then(async obligations => {
   console.log('Učitane obveze iz IndexedDB:', obligations);
 
-  const notif = await import('./notifications.js');
+  const notif = await import('./services/notifications.js');
 
   if (notif?.rescheduleAllObligations) {
     await notif.rescheduleAllObligations(obligations);

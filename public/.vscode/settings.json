@@ -1,4 +1,6 @@
 {
   "liveServer.settings.root": "/public",
-  "editor.tabSize": 2
+  "editor.tabSize": 2,
+  "search.useGlobalIgnoreFiles": true,
+  "search.useParentIgnoreFiles": true
 }

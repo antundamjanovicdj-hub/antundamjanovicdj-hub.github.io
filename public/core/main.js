@@ -81,11 +81,10 @@ async function boot() {
     await waitForDomReady();
 
     // CORE
-    await import('./app-init.js');
+    await import('./engine/app-init.js');
 
     // FEATURE MODULES
     await import('./contacts.js');
-    await import('./obligations.js');
 
     // INLINE MIGRATION (mora prije init)
     await import('./boot-inline.js');
@@ -113,7 +112,7 @@ async function boot() {
     }, 0);
 
     // DEVICE LAYER
-    const { checkBatteryOptimization } = await import('./battery.js');
+    const { checkBatteryOptimization } = await import('./services/battery.js');
 
     // run after slight delay so UI is visible
     setTimeout(() => {

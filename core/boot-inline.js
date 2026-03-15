@@ -1,7 +1,7 @@
 // core/boot-inline.js
 // Extracted from index.html inline <script type="module"> (Phase 2)
 
-import { getLang, todayISO, getISODateFromDateTime } from './app-init.js';
+import { getLang, todayISO, getISODateFromDateTime } from './utils/utils.js';
 
 // expose helpers (temporary, until global kill phase)
 window.todayISO = todayISO;

@@ -1,4 +1,4 @@
-import Temporal from '../../src/core/temporal/index.js';
+import Temporal from '../temporal/index.js';
 import '../dev/dev-tools.js';
 import './shopping-engine.js';
 import './navigation.js';

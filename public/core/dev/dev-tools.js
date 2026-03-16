@@ -1,4 +1,4 @@
-import Temporal from '../../src/core/temporal/index.js';
+import Temporal from '../temporal/index.js';
 import { obligationDB } from '../services/db.js';
 
 let lkDevVisible = false;

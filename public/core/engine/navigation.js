@@ -1,6 +1,6 @@
 import { getLang, SCREEN_TITLES } from '../utils/utils.js';
 import { obligationDB } from '../services/db.js';
-import Temporal from '../../src/core/temporal/index.js';
+import Temporal from '../temporal/index.js';
 
 let navigationLock = false;
 let navigationLockTimeout = null;

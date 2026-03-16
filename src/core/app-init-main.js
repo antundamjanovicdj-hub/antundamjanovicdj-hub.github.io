@@ -1115,7 +1115,7 @@ if (isActive) {
   window.forceObligationsListRefresh?.('afterSave');
 
   // 🌿 UX: highlight nova obveza
-  import('./modules/obligations/obligations.js').then(m => {
+  import('../modules/obligations/obligations.js').then(m => {
     setTimeout(() => {
   m.highlightNewObligation?.(obligation.id);
 }, 180);

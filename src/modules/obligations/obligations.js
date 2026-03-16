@@ -3,13 +3,13 @@
 
 const __OBLIGATIONS_MODULE__ = true;
 
-import { obligationDB } from "../../services/db.js";
+import { obligationDB } from "../../core/services/db.js";
 
 import {
   getISODateFromDateTime,
   todayISO,
   getLang
-} from "../../utils/utils.js";
+} from "../../core/utils/utils.js";
 
 // cache za already scheduled reminders
 const scheduledReminderCache = new Set();

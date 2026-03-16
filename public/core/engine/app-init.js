@@ -209,8 +209,8 @@ import {
 } from '../services/db.js';
 // DEBUG: expose DB to console
 window.obligationDB = obligationDB;
-import { buildObligationCard, renderAllSections } from '../modules/obligations/obligations.js';
-import { attachObligationHandlers } from "../modules/obligations/obligations.js";
+import { buildObligationCard, renderAllSections } from '../../modules/obligations/obligations.js';
+import { attachObligationHandlers } from "../../modules/obligations/obligations.js";
 
 // ZERO-RISK SHADOW IMPORT (obligations module)
 window.checkBatteryOptimization = checkBatteryOptimization;

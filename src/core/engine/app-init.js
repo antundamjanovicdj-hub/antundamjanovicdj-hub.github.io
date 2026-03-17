@@ -1,12 +1,11 @@
-import Temporal from '/core/temporal/index.js';
-import '/core/dev/dev-tools.js';
-import '/core/engine/shopping-engine.js';
-import '/core/engine/navigation.js';
-import { getLang } from '/core/utils/utils.js';
-import('/core/services/notifications.js')
+// ===== BOOTSTRAP (must be first) =====
+import '../bootstrap.js';
 
-// 🫀 Temporal Brain auto-boot
-void Temporal;
+// 🫀 Temporal must be directly available (no race condition)
+import Temporal from '/core/temporal/index.js';
+
+import { getLang } from '/core/utils/utils.js';
+import { getFreshTemporalState } from '../temporal/temporal-bridge.js';
 
 // 🫀 TEMPORAL SUBSCRIBER (source of truth for list)
 window.__temporalRerenderQueued = false;
@@ -254,21 +253,22 @@ export function todayISO() {
 document.addEventListener("visibilitychange", async () => {
   if (document.visibilityState === "visible") {
     try {
-      const all = await obligationDB.getAll();
-      Temporal.setObligations(all);
 
-      window.__TEMPORAL_STATE__ = Temporal.getState?.() || window.__TEMPORAL_STATE__;
+      const { temporalState } = await getFreshTemporalState();
+
+      window.__TEMPORAL_STATE__ =
+        temporalState || window.__TEMPORAL_STATE__;
 
       if (document.getElementById('screen-obligations-list')?.classList.contains('active')) {
 
-  // 🫀 force clean rerender after resume
-  window.__temporalRerenderQueued = false;
+        window.__temporalRerenderQueued = false;
 
-  requestAnimationFrame(() => {
-    renderObligationsList?.();
-  });
+        requestAnimationFrame(() => {
+          renderObligationsList?.();
+        });
 
-}
+      }
+
     } catch (err) {
       console.warn("[Temporal] Resume refresh failed:", err);
     }
@@ -371,16 +371,8 @@ async function renderObligationsList() {
   try {
 
     // 🔥 SINGLE SOURCE OF TRUTH
-    const all = await obligationDB.getAll();
 
-    // 🫀 ALWAYS SYNC TEMPORAL BEFORE READING STATE
-const obligations = all.filter(o => o.type !== 'shopping');
-
-// 🫀 update Temporal engine with latest obligations
-Temporal.setObligations(obligations);
-
-// 🫀 READ FRESH TEMPORAL STATE
-const temporalState = Temporal.getState?.() || null;
+const { all, obligations, temporalState } = await getFreshTemporalState();
 
     const container = document.getElementById('obligationsContainer');
   console.log('🔍 [renderObligationsList] container:', {
@@ -1052,73 +1044,13 @@ window.openEditObligation = openEditObligation;
   }
 })();
 
-// ===== NOW INDICATOR VISIBILITY =====
-window.updateNowIndicatorVisibility = function () {
+import {
+  initNowIndicatorRuntime,
+  updateNowIndicatorVisibility
+} from '../../modules/obligations/now-indicator.js';
 
-  const indicator = document.getElementById('nowIndicator');
-  if (!indicator) return;
-
-  const activeScreen = document.querySelector('.screen.active')?.id;
-  if (activeScreen !== 'screen-obligations-list') {
-    indicator.classList.add('hidden');
-    return;
-  }
-
-  const pointer = document.querySelector('.temporal-pointer');
-
-  if (!pointer) {
-    indicator.classList.add('hidden');
-    return;
-  }
-
-  const rect = pointer.getBoundingClientRect();
-
-// real viewport safe zone (header + bottom padding)
-const TOP_OFFSET = 100;
-const BOTTOM_OFFSET = 100;
-
-const pointerVisible =
-  rect.bottom > TOP_OFFSET &&
-  rect.top < (window.innerHeight - BOTTOM_OFFSET);
-
-if (pointerVisible) {
-  indicator.classList.add('hidden');
-} else {
-  indicator.classList.remove('hidden');
-}
-
-};
-
-(function initNowIndicator() {
-  const indicator = document.getElementById('nowIndicator');
-  if (!indicator) return;
-
-  if (!indicator.dataset.bound) {
-    indicator.dataset.bound = '1';
-
-    indicator.addEventListener('click', () => {
-      const pointer = document.querySelector('.temporal-pointer');
-      if (!pointer) return;
-
-      pointer.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center'
-      });
-    });
-
-    window.addEventListener('scroll', () => {
-      window.updateNowIndicatorVisibility?.();
-    }, { passive: true });
-
-    window.addEventListener('resize', () => {
-      window.updateNowIndicatorVisibility?.();
-    });
-  }
-
-  requestAnimationFrame(() => {
-    window.updateNowIndicatorVisibility?.();
-  });
-})();
+window.updateNowIndicatorVisibility = updateNowIndicatorVisibility;
+initNowIndicatorRuntime();
 
 // ===== OBLIGATIONS ENGINE BRIDGE (Calm Simplification) =====
 
@@ -1157,8 +1089,7 @@ if (newStatus === "done") {
 }
 
   // 🫀 Temporal sync
-  const all = await obligationDB.getAll();
-  Temporal.setObligations(all);
+  await getFreshTemporalState();
 
 window.__temporalRerenderQueued = false;
 window.forceObligationsListRefresh?.('toggleStatus');
@@ -1178,8 +1109,7 @@ await cancelNotificationSafe(obligation);
 await obligationDB.delete(id);
 
   // 🫀 Temporal sync
-  const all = await obligationDB.getAll();
-  Temporal.setObligations(all);
+  await getFreshTemporalState();
 
 window.__temporalRerenderQueued = false;
 window.forceObligationsListRefresh?.('delete');
@@ -1217,51 +1147,3 @@ window.scrollToTemporalPointerSafe = function () {
   tryScroll();
 
 };
-
-// ===== NOW INDICATOR RUNTIME HOOK =====
-(function initNowIndicatorRuntime() {
-
-  if (window.__NOW_INDICATOR_READY__) return;
-  window.__NOW_INDICATOR_READY__ = true;
-
-  const indicator = document.getElementById('nowIndicator');
-  if (!indicator) return;
-
-  // klik → scroll na pointer
-  indicator.addEventListener('click', () => {
-    const pointer = document.querySelector('.temporal-pointer');
-    if (!pointer) return;
-
-    pointer.scrollIntoView({
-      behavior: 'smooth',
-      block: 'center'
-    });
-  });
-
- // scroll → reevaluate visibility (FIXED)
-function bindNowIndicatorScroll() {
-  const scrollContainer = document.getElementById('screen-obligations-list');
-
-  if (!scrollContainer) {
-    requestAnimationFrame(bindNowIndicatorScroll);
-    return;
-  }
-
-  scrollContainer.addEventListener('scroll', () => {
-    window.updateNowIndicatorVisibility?.();
-  }, { passive: true });
-}
-
-bindNowIndicatorScroll();
-
-// resize → reevaluate
-window.addEventListener('resize', () => {
-  window.updateNowIndicatorVisibility?.();
-});
-
-// inicijalni poziv (nakon layout-a)
-requestAnimationFrame(() => {
-  window.updateNowIndicatorVisibility?.();
-});
-
-})();

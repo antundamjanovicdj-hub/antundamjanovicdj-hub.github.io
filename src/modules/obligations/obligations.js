@@ -2,7 +2,7 @@
 // LifeKompas — Obligations Module with ALL Features
 
 const __OBLIGATIONS_MODULE__ = true;
-
+import { getFreshTemporalState } from '/core/temporal/temporal-bridge.js';
 import { obligationDB } from "/core/services/db.js";
 
 import {
@@ -997,7 +997,7 @@ window.__LK_YESTERDAY_DIALOG_OPEN__ = true;
     }
     dialog.remove();
 window.__LK_YESTERDAY_DIALOG_OPEN__ = false;
-    Temporal.setObligations(await obligationDB.getAll());
+    await getFreshTemporalState();
     window.refreshCurrentObligationsView?.();
   });
 
@@ -1054,8 +1054,7 @@ export function setupMobileLifecycle() {
     if (document.visibilityState === 'visible') {
       console.log('[Lifecycle] App resumed');
       recoverReminders();
-      const obligations = await obligationDB.getAll();
-      Temporal.setObligations(obligations);
+      await getFreshTemporalState();
       Temporal.triggerUIRender?.();
       checkYesterdayUnfinished();
     }
@@ -1066,7 +1065,7 @@ export function setupMobileLifecycle() {
       if (state.isActive) {
         console.log('[Lifecycle] Capacitor resume');
         const obligations = await obligationDB.getAll();
-        Temporal.setObligations(obligations);
+        await getFreshTemporalState();
         Temporal.triggerUIRender?.();
       }
     });
@@ -1106,9 +1105,12 @@ for (const ob of obligations) {
 }
 
 }
-  Temporal.setObligations(obligations);
+  await getFreshTemporalState();
   window.refreshCurrentObligationsView?.();
-  setTimeout(() => autoScrollOnOpen(Temporal.getState()), 100);
+  setTimeout(async () => {
+  const { temporalState } = await getFreshTemporalState();
+  autoScrollOnOpen(temporalState);
+}, 100);
   checkYesterdayUnfinished();
 });
 

@@ -1,9 +1,9 @@
-import Temporal from '../temporal/index.js';
-import '../dev/dev-tools.js';
-import './shopping-engine.js';
-import './navigation.js';
-import { getLang } from '../utils/utils.js';
-import('../services/notifications.js')
+import Temporal from '/core/temporal/index.js';
+import '/core/dev/dev-tools.js';
+import '/core/engine/shopping-engine.js';
+import '/core/engine/navigation.js';
+import { getLang } from '/core/utils/utils.js';
+import('/core/services/notifications.js')
 
 // 🫀 Temporal Brain auto-boot
 void Temporal;
@@ -199,18 +199,18 @@ const APP_VERSION = "0.1.1-family-test";
 const screenHistory = [];
 
 // ===== BATTERY OPTIMIZATION CHECK =====
-import { checkBatteryOptimization } from '../services/battery.js';
+import { checkBatteryOptimization } from '/core/services/battery.js';
 import {
   obligationDB,
   addShoppingItem,
   getShoppingItems,
   updateShoppingItem,
   deleteShoppingItem
-} from '../services/db.js';
+} from '/core/services/db.js';
 // DEBUG: expose DB to console
 window.obligationDB = obligationDB;
-import { buildObligationCard, renderAllSections } from '../../modules/obligations/obligations.js';
-import { attachObligationHandlers } from "../../modules/obligations/obligations.js";
+import { buildObligationCard, renderAllSections } from '/modules/obligations/obligations.js';
+import { attachObligationHandlers } from "/modules/obligations/obligations.js";
 
 // ZERO-RISK SHADOW IMPORT (obligations module)
 window.checkBatteryOptimization = checkBatteryOptimization;
@@ -415,13 +415,23 @@ const temporalState = Temporal.getState?.() || null;
   container.innerHTML = renderAllSections(obligations, temporalState, lang);
 attachObligationHandlers(container);
 
+// 🫀 NOW INDICATOR SYNC (AFTER DOM + LAYOUT)
+requestAnimationFrame(() => {
+  requestAnimationFrame(() => {
+    window.updateNowIndicatorVisibility?.();
+  });
+});
+
 // 🫀 pointer stabilization tick (fix for iOS layout delay)
 requestAnimationFrame(() => {
   requestAnimationFrame(() => {
 
     const pointer = document.querySelector('.temporal-pointer');
 
-    if (!pointer) return;
+    if (!pointer) {
+  window.updateNowIndicatorVisibility?.();
+  return;
+}
 
     // force reflow so pointer position recalculates
     pointer.getBoundingClientRect();
@@ -1045,27 +1055,70 @@ window.openEditObligation = openEditObligation;
 // ===== NOW INDICATOR VISIBILITY =====
 window.updateNowIndicatorVisibility = function () {
 
-  const indicator = document.querySelector('.now-indicator');
-
+  const indicator = document.getElementById('nowIndicator');
   if (!indicator) return;
+
+  const activeScreen = document.querySelector('.screen.active')?.id;
+  if (activeScreen !== 'screen-obligations-list') {
+    indicator.classList.add('hidden');
+    return;
+  }
 
   const pointer = document.querySelector('.temporal-pointer');
 
   if (!pointer) {
-    indicator.style.display = 'none';
+    indicator.classList.add('hidden');
     return;
   }
 
-  // postavi indikator odmah iznad pointera
-  const list = pointer.closest('.obligations-list');
+  const rect = pointer.getBoundingClientRect();
 
-if (!list) return;
+// real viewport safe zone (header + bottom padding)
+const TOP_OFFSET = 100;
+const BOTTOM_OFFSET = 100;
 
-list.insertBefore(indicator, pointer);
+const pointerVisible =
+  rect.bottom > TOP_OFFSET &&
+  rect.top < (window.innerHeight - BOTTOM_OFFSET);
 
-  indicator.style.display = 'flex';
+if (pointerVisible) {
+  indicator.classList.add('hidden');
+} else {
+  indicator.classList.remove('hidden');
+}
 
 };
+
+(function initNowIndicator() {
+  const indicator = document.getElementById('nowIndicator');
+  if (!indicator) return;
+
+  if (!indicator.dataset.bound) {
+    indicator.dataset.bound = '1';
+
+    indicator.addEventListener('click', () => {
+      const pointer = document.querySelector('.temporal-pointer');
+      if (!pointer) return;
+
+      pointer.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
+    });
+
+    window.addEventListener('scroll', () => {
+      window.updateNowIndicatorVisibility?.();
+    }, { passive: true });
+
+    window.addEventListener('resize', () => {
+      window.updateNowIndicatorVisibility?.();
+    });
+  }
+
+  requestAnimationFrame(() => {
+    window.updateNowIndicatorVisibility?.();
+  });
+})();
 
 // ===== OBLIGATIONS ENGINE BRIDGE (Calm Simplification) =====
 
@@ -1164,3 +1217,51 @@ window.scrollToTemporalPointerSafe = function () {
   tryScroll();
 
 };
+
+// ===== NOW INDICATOR RUNTIME HOOK =====
+(function initNowIndicatorRuntime() {
+
+  if (window.__NOW_INDICATOR_READY__) return;
+  window.__NOW_INDICATOR_READY__ = true;
+
+  const indicator = document.getElementById('nowIndicator');
+  if (!indicator) return;
+
+  // klik → scroll na pointer
+  indicator.addEventListener('click', () => {
+    const pointer = document.querySelector('.temporal-pointer');
+    if (!pointer) return;
+
+    pointer.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center'
+    });
+  });
+
+ // scroll → reevaluate visibility (FIXED)
+function bindNowIndicatorScroll() {
+  const scrollContainer = document.getElementById('screen-obligations-list');
+
+  if (!scrollContainer) {
+    requestAnimationFrame(bindNowIndicatorScroll);
+    return;
+  }
+
+  scrollContainer.addEventListener('scroll', () => {
+    window.updateNowIndicatorVisibility?.();
+  }, { passive: true });
+}
+
+bindNowIndicatorScroll();
+
+// resize → reevaluate
+window.addEventListener('resize', () => {
+  window.updateNowIndicatorVisibility?.();
+});
+
+// inicijalni poziv (nakon layout-a)
+requestAnimationFrame(() => {
+  window.updateNowIndicatorVisibility?.();
+});
+
+})();

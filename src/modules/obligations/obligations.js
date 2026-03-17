@@ -3,13 +3,13 @@
 
 const __OBLIGATIONS_MODULE__ = true;
 
-import { obligationDB } from "../../core/services/db.js";
+import { obligationDB } from "/core/services/db.js";
 
 import {
   getISODateFromDateTime,
   todayISO,
   getLang
-} from "../../core/utils/utils.js";
+} from "/core/utils/utils.js";
 
 // cache za already scheduled reminders
 const scheduledReminderCache = new Set();
@@ -43,6 +43,13 @@ function renderFallbackState() {
 
 // ===== MAIN LIST RENDER =====
 export function renderObligationsList(obligations = []) {
+
+  if (window.__LK_RENDER_LOCK__) return;
+  window.__LK_RENDER_LOCK__ = true;
+
+  requestAnimationFrame(() => {
+    window.__LK_RENDER_LOCK__ = false;
+  });
   const container = document.getElementById('obligationsContainer');
   if (!container) return;
 
@@ -371,7 +378,7 @@ const diff = next - now;
 
 
 // ===== RENDER ALL SECTIONS =====
-export function renderAllSections(obligations, temporalState, lang = 'hr') {
+export function renderAllSections(obligations, temporalState = {}, lang = 'hr') {
   // 🫀 use temporal timeline as source of truth
 const temporalTimed = Array.isArray(temporalState?.timedObligations)
   ? temporalState.timedObligations
@@ -498,7 +505,9 @@ if (Number.isInteger(temporalState?.pointer)) {
 }
 
 // safety
-if (pointerIndex === -1) pointerIndex = null;
+if (pointerIndex === -1 || pointerIndex === null) {
+  pointerIndex = 0;
+}
 
 activeSnapshot.forEach((ob, index) => {
 
@@ -804,9 +813,10 @@ export function scrollToPointer() {
 
 // ===== AUTO SCROLL ON SCREEN OPEN =====
 export function autoScrollOnOpen(temporalState, attempt = 0) {
-  const directContainer =
-  document.getElementById('obligationsContainer') ||
-  document.querySelector('.obligations-list');
+  const container =
+    document.getElementById('obligationsContainer') ||
+    document.querySelector('.obligations-list');
+
   if (!container) return;
 
   const pointer = document.getElementById('temporalPointer');
@@ -896,20 +906,32 @@ export function autoScrollOnOpen(temporalState, attempt = 0) {
 
 // ===== NOW INDICATOR VISIBILITY =====
 export function updateNowIndicatorVisibility() {
+
   const pointer = document.getElementById('temporalPointer');
-  const nowIndicator = document.getElementById('nowIndicator');
+  const indicator = document.querySelector('.now-indicator');
   const container = document.getElementById('obligationsContainer');
 
-  if (!pointer || !nowIndicator || !container) return;
+  if (!indicator || !container) return;
+
+  if (!pointer) {
+    indicator.classList.add('hidden');
+    return;
+  }
 
   const pointerRect = pointer.getBoundingClientRect();
   const containerRect = container.getBoundingClientRect();
 
-  const isOutOfView = 
-    pointerRect.bottom < containerRect.top || 
-    pointerRect.top > containerRect.bottom;
+  const pointerAbove = pointerRect.top < containerRect.top;
+  const pointerBelow = pointerRect.bottom > containerRect.bottom;
 
-  nowIndicator.classList.toggle('hidden', !isOutOfView);
+  const isOutside = pointerAbove || pointerBelow;
+
+  indicator.classList.toggle('hidden', !isOutside);
+
+  // position indicator at top of container
+  if (isOutside) {
+  }
+
 }
 
 // ===== HIGHLIGHT NEW OBLIGATION =====

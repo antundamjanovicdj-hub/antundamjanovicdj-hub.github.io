@@ -1,5 +1,3 @@
-import TemporalBrain from './TemporalBrain.js';
-
-const Temporal = TemporalBrain;
+import Temporal from './TemporalBrain.js';
 
 export default Temporal;

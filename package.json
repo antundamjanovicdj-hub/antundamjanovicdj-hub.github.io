@@ -4,14 +4,16 @@
   "description": "",
   "main": "service-worker.js",
   "scripts": {
-  "sync:web": "mkdir -p public && rsync -av --delete --exclude='.DS_Store' src/ public/",
-  "cap:sync": "npm run sync:web && npx cap sync",
-  "sync:android": "npm run sync:web && npx cap sync android",
-  "run:android": "npm run sync:android && npx cap run android",
-  "check:json": "node -e \"JSON.parse(require('fs').readFileSync('./package.json'))\"",
-  "build:apk": "npm run check:json && npm run cap:sync && cd android && ./gradlew assembleDebug",
-  "watch:web": "chokidar \"src/**/*\" --usePolling -c \"npm run sync:web\" --initial"
-},
+    "dev": "concurrently \"npm run watch:web\" \"npm run serve\"",
+    "serve": "npx serve public -l tcp://localhost:3000",
+    "sync:web": "mkdir -p public && rsync -av --delete --exclude='.DS_Store' src/ public/",
+    "cap:sync": "npm run sync:web && npx cap sync",
+    "sync:android": "npm run sync:web && npx cap sync android",
+    "run:android": "npm run sync:android && npx cap run android",
+    "check:json": "node -e \"JSON.parse(require('fs').readFileSync('./package.json'))\"",
+    "build:apk": "npm run check:json && npm run cap:sync && cd android && ./gradlew assembleDebug",
+    "watch:web": "chokidar \"src/**/*\" --usePolling -c \"npm run sync:web\" --initial"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/antundamjanovicdj-hub/antundamjanovicdj-hub.github.io.git"
@@ -37,6 +39,7 @@
   "devDependencies": {
     "@capacitor/assets": "^3.0.5",
     "chokidar-cli": "^3.0.0",
+    "concurrently": "^9.2.1",
     "stylelint-config-standard": "^40.0.0"
   }
 }

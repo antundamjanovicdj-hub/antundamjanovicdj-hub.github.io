@@ -290,9 +290,9 @@
 
   <!-- TOOLBAR -->
     <div class="obligations-toolbar">
-      <button id="btnViewByDays" class="toolbar-btn">
-        📆 Pregled po danima
-      </button>
+      <button id="btnViewByDays" class="toolbar-btn" data-mode="today">
+  📆 Današnje obveze
+</button>
     </div>
 
     <!-- DATE PICKER – samo za daily view -->
@@ -305,7 +305,11 @@
     </div>
 
     <!-- LIST VIEW -->
-    <div id="obligationsContainer" class="obligations-list"></div>
+    <div id="obligationsContainer" class="obligations-list">
+  <div class="now-indicator hidden" id="nowIndicator">
+    ⏱ SADA
+  </div>
+</div>
 
     <!-- DAILY VIEW -->
     <div id="dailyView" class="hidden" style="padding: 0 12px 16px;">
@@ -465,11 +469,6 @@ padding-top:6px;
 <button id="lkDevResetDB">reset DB</button>
 </div>
 
-</div>
-
-<!-- Temporal NOW indicator -->
-<div class="now-indicator hidden" id="nowIndicator">
-  ⏱ SADA
 </div>
 
 </div> <!-- .app -->

@@ -303,9 +303,7 @@ window.forceObligationsListRefresh = async function(reason = '') {
         if (mode === 'list') {
           window.AppState.obligations.viewMode = 'days';
           showDailyMode();
-          await loadDailyForDate(
-            window.AppState.obligations.currentDailyDate || todayISO()
-          );
+          await renderObligationsList();
         } else {
           window.AppState.obligations.viewMode = 'list';
           showListMode();

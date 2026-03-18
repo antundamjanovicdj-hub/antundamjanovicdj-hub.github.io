@@ -51,14 +51,26 @@ export function renderObligationsList(obligations = []) {
     window.__LK_RENDER_LOCK__ = false;
   });
   const container = document.getElementById('obligationsContainer');
-  if (!container) return;
+if (!container) return;
+
+// 🛡️ iOS HARD RESET (final)
+container.innerHTML = '';
+document.querySelectorAll('.temporal-pointer, #temporalPointer').forEach(el => el.remove());
 
   const safeObligations = Array.isArray(obligations) ? obligations : [];
 
   const lang = window.getLang?.() || 'hr';
-  const temporalState = Temporal.getState?.() || {};
+  const temporalStateRaw = Temporal.getState?.() || {};
+
+const temporalState = temporalStateRaw;
 
   container.innerHTML = renderAllSections(safeObligations, temporalState, lang);
+
+  // 🔍 DEBUG: koliko pointera postoji u DOM-u
+setTimeout(() => {
+  const all = document.querySelectorAll('.temporal-pointer');
+  console.log('POINTER COUNT:', all.length, all);
+}, 300);
 
   // reset scroll flag na svaki novi render liste
   window.__LK_POINTER_SCROLLED__ = false;
@@ -235,6 +247,8 @@ export function buildProgressLine(percent = 0) {
 
 // ===== TEMPORAL POINTER ELEMENT =====
 export function buildTemporalPointer() {
+  console.trace("⚠️ POINTER RENDERED");
+
   return `
     <div class="temporal-pointer" id="temporalPointer" data-testid="temporal-pointer">
       <div class="pointer-dot"></div>
@@ -318,12 +332,30 @@ export function buildObligationCard(ob, lang) {
 }
 
 function buildFreeTimeMessage(temporalState, sections) {
-  if (!temporalState?.nextChangeAt || !temporalState?.now) return null;
 
-  // ako nema sljedeće promjene → nema free time bloka
-if (!temporalState?.nextChangeAt) {
-  return null;
-}
+  const nowTs = Date.now();
+
+  const hasFutureToday = (sections?.active || []).some(o => {
+    if (!o.dateTime) return false;
+    return new Date(o.dateTime).getTime() > nowTs;
+  });
+
+  if (!hasFutureToday) return null;
+
+  // 🛡️ CENTRAL FUTURE CHECK (same as render)
+  const futureValue = temporalState?.future;
+
+  const hasFuture =
+    Array.isArray(futureValue)
+      ? futureValue.length > 0
+      : Number.isInteger(futureValue)
+        ? futureValue > 0
+        : false;
+
+  // ❌ no future → NEVER show free time
+  if (!hasFuture) return null;
+
+  if (!temporalState?.nextChangeAt || !temporalState?.now) return null;
 
   const now = typeof temporalState.now === "number"
   ? temporalState.now
@@ -398,6 +430,16 @@ const {
   doneToday = [],
   labels = {}
 } = sections;
+
+// 🛡️ REAL future (today only)
+const nowTs = Date.now();
+
+const hasFutureToday = active.some(o => {
+  if (!o.dateTime) return false;
+  return new Date(o.dateTime).getTime() > nowTs;
+});
+
+const noFuture = !hasFutureToday;
   console.log("SECTIONS RESULT", {
   active: sections.active.length,
   whenYouCan: sections.whenYouCan.length,
@@ -416,6 +458,24 @@ const {
   });
 
   const htmlParts = [];
+  let pointerRendered = false;
+
+  // 🛡️ CENTRAL FUTURE NORMALIZATION
+  const futureValue = temporalState?.future;
+
+  const hasFuture =
+    Array.isArray(futureValue)
+      ? futureValue.length > 0
+      : Number.isInteger(futureValue)
+        ? futureValue > 0
+        : false;
+
+  // no future → pointer MUST be after
+  if (!hasFuture) {
+    temporalState.pointerPosition = 'after';
+    temporalState.pointer = Math.max(0, (sections.active?.length || 1) - 1);
+    temporalState.nextChangeAt = null;
+  }
 
   // ===== UPDATE DAILY STATE =====
 const dailyTitle = document.querySelector(".daily-state-title");
@@ -459,7 +519,7 @@ if (!hasTimedObligations && !hasWhenYouCan && !hasDone) {
   // SECTION: Active obligations with temporal pointer
   // SECTION: Active obligations (timed → temporal timeline)
 if (hasTimedObligations) {
-    htmlParts.push(`<div class="obligations-section-title">${sections.labels.active || 'Aktivne obveze'}</div>`);
+    // uklonjen naslov sekcije — toolbar preuzima kontekst
     htmlParts.push(`<div class="obligations-list with-timeline" data-testid="active-obligations">`);
     
    const activeSnapshot = Array.isArray(sections.active)
@@ -486,7 +546,8 @@ if (ai === -1 || bi === -1) {
 
 // 🫀 POINTER FROM TEMPORAL ENGINE (stable)
 
-let pointerPosition = temporalState?.pointerPosition ?? null;
+// 🛡️ ALWAYS use latest pointerPosition (after fixes)
+let pointerPosition = temporalState.pointerPosition ?? null;
 let pointerIndex = null;
 
 // resolve pointer index via obligation id
@@ -511,26 +572,56 @@ if (pointerIndex === -1 || pointerIndex === null) {
 
 activeSnapshot.forEach((ob, index) => {
 
+  // 🛡️ HARD CHECK (single source of truth)
+  const futureValue = temporalState?.future;
+
+  const hasFuture =
+    Array.isArray(futureValue)
+      ? futureValue.length > 0
+      : Number.isInteger(futureValue)
+        ? futureValue > 0
+        : false;
+
+  // 🛡️ SINGLE SOURCE OF TRUTH (no future)
+if (noFuture) {
+  pointerPosition = 'after';
+}
+
   try {
 
-    // BEFORE first obligation
-if (pointerPosition === 'before' && index === 0) {
+    // BEFORE first obligation (HARD BLOCK when no future)
+// ❌ DISABLE BEFORE when no future (final fix)
+if (
+  pointerPosition === 'before' &&
+  index === 0 &&
+  !noFuture
+) {
 
+  if (!pointerRendered) {
   htmlParts.push(buildTemporalPointer());
+  pointerRendered = true;
+}
 
   const freeBlock = buildFreeTimeMessage(
-  temporalState,
-  sections || { whenYouCan: [] }
-);
+    temporalState,
+    sections || { whenYouCan: [] }
+  );
 
-if (freeBlock) htmlParts.push(freeBlock);
+  if (freeBlock) htmlParts.push(freeBlock);
 
 }
 
-    // BETWEEN obligations (before first future)
-if (pointerPosition === 'between' && index === pointerIndex) {
+    // BETWEEN obligations (HARD BLOCK when no future)
+if (
+  pointerPosition === 'between' &&
+  index === pointerIndex &&
+  !noFuture
+) {
 
+  if (!pointerRendered) {
   htmlParts.push(buildTemporalPointer());
+  pointerRendered = true;
+}
 
   const freeBlock = buildFreeTimeMessage(
     temporalState,
@@ -544,15 +635,29 @@ if (pointerPosition === 'between' && index === pointerIndex) {
     // render obligation
     htmlParts.push(buildObligationCard(ob, lang));
 
-    // ON obligation
-    if (pointerPosition === 'on' && index === pointerIndex) {
-      htmlParts.push(buildTemporalPointer());
-    }
+    // ON obligation (HARD BLOCK when no future)
+if (
+  pointerPosition === 'on' &&
+  index === pointerIndex &&
+  !noFuture
+) {
+  if (!pointerRendered) {
+  htmlParts.push(buildTemporalPointer());
+  pointerRendered = true;
+}
+}
 
-    // AFTER last obligation
-    if (pointerPosition === 'after' && index === activeSnapshot.length - 1) {
-      htmlParts.push(buildTemporalPointer());
-    }
+    // AFTER last obligation (no future → NO pointer)
+if (
+  pointerPosition === 'after' &&
+  index === activeSnapshot.length - 1 &&
+  !noFuture
+) {
+  if (!pointerRendered) {
+    htmlParts.push(buildTemporalPointer());
+    pointerRendered = true;
+  }
+}
 
   } catch (err) {
 

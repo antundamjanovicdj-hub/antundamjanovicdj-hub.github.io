@@ -404,7 +404,11 @@ const { all, obligations, temporalState } = await getFreshTemporalState();
     }))
   );
 
+  if (window.AppState.obligations.viewMode === 'days') {
+  container.innerHTML = renderAllObligationsTimeline(obligations, lang);
+} else {
   container.innerHTML = renderAllSections(obligations, temporalState, lang);
+}
 attachObligationHandlers(container);
 
 // 🫀 NOW INDICATOR SYNC (AFTER DOM + LAYOUT)
@@ -744,6 +748,56 @@ requestAnimationFrame(() => {
 // 🫀 AUTO SCROLL HANDLED BY obligations module (on screen open)
 // prevents scroll jump on every temporal rerender
 }
+function renderAllObligationsTimeline(obligations, lang) {
+
+  const safe = Array.isArray(obligations) ? obligations : [];
+
+  // samo obveze sa datumom
+  const timed = safe.filter(o => o.dateTime);
+
+  // sortiraj po datumu
+  timed.sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime));
+
+  let currentMonth = null;
+  const html = [];
+
+  timed.forEach(ob => {
+
+    const dt = new Date(ob.dateTime);
+
+    const monthKey = `${dt.getFullYear()}-${dt.getMonth()}`;
+
+    // novi mjesec → ubaci separator
+    if (monthKey !== currentMonth) {
+
+      currentMonth = monthKey;
+
+      const monthName = dt.toLocaleDateString(
+        (I18N[lang] && I18N[lang].lang) || 'hr-HR',
+        { month: 'long', year: 'numeric' }
+      );
+
+      html.push(`
+        <div class="obligations-month-separator">
+          — ${monthName} —
+        </div>
+      `);
+    }
+
+    html.push(buildObligationCard(ob, lang));
+
+  });
+
+  if (html.length === 0) {
+    return `
+      <div class="empty-list">
+        Nema obveza
+      </div>
+    `;
+  }
+
+  return html.join('');
+}
 
 /* ===== DAILY VIEW LOGIC ===== */
 // SINGLE SOURCE OF TRUTH
@@ -779,11 +833,10 @@ function showListMode() {
   const btn = document.getElementById('btnViewByDays');
 
   if (dailyView) dailyView.classList.add('hidden');
-  if (dailyDateBar) dailyDateBar.classList.add('hidden');
+  // dailyDateBar removed (Sve obveze)
   if (list) list.classList.remove('hidden');
 
-  const lang = getLang();
-  if (btn) btn.textContent = I18N[lang].obligationsView.byDay;
+  if (btn) btn.textContent = '📆 Sve obveze';
 
   // reset guard
   setTimeout(() => {
@@ -800,12 +853,12 @@ function showDailyMode() {
   const list = document.getElementById('obligationsContainer');
   const btn = document.getElementById('btnViewByDays');
 
-  if (list) list.classList.add('hidden');
-  if (dailyView) dailyView.classList.remove('hidden');
-  if (dailyDateBar) dailyDateBar.classList.remove('hidden');
+  // koristimo isti list (timeline)
+if (list) list.classList.remove('hidden');
+if (dailyView) dailyView.classList.add('hidden');
+  // dailyDateBar removed (Sve obveze)
 
-  const lang = getLang();
-  if (btn) btn.textContent = I18N[lang].obligationsView.asList;
+  if (btn) btn.textContent = '📆 Današnje obveze';
 }
 
 function groupObligationsByStatus(items) {

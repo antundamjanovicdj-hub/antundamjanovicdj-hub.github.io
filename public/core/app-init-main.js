@@ -1449,9 +1449,9 @@ if (dailyDatePicker) {
               if (!ob) return;
               requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
-                  import('./obligations.js').then(m => {
+                  import('../modules/obligations/obligations.js').then(m => {
                     m.highlightNewObligation?.(ob.id);
-                  });
+                 });
                 });
               });
             });

@@ -44,12 +44,15 @@ function renderFallbackState() {
 // ===== MAIN LIST RENDER =====
 export function renderObligationsList(obligations = []) {
 
-  if (window.__LK_RENDER_LOCK__) return;
-  window.__LK_RENDER_LOCK__ = true;
+  // 🛡️ allow forced refresh to bypass lock
+if (window.__LK_RENDER_LOCK__ && !window.__LK_FORCE_RENDER__) return;
 
-  requestAnimationFrame(() => {
-    window.__LK_RENDER_LOCK__ = false;
-  });
+window.__LK_RENDER_LOCK__ = true;
+
+requestAnimationFrame(() => {
+  window.__LK_RENDER_LOCK__ = false;
+  window.__LK_FORCE_RENDER__ = false;
+});
   const container = document.getElementById('obligationsContainer');
 if (!container) return;
 
@@ -471,11 +474,15 @@ const noFuture = !hasFutureToday;
         : false;
 
   // no future → pointer MUST be after
-  if (!hasFuture) {
-    temporalState.pointerPosition = 'after';
-    temporalState.pointer = Math.max(0, (sections.active?.length || 1) - 1);
-    temporalState.nextChangeAt = null;
-  }
+let pointerPosition = temporalState.pointerPosition;
+let pointerIndex = temporalState.pointer;
+let nextChangeAt = temporalState.nextChangeAt;
+
+if (!hasFuture) {
+  pointerPosition = 'after';
+  pointerIndex = Math.max(0, (sections.active?.length || 1) - 1);
+  nextChangeAt = null;
+}
 
   // ===== UPDATE DAILY STATE =====
 const dailyTitle = document.querySelector(".daily-state-title");
@@ -723,14 +730,35 @@ export function attachObligationHandlers(container) {
 
     // Delete button
     const deleteBtn = target.closest(".obligation-delete");
-    if (deleteBtn) {
-      e.stopPropagation();
-      deleteBtn.classList.add("tap");
-      const id = parseInt(deleteBtn.dataset.id, 10);
-      setTimeout(() => deleteBtn.classList.remove("tap"), 150);
-      window.deleteObligation?.(id);
-      return;
-    }
+if (deleteBtn) {
+  e.stopPropagation();
+  deleteBtn.classList.add("tap");
+
+  const id = parseInt(deleteBtn.dataset.id, 10);
+
+  setTimeout(() => deleteBtn.classList.remove("tap"), 150);
+
+  (async () => {
+  try {
+
+    await window.deleteObligation?.(id);
+
+    // 🔥 HARD REFRESH
+    const fresh = await obligationDB.getAll();
+
+    // 🔥 bypass lock
+    window.__LK_FORCE_RENDER__ = true;
+
+    // 🔥 render odmah
+    window.renderObligationsList?.(fresh);
+
+  } catch (err) {
+    console.error('🧾 DELETE FLOW ERROR', err);
+  }
+})();
+
+  return;
+}
 
     // Edit button
     const editBtn = target.closest(".obligation-edit");
@@ -794,17 +822,32 @@ async function handleDoneAction(id) {
 
   await new Promise(resolve => setTimeout(resolve, 500));
 
-  window.toggleObligationStatus?.(id, "done");
+  const all = await obligationDB.getAll();
+const current = all.find(o => o.id === id);
 
-  const obligations = await obligationDB.getAll();
-const ob = obligations.find(o => o.id === id);
+if (!current) return;
 
-if (ob) {
-  const next = await processRecurringObligation(ob);
-  if (next) {
-    window.renderObligationsList?.();
-  }
+// 🔥 TOGGLE STATUS
+const newStatus = current.status === "done" ? "active" : "done";
+
+await window.toggleObligationStatus?.(id, newStatus);
+
+// 🔁 recurring samo kad ide u DONE
+if (newStatus === "done") {
+  await processRecurringObligation(current);
 }
+
+// 🔥 HARD REFRESH
+const fresh = await obligationDB.getAll();
+
+window.__LK_FORCE_RENDER__ = true;
+window.renderObligationsList?.(fresh);
+
+// 🔥 bypass lock
+window.__LK_FORCE_RENDER__ = true;
+
+// 🔥 render odmah
+window.renderObligationsList?.(fresh);
 
   delete card.dataset.processing;
 

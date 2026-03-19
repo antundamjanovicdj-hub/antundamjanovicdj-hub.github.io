@@ -237,15 +237,25 @@ if (window.lkFocusIntent) {
       };
 
       // ===== OBLIGATIONS: DETERMINISTIC LIST REFRESH (ENGINE SAFE) =====
-window.forceObligationsListRefresh = async function(reason = '') {
+async function forceObligationsListRefresh(reason = '') {
+  window.forceObligationsListRefresh = forceObligationsListRefresh;
   try {
-    const all = await obligationDB.getAll();
+    // 🛡️ WAIT FOR DB STABILIZATION (iOS fix)
+await new Promise(r => setTimeout(r, 50));
 
-    // refresh UI only (Temporal engine already owns state)
-    window.__TEMPORAL_STATE__ =
-      Temporal.getState?.() || window.__TEMPORAL_STATE__;
-    window.__TEMPORAL_STATE__ =
-      Temporal.getState?.() || window.__TEMPORAL_STATE__;
+let all = [];
+
+try {
+  all = await obligationDB.getAll();
+} catch (dbErr) {
+  console.error('🧾 [forceListRefresh] getAll ERROR', dbErr);
+  return;
+}
+
+// refresh UI only (Temporal engine already owns state)
+// ⚠️ DO NOT MUTATE GLOBAL TEMPORAL STATE (immutable)
+const temporalState =
+  Temporal.getState?.() || window.__TEMPORAL_STATE__;
     
     // 🧪 DEBUG LOGS
     console.log('🧾 [forceListRefresh] START', {
@@ -255,8 +265,17 @@ window.forceObligationsListRefresh = async function(reason = '') {
       queueFlag: window.__temporalRerenderQueued
     });
     
-    window.AppState.obligations.viewMode = 'list';
-    showListMode?.();
+    if (window.AppState?.obligations) {
+  window.AppState.obligations.viewMode = 'list';
+} else {
+  console.warn('⚠️ AppState.obligations missing');
+}
+
+try {
+  showListMode?.();
+} catch (err) {
+  console.error('🧾 showListMode ERROR', err);
+}
     
     // 🫀 RESET TEMPORAL QUEUE
     window.__temporalRerenderQueued = false;
@@ -268,14 +287,31 @@ window.forceObligationsListRefresh = async function(reason = '') {
     
     // 🫀 DOUBLE RAF: čekaj da DOM i CSS budu spremni za prikaz
     requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        console.log('🧾 [forceListRefresh] CALLING renderObligationsList');
-        renderObligationsList?.();
-      });
-    });
+  requestAnimationFrame(() => {
+    try {
+      console.log('🧾 [forceListRefresh] CALLING renderObligationsList');
+
+      if (typeof renderObligationsList === 'function') {
+  window.__LK_FORCE_RENDER__ = true;
+  renderObligationsList(all);
+} else if (typeof window.renderObligationsList === 'function') {
+  window.__LK_FORCE_RENDER__ = true;
+  window.renderObligationsList(all);
+} else {
+  throw new Error('renderObligationsList not found');
+}
+
+    } catch (err) {
+      console.error('🧾 [forceListRefresh] RENDER ERROR', err);
+    }
+  });
+});
   } catch (e) {
-    console.log('🧾 [forceListRefresh] failed', e);
-  }
+  console.error('🧾 [forceListRefresh] ERROR', e);
+  console.error('🧾 TYPE:', typeof e);
+  console.error('🧾 KEYS:', Object.keys(e || {}));
+  console.error('🧾 STRING:', JSON.stringify(e));
+}
 };
 
       // klik na BACK
@@ -296,20 +332,23 @@ window.forceObligationsListRefresh = async function(reason = '') {
       }
 
       // ===== ENGINE GLOBAL CLICK DELEGATION =====
-      document.addEventListener('click', async (e) => {
-        const toggleBtn = e.target.closest('#btnViewByDays');
-        if (!toggleBtn) return;
-        const mode = window.AppState.obligations.viewMode;
-        if (mode === 'list') {
-          window.AppState.obligations.viewMode = 'days';
-          showDailyMode();
-          await renderObligationsList();
-        } else {
-          window.AppState.obligations.viewMode = 'list';
-          showListMode();
-          await renderObligationsList();
-        }
-      });
+document.addEventListener('click', async (e) => {
+  const toggleBtn = e.target.closest('#btnViewByDays');
+  if (!toggleBtn) return;
+
+  const mode = window.AppState.obligations.viewMode;
+  const all = await obligationDB.getAll();
+
+  if (mode === 'list') {
+    window.AppState.obligations.viewMode = 'days';
+    showDailyMode();
+    await renderObligationsList(all);
+  } else {
+    window.AppState.obligations.viewMode = 'list';
+    showListMode();
+    await renderObligationsList(all);
+  }
+});
 
       // ===== CONTACTS INIT =====
       if (typeof loadContacts === 'function') loadContacts();
@@ -887,7 +926,19 @@ window.forceObligationsListRefresh = async function(reason = '') {
         document.getElementById('obligationTitle').value = ob.title || '';
         document.getElementById('obligationNote').value = ob.note || '';
         const dateInput = document.getElementById('obligationDate');
-const timeInput = document.getElementById('obligationTime');
+        const timeInput = document.getElementById('obligationTime');
+        const enableTime = document.getElementById('enableTime');
+        const timeWrapper = document.getElementById('timeWrapper');
+
+if (enableTime && timeWrapper) {
+  const hasTime =
+  !!ob.dateTime &&
+  typeof ob.dateTime === "string" &&
+  ob.dateTime.match(/T\d{2}:\d{2}/);
+
+  enableTime.checked = hasTime;
+  timeWrapper.classList.toggle('hidden', !hasTime);
+}
 
 if (ob.dateTime) {
   const [datePart, timePart] = ob.dateTime.split('T');
@@ -918,6 +969,7 @@ if (ob.dateTime) {
         const repeatType = document.getElementById('repeatType');
         if (repeatType && ob.repeat) repeatType.value = ob.repeat;
         document.getElementById('saveObligation').dataset.editId = ob.id;
+
       }
 
       document.getElementById('btnAddObligation').addEventListener('click', (e) => {
@@ -940,10 +992,27 @@ if (ob.dateTime) {
 
 // Auto-close iOS time picker after selection
 const timePicker = document.getElementById('obligationTime');
-if (timePicker && !timePicker.dataset.blurAttached) {
-  timePicker.dataset.blurAttached = "1";
-  timePicker.addEventListener('change', () => {
-    timePicker.blur();
+if (timePicker && !timePicker.dataset.iosFixAttached) {
+  timePicker.dataset.iosFixAttached = "1";
+
+  let scrollTimer = null;
+
+  // 🧠 detektiraj "scrolling phase"
+  timePicker.addEventListener('input', () => {
+    timePicker.dataset.scrolling = "1";
+
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(() => {
+      timePicker.dataset.scrolling = "0";
+    }, 400); // vrijeme da user završi scroll
+  });
+
+  // 🛡️ blokiraj change dok još scrolla
+  timePicker.addEventListener('change', (e) => {
+    if (timePicker.dataset.scrolling === "1") {
+      e.stopImmediatePropagation();
+      return;
+    }
   });
 }
 });
@@ -977,6 +1046,29 @@ document.getElementById('enableReminder').addEventListener('change', (e) => {
   }
 
 });
+
+// ===== TIME TOGGLE (iOS FIX) =====
+const enableTime = document.getElementById('enableTime');
+const timeWrapper = document.getElementById('timeWrapper');
+const timeInput = document.getElementById('obligationTime');
+
+if (enableTime && timeWrapper && timeInput) {
+
+  enableTime.addEventListener('change', () => {
+    const enabled = enableTime.checked;
+
+    timeWrapper.classList.toggle('hidden', !enabled);
+
+    if (!enabled) {
+      timeInput.value = '';
+    } else {
+      requestAnimationFrame(() => {
+        timeInput.focus();
+      });
+    }
+  });
+
+}
 
       // date is optional — no auto fill
 const dateInput = document.getElementById('obligationDate');
@@ -1019,9 +1111,12 @@ const dateVal =
 const timeVal =
   document.getElementById('obligationTime')?.value || '';
 
+const enableTime =
+  document.getElementById('enableTime')?.checked;
+
 let dateTime = null;
 
-if (dateVal && timeVal) {
+if (dateVal && enableTime && timeVal) {
 
   // timed obligation → goes to timeline
   dateTime = `${dateVal}T${timeVal}`;
@@ -1080,7 +1175,13 @@ window.renderObligationsList?.(all);
 
 // force render pipeline immediately
 window.__temporalRerenderQueued = false;
-window.forceObligationsListRefresh?.('savePipeline');
+
+if (typeof window.forceObligationsListRefresh === 'function') {
+  window.forceObligationsListRefresh('savePipeline')
+    .catch(err => {
+      console.error('🧾 forceListRefresh CALL ERROR (savePipeline)', err);
+    });
+}
 // reset form fields after save (safe)
 const titleInput = document.getElementById('obligationTitle');
 const noteInput = document.getElementById('obligationNote');
@@ -1110,7 +1211,13 @@ const isActive = document.getElementById('screen-obligations-list')?.classList?.
 
 if (isActive) {
   window.__temporalRerenderQueued = false;
-  window.forceObligationsListRefresh?.('afterSave');
+
+  if (typeof window.forceObligationsListRefresh === 'function') {
+  window.forceObligationsListRefresh('afterSave')
+    .catch(err => {
+      console.error('🧾 forceListRefresh CALL ERROR (afterSave)', err);
+    });
+}
 
   // 🌿 UX: highlight nova obveza
   import('../modules/obligations/obligations.js').then(m => {

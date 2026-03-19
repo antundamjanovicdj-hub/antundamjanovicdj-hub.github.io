@@ -5,14 +5,15 @@
   "main": "service-worker.js",
   "scripts": {
     "dev": "concurrently \"npm run watch:web\" \"npm run serve\"",
-    "serve": "npx serve public -l tcp://localhost:3000",
     "sync:web": "mkdir -p public && rsync -av --delete --exclude='.DS_Store' src/ public/",
     "cap:sync": "npm run sync:web && npx cap sync",
     "sync:android": "npm run sync:web && npx cap sync android",
     "run:android": "npm run sync:android && npx cap run android",
     "check:json": "node -e \"JSON.parse(require('fs').readFileSync('./package.json'))\"",
     "build:apk": "npm run check:json && npm run cap:sync && cd android && ./gradlew assembleDebug",
-    "watch:web": "chokidar \"src/**/*\" --usePolling -c \"npm run sync:web\" --initial"
+    "watch:web": "chokidar \"src/**/*\" --usePolling -c \"npm run sync:web\" --initial",
+    "dev:web": "http-server public -p 3000 -c-1",
+    "dev:full": "concurrently -k -n WATCH,SERVER -c blue,green \"npm run watch:web\" \"npm run dev:web\""
   },
   "repository": {
     "type": "git",
@@ -40,6 +41,8 @@
     "@capacitor/assets": "^3.0.5",
     "chokidar-cli": "^3.0.0",
     "concurrently": "^9.2.1",
+    "http-server": "^14.1.1",
+    "serve": "^14.2.6",
     "stylelint-config-standard": "^40.0.0"
   }
 }

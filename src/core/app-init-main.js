@@ -37,6 +37,8 @@ import {
   addShoppingItem
 } from './services/db.js';
 
+import { initShoppingModule } from '../modules/shopping/shopping-init.js';
+
 import * as notifications from './services/notifications.js';
 
 import { getContacts } from './services/db.js';
@@ -55,6 +57,9 @@ export function initApp() {
       console.warn('[LifeKompas] Events already bound');
     } else {
       window.__LIFEKOMPAS_EVENTS_BOUND__ = true;
+
+      // 🛒 init shopping (EARLY BOOT)
+      initShoppingModule();
 
       // ===== CRITICAL GLOBAL STATE =====
       window.screenHistory = [];
@@ -770,6 +775,7 @@ document.addEventListener('click', async (e) => {
       if (calcBtn) calcBtn.addEventListener('click', calculateMonth);
 
       document.getElementById('btnShopping').addEventListener('click', async () => {
+        initShoppingModule();
         const lang = getLang();
         showScreen('screen-shopping');
         document.getElementById('shoppingTitle').textContent = I18N[lang].shopping.title;

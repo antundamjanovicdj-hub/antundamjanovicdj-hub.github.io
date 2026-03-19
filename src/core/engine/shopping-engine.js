@@ -5,6 +5,10 @@ import {
   deleteShoppingItem
 } from '../services/db.js';
 import { getLang } from '../utils/utils.js';
+// 🖐️ device detection (SAFE LOCAL)
+const IS_TOUCH_DEVICE =
+  'ontouchstart' in window ||
+  navigator.maxTouchPoints > 0;
 /* =====================================================
    SHOPPING ENGINE
    ===================================================== */
@@ -45,7 +49,7 @@ function ensureShoppingArchiveButton() {
 }
 
    /* ===== SHOPPING (IndexedDB + Archive) ===== */
-async function renderShoppingList() {
+export async function renderShoppingList() {
 
   shoppingItems = await getShoppingItems();
 

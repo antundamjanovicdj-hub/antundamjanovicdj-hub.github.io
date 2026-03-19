@@ -7,8 +7,8 @@ android {
         applicationId "com.lifekompas.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 3
-        versionName "1.0.1"
+        versionCode 4
+        versionName "2.4.1-cleanup"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         ndk {

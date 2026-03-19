@@ -69,12 +69,6 @@ const temporalState = temporalStateRaw;
 
   container.innerHTML = renderAllSections(safeObligations, temporalState, lang);
 
-  // 🔍 DEBUG: koliko pointera postoji u DOM-u
-setTimeout(() => {
-  const all = document.querySelectorAll('.temporal-pointer');
-  console.log('POINTER COUNT:', all.length, all);
-}, 300);
-
   // reset scroll flag na svaki novi render liste
   window.__LK_POINTER_SCROLLED__ = false;
 
@@ -837,16 +831,10 @@ if (newStatus === "done") {
   await processRecurringObligation(current);
 }
 
-// 🔥 HARD REFRESH
+// 🔥 HARD REFRESH (single render)
 const fresh = await obligationDB.getAll();
 
 window.__LK_FORCE_RENDER__ = true;
-window.renderObligationsList?.(fresh);
-
-// 🔥 bypass lock
-window.__LK_FORCE_RENDER__ = true;
-
-// 🔥 render odmah
 window.renderObligationsList?.(fresh);
 
   delete card.dataset.processing;
@@ -1200,12 +1188,20 @@ export async function processRecurringObligation(obligation) {
 export function setupMobileLifecycle() {
   document.addEventListener('visibilitychange', async () => {
     if (document.visibilityState === 'visible') {
-      console.log('[Lifecycle] App resumed');
-      recoverReminders();
-      await getFreshTemporalState();
-      Temporal.triggerUIRender?.();
-      checkYesterdayUnfinished();
-    }
+  console.log('[Lifecycle] App resumed');
+
+  recoverReminders();
+
+  const obligations = await obligationDB.getAll();
+
+  await getFreshTemporalState();
+
+  // 🔥 render sa stvarnim podacima (fix za prazan ekran)
+  window.__LK_FORCE_RENDER__ = true;
+  window.renderObligationsList?.(obligations);
+
+  checkYesterdayUnfinished();
+}
   });
 
   if (window.Capacitor?.Plugins?.App) {

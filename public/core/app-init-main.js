@@ -285,26 +285,26 @@ try {
       viewMode: window.AppState?.obligations?.viewMode
     });
     
-    // 🫀 DOUBLE RAF: čekaj da DOM i CSS budu spremni za prikaz
-    requestAnimationFrame(() => {
-  requestAnimationFrame(() => {
+    // 🧾 SAFE RAF (stabilno + timing sigurnost)
+requestAnimationFrame(() => {
+  setTimeout(() => {
     try {
       console.log('🧾 [forceListRefresh] CALLING renderObligationsList');
 
       if (typeof renderObligationsList === 'function') {
-  window.__LK_FORCE_RENDER__ = true;
-  renderObligationsList(all);
-} else if (typeof window.renderObligationsList === 'function') {
-  window.__LK_FORCE_RENDER__ = true;
-  window.renderObligationsList(all);
-} else {
-  throw new Error('renderObligationsList not found');
-}
+        window.__LK_FORCE_RENDER__ = true;
+        renderObligationsList(all);
+      } else if (typeof window.renderObligationsList === 'function') {
+        window.__LK_FORCE_RENDER__ = true;
+        window.renderObligationsList(all);
+      } else {
+        throw new Error('renderObligationsList not found');
+      }
 
     } catch (err) {
       console.error('🧾 [forceListRefresh] RENDER ERROR', err);
     }
-  });
+  }, 30);
 });
   } catch (e) {
   console.error('🧾 [forceListRefresh] ERROR', e);
@@ -990,18 +990,7 @@ if (ob.dateTime) {
     });
   });
 
-// 🧠 iOS TIME PICKER — NO INTERFERENCE (stable)
-const timePicker = document.getElementById('obligationTime');
-if (timePicker && !timePicker.dataset.bound) {
-  timePicker.dataset.bound = "1";
 
-  // samo cache vrijednosti — bez blokiranja
-  timePicker.addEventListener('change', () => {
-    if (timePicker.value) {
-      window.__LK_TIME_CACHE__ = timePicker.value;
-    }
-  });
-}
 });
       document.getElementById('saveObligation').removeAttribute('data-edit-id');
 
@@ -1039,24 +1028,25 @@ const enableTime = document.getElementById('enableTime');
 const timeWrapper = document.getElementById('timeWrapper');
 const timeInput = document.getElementById('obligationTime');
 
-// 🧠 STABLE TIME CACHE (iOS fix)
-window.__LK_TIME_CACHE__ = null;
+// 🧠 iOS TIME CONFIRM ONLY (uzima vrijednost tek na ✓)
+if (timeInput && !timeInput.dataset.confirmOnly) {
+  timeInput.dataset.confirmOnly = "1";
 
-if (timeInput && !timeInput.dataset.cacheBound) {
-  timeInput.dataset.cacheBound = "1";
+  let pendingTime = '';
 
-  timeInput.addEventListener('change', () => {
-    if (timeInput.value) {
-      window.__LK_TIME_CACHE__ = timeInput.value;
-    }
+  // dok scrolla → samo pamti
+  timeInput.addEventListener('input', () => {
+    pendingTime = timeInput.value;
   });
 
-  timeInput.addEventListener('input', () => {
-    if (timeInput.value) {
-      window.__LK_TIME_CACHE__ = timeInput.value;
+  // kad zatvori picker (✓) → commit
+  timeInput.addEventListener('blur', () => {
+    if (pendingTime) {
+      timeInput.value = pendingTime;
     }
   });
 }
+
 
 if (enableTime && timeWrapper && timeInput) {
 
@@ -1081,6 +1071,8 @@ const dateInput = document.getElementById('obligationDate');
 
       // SPREMI ILI AŽURIRAJ
       document.getElementById('saveObligation').addEventListener('click', async () => {
+
+        showSaveToast();
 
   const saveBtn = document.getElementById('saveObligation');
 
@@ -1121,14 +1113,13 @@ let timeVal = '';
 
 if (timeInputEl) {
 
-  // pokušaj 1: direktna vrijednost
-  if (timeInputEl.value) {
-    timeVal = timeInputEl.value;
-  }
+  // 🛡️ iOS debounce guard (uzima samo stabilnu vrijednost)
+  const raw = timeInputEl.value;
 
-  // pokušaj 2: iOS fallback (attribute)
-  if (!timeVal) {
-    timeVal = timeInputEl.getAttribute('value') || '';
+  if (raw && raw.length === 5) {
+    timeVal = raw;
+  } else {
+    timeVal = '';
   }
 
 }
@@ -1138,23 +1129,12 @@ const enableTime =
 
 let dateTime = null;
 
-// 🧠 STABLE TIME LOGIC (no enableTime dependency)
-
+// timed obligation → ide u timeline
 if (dateVal && timeVal) {
-
-  // timed obligation → goes to timeline
   dateTime = `${dateVal}T${timeVal}`;
-
-} else if (isEdit && existing?.dateTime) {
-
-  // keep existing dateTime during edit if user cleared fields
-  dateTime = existing.dateTime;
-
 } else {
-
-  // no date/time → "Kad stigneš"
+  // bez potpunog datuma+vremena → "Kad stigneš"
   dateTime = null;
-
 }
 // ===== FORM SNAPSHOT (Calm Simplification) =====
 const formData = {
@@ -1183,28 +1163,20 @@ const obligation = {
   lang
 };
 
-    // ✅ 1) Spremi odmah
+    // ✅ 1) Spremi odmah (single source of truth)
 await obligationDB.add(obligation);
 
 // 🫀 flag for smart scroll
 window.__NEW_OBLIGATION_ADDED__ = true;
 
-// update Temporal engine immediately
-await obligationDB.add(obligation);
 
-const all = await obligationDB.getAll();
-
-// refresh UI
-window.renderObligationsList?.(all);
-
-// force render pipeline immediately
-window.__temporalRerenderQueued = false;
-
-if (typeof window.forceObligationsListRefresh === 'function') {
-  window.forceObligationsListRefresh('savePipeline')
-    .catch(err => {
-      console.error('🧾 forceListRefresh CALL ERROR (savePipeline)', err);
-    });
+// 🛡️ SAFE FALLBACK RENDER (no side effects)
+try {
+  const all = await obligationDB.getAll();
+  window.__LK_FORCE_RENDER__ = true;
+  window.renderObligationsList?.(all);
+} catch (e) {
+  console.warn('[save] fallback render failed', e);
 }
 // reset form fields after save (safe)
 const titleInput = document.getElementById('obligationTitle');
@@ -1491,3 +1463,27 @@ if (dailyDatePicker) {
     document.body.innerHTML = `<div style="height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;background:#0d5e32;color:white;font-family:sans-serif;text-align:center;padding:20px;"><h2>LifeKompas</h2><p>Dogodila se greška pri pokretanju aplikacije.</p><button onclick="location.reload()" style="padding:12px 20px;border:none;border-radius:12px;font-size:16px;">Ponovno pokreni</button></div>`;
   } // ← zatvara catch block
 } // ← ✅ zatvara initApp function
+
+function showSaveToast() {
+
+  const toast = document.createElement('div');
+  toast.textContent = 'Spremljeno';
+
+  Object.assign(toast.style, {
+    position: 'fixed',
+    bottom: '100px',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    background: 'black',
+    color: 'white',
+    padding: '12px 18px',
+    borderRadius: '20px',
+    zIndex: 99999
+  });
+
+  document.body.appendChild(toast);
+
+  setTimeout(() => {
+    toast.remove();
+  }, 1500);
+}

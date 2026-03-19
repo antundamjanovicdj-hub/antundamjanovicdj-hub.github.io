@@ -990,28 +990,15 @@ if (ob.dateTime) {
     });
   });
 
-// Auto-close iOS time picker after selection
+// 🧠 iOS TIME PICKER — NO INTERFERENCE (stable)
 const timePicker = document.getElementById('obligationTime');
-if (timePicker && !timePicker.dataset.iosFixAttached) {
-  timePicker.dataset.iosFixAttached = "1";
+if (timePicker && !timePicker.dataset.bound) {
+  timePicker.dataset.bound = "1";
 
-  let scrollTimer = null;
-
-  // 🧠 detektiraj "scrolling phase"
-  timePicker.addEventListener('input', () => {
-    timePicker.dataset.scrolling = "1";
-
-    clearTimeout(scrollTimer);
-    scrollTimer = setTimeout(() => {
-      timePicker.dataset.scrolling = "0";
-    }, 400); // vrijeme da user završi scroll
-  });
-
-  // 🛡️ blokiraj change dok još scrolla
-  timePicker.addEventListener('change', (e) => {
-    if (timePicker.dataset.scrolling === "1") {
-      e.stopImmediatePropagation();
-      return;
+  // samo cache vrijednosti — bez blokiranja
+  timePicker.addEventListener('change', () => {
+    if (timePicker.value) {
+      window.__LK_TIME_CACHE__ = timePicker.value;
     }
   });
 }
@@ -1051,6 +1038,25 @@ document.getElementById('enableReminder').addEventListener('change', (e) => {
 const enableTime = document.getElementById('enableTime');
 const timeWrapper = document.getElementById('timeWrapper');
 const timeInput = document.getElementById('obligationTime');
+
+// 🧠 STABLE TIME CACHE (iOS fix)
+window.__LK_TIME_CACHE__ = null;
+
+if (timeInput && !timeInput.dataset.cacheBound) {
+  timeInput.dataset.cacheBound = "1";
+
+  timeInput.addEventListener('change', () => {
+    if (timeInput.value) {
+      window.__LK_TIME_CACHE__ = timeInput.value;
+    }
+  });
+
+  timeInput.addEventListener('input', () => {
+    if (timeInput.value) {
+      window.__LK_TIME_CACHE__ = timeInput.value;
+    }
+  });
+}
 
 if (enableTime && timeWrapper && timeInput) {
 
@@ -1108,15 +1114,33 @@ const dateInput = document.getElementById('obligationDate');
 const dateVal =
   document.getElementById('obligationDate')?.value || '';
 
-const timeVal =
-  document.getElementById('obligationTime')?.value || '';
+// 🧠 HARD READ (iOS fix)
+const timeInputEl = document.getElementById('obligationTime');
+
+let timeVal = '';
+
+if (timeInputEl) {
+
+  // pokušaj 1: direktna vrijednost
+  if (timeInputEl.value) {
+    timeVal = timeInputEl.value;
+  }
+
+  // pokušaj 2: iOS fallback (attribute)
+  if (!timeVal) {
+    timeVal = timeInputEl.getAttribute('value') || '';
+  }
+
+}
 
 const enableTime =
   document.getElementById('enableTime')?.checked;
 
 let dateTime = null;
 
-if (dateVal && enableTime && timeVal) {
+// 🧠 STABLE TIME LOGIC (no enableTime dependency)
+
+if (dateVal && timeVal) {
 
   // timed obligation → goes to timeline
   dateTime = `${dateVal}T${timeVal}`;

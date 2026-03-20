@@ -802,7 +802,7 @@ document.addEventListener('click', async (e) => {
             if (!amount || isNaN(amount)) { alert("Neispravan iznos"); return; }
             const item = { id: Date.now(), type: 'otherCost', desc: "Račun", amount, date: new Date().toISOString().split('T')[0], createdAt: Date.now() };
             await addFinanceItem(item);
-            alert("Račun spremljen: " + amount.toFixed(2) + " €");
+            alert("Račun spremljen u ostali troškovi: " + amount.toFixed(2) + " €");
           });
         }
       });

@@ -56,6 +56,74 @@ export async function renderShoppingList() {
   const list = document.getElementById('shoppingList');
   const empty = document.getElementById('shoppingEmpty');
 
+  // 🧹 bulk delete (create button if not exists)
+let bulkDeleteBtn = document.getElementById('btnDeleteSelected');
+
+if (!bulkDeleteBtn) {
+  bulkDeleteBtn = document.createElement('button');
+  bulkDeleteBtn.id = 'btnDeleteSelected';
+  bulkDeleteBtn.textContent = 'Obriši označeno';
+  bulkDeleteBtn.style.margin = '16px 8px 8px 8px';
+  bulkDeleteBtn.style.padding = '10px 14px';
+  bulkDeleteBtn.style.borderRadius = '20px';
+  bulkDeleteBtn.style.border = 'none';
+  bulkDeleteBtn.style.background = 'rgba(255,255,255,0.15)';
+  bulkDeleteBtn.style.backdropFilter = 'blur(10px)';
+  bulkDeleteBtn.style.color = '#fff';
+  bulkDeleteBtn.style.fontWeight = '600';
+
+  list.parentNode.insertBefore(bulkDeleteBtn, list);
+
+  bulkDeleteBtn.addEventListener('click', async () => {
+
+    const selected = shoppingItems.filter(i => i.selected);
+
+    for (const item of selected) {
+      await deleteShoppingItem(item.id);
+    }
+
+    renderShoppingList();
+  });
+}
+
+// 🧨 delete all button (create once)
+let deleteAllBtn = document.getElementById('btnDeleteAll');
+
+if (!deleteAllBtn) {
+
+  deleteAllBtn = document.createElement('button');
+  deleteAllBtn.id = 'btnDeleteAll';
+  deleteAllBtn.textContent = 'Obriši sve';
+
+  deleteAllBtn.style.margin = '16px 8px 8px 8px';
+  deleteAllBtn.style.padding = '10px 14px';
+  deleteAllBtn.style.borderRadius = '20px';
+  deleteAllBtn.style.border = 'none';
+  deleteAllBtn.style.background = 'rgba(255,255,255,0.15)';
+  deleteAllBtn.style.backdropFilter = 'blur(10px)';
+  deleteAllBtn.style.color = '#fff';
+  deleteAllBtn.style.fontWeight = '600';
+
+  // ubaci iznad liste (iznad ovog drugog gumba)
+  deleteAllBtn.style.marginLeft = '8px';
+list.parentNode.insertBefore(deleteAllBtn, list);
+
+  deleteAllBtn.addEventListener('click', async () => {
+
+    if (shoppingItems.length === 0) return;
+
+    // optional confirm (možeš kasnije maknuti ako želiš)
+    const confirmDelete = confirm('Obrisati sve stavke?');
+    if (!confirmDelete) return;
+
+    for (const item of shoppingItems) {
+      await deleteShoppingItem(item.id);
+    }
+
+    renderShoppingList();
+  });
+}
+
   if (!list || !empty) return;
 
   ensureShoppingArchiveButton();
@@ -94,18 +162,44 @@ export async function renderShoppingList() {
     li.className = 'shopping-item';
 
     li.innerHTML = `
-      <div class="shopping-item-delete">🗑️</div>
-      <div class="shopping-item-content">${item.title}</div>
-    `;
+  <div class="shopping-item-content">
+    <input type="checkbox" class="shopping-select" />
+    <span>${item.title}</span>
+  </div>
+`;
     const swipeContent = li.querySelector('.shopping-item-content');
 
-    if (item.checked) li.classList.add('checked');
+    const checkbox = li.querySelector('.shopping-select');
 
-    li.addEventListener('click', async () => {
-      item.checked = !item.checked;
-      await updateShoppingItem(item); // 🔥 važnije od add
-      renderShoppingList();
-    });
+if (checkbox) {
+
+  // 🛑 PREKINI event da ne ide na li
+  checkbox.addEventListener('click', (e) => {
+    e.stopPropagation();
+  });
+
+  checkbox.addEventListener('touchstart', (e) => {
+    e.stopPropagation();
+  });
+
+  // ✅ toggle selected (UI only)
+  checkbox.addEventListener('change', () => {
+    item.selected = checkbox.checked;
+  });
+
+}
+
+const content = li.querySelector('.shopping-item-content');
+
+if (content) {
+  content.addEventListener('click', async () => {
+    item.checked = !item.checked;
+    await updateShoppingItem(item);
+    renderShoppingList();
+  });
+}
+
+    if (item.checked) li.classList.add('checked');
 
 // ===== MOBILE ONLY: swipe to delete (FINAL) =====
 if (IS_TOUCH_DEVICE) {
@@ -116,11 +210,16 @@ let swiping = false;
   const DELETE_THRESHOLD = 120; // px
 
   li.addEventListener('touchstart', e => {
+
+  // 🛑 ignore checkbox
+  if (e.target.closest('.shopping-select')) return;
+
   startX = e.touches[0].clientX;
   currentX = startX;
   startTime = Date.now();
-  swiping = true;
-  li.classList.add('swiping');
+
+  swiping = false; // 🔥 reset na početku
+
 }, { passive: true });
 
 // 🔎 MICRO HINT – show on first swipe only
@@ -142,65 +241,73 @@ if (IS_TOUCH_DEVICE && hint && !hintSeen) {
 }
 
   li.addEventListener('touchmove', e => {
-  li.classList.add('swiping');
-    if (!swiping) return;
 
-    currentX = e.touches[0].clientX;
-    const diff = currentX - startX;
-const elapsed = Date.now() - startTime;
-const velocity = Math.abs(diff) / elapsed;
+  // 🛑 ignore swipe on checkbox
+  if (e.target.closest('.shopping-select')) return;
 
-// 🔥 flick delete
-if (diff < -DELETE_THRESHOLD || velocity > 0.6) {
+  currentX = e.touches[0].clientX;
+const diff = currentX - startX;
 
-  const MAX_SWIPE = 84;
+// 🔥 aktiviraj swipe čim ima mali pomak
+if (Math.abs(diff) > 10) {
+  swiping = true;
+}
 
-  // 🔥 ELASTIC
-  let limited = diff;
+if (!swiping) return;
 
-  if (diff < -MAX_SWIPE) {
-    const extra = diff + MAX_SWIPE;
-    limited = -MAX_SWIPE + (extra * 0.35); 
+li.classList.add('swiping');
+  const elapsed = Date.now() - startTime;
+  const velocity = Math.abs(diff) / elapsed;
+
+  // 🔥 flick delete
+  if (diff < -DELETE_THRESHOLD || velocity > 0.6) {
+
+    const MAX_SWIPE = 84;
+
+    let limited = diff;
+
+    if (diff < -MAX_SWIPE) {
+      const extra = diff + MAX_SWIPE;
+      limited = -MAX_SWIPE + (extra * 0.35); 
+    }
+
+    swipeContent.style.transform = `translateX(${limited}px)`;
   }
 
-  swipeContent.style.transform = `translateX(${limited}px)`;
-}
-  }, { passive: true });
+}, { passive: true });
 
-  li.addEventListener('touchend', () => {
-    if (!swiping) return;
-    swiping = false;
+  li.addEventListener('touchend', (e) => {
+
+  // 🛑 ignore swipe on checkbox
+  if (e.target.closest('.shopping-select')) return;
+
+  if (!swiping) return;
+
+  swiping = false;
   li.classList.remove('swiping');
 
-    const diff = currentX - startX;
+  const diff = currentX - startX;
 
-    if (diff < -DELETE_THRESHOLD) {
-      // ✅ DELETE
-      shoppingItems = shoppingItems.filter(i => i.id !== item.id);
-      renderShoppingList();
-      deleteShoppingItem(item.id);
-    } else {
-      // ⬅️ SNAP BACK
-      swipeContent.style.transition = 'transform 0.15s ease-out';
-      swipeContent.style.transform = 'translateX(0)';
+  if (diff < -DELETE_THRESHOLD) {
+    // ✅ DELETE
+    shoppingItems = shoppingItems.filter(i => i.id !== item.id);
+    renderShoppingList();
+    deleteShoppingItem(item.id);
+  } else {
+    // ⬅️ SNAP BACK
+    swipeContent.style.transition = 'transform 0.15s ease-out';
+    swipeContent.style.transform = 'translateX(0)';
 
-      setTimeout(() => {
-  swipeContent.style.transition = '';
+    setTimeout(() => {
+      swipeContent.style.transition = '';
     }, 150);
-    }
-  });
+  }
+
+});
 }
 
 // swipe disabled for stability
 
-    // DESKTOP: right-click delete
-    li.addEventListener('contextmenu', e => {
-      e.preventDefault();
-      shoppingItems = shoppingItems.filter(i => i.id !== item.id);
-      renderShoppingList();
-      deleteShoppingItem(item.id);
-    });
-
-    list.appendChild(li);
+list.appendChild(li);
 });
 }

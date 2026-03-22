@@ -302,3 +302,60 @@ export async function cancelBirthdayNotification(contactId) {
 window.requestNotificationPermission = requestNotificationPermission;
 window.scheduleBirthdayNotification = scheduleBirthdayNotification;
 window.cancelBirthdayNotification = cancelBirthdayNotification;
+
+// ===== NOTIFICATION CLICK HANDLER (CRITICAL FIX) =====
+(async () => {
+
+  const LN = await getLocalNotifications();
+  if (!LN) return;
+
+  LN.addListener('localNotificationActionPerformed', (event) => {
+
+    console.log('🔔 notification clicked', event);
+
+    const data = event?.notification?.extra;
+
+    if (!data) return;
+
+    // 👉 OBVEZE
+    if (data.obligationId) {
+
+      // skip language screen
+      const lang = localStorage.getItem('lk_lang');
+      if (lang) {
+        document.getElementById('screen-lang')?.classList.remove('active');
+        document.getElementById('screen-menu')?.classList.add('active');
+      }
+
+      // open obligations screen
+      window.showScreen?.('screen-obligations-list');
+
+      // scroll to obligation (malo delay za render)
+      setTimeout(() => {
+
+        const el = document.querySelector(
+          `.obligation-card[data-id="${data.obligationId}"]`
+        );
+
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+      }, 600);
+    }
+
+    // 👉 CONTACTS (future safe)
+    if (data.contactId) {
+
+      const lang = localStorage.getItem('lk_lang');
+      if (lang) {
+        document.getElementById('screen-lang')?.classList.remove('active');
+        document.getElementById('screen-menu')?.classList.add('active');
+      }
+
+      window.showScreen?.('screen-contacts');
+    }
+
+  });
+
+})();

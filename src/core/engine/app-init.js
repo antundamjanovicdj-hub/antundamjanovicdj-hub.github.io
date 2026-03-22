@@ -61,19 +61,24 @@ window.addEventListener('unhandledrejection', (e) => {
 let clickLocked = false;
 
 document.addEventListener('click', (e) => {
-  if (e.target.closest('#lkTesterBtn')) return;
-
-  if (clickLocked) {
+  // 🔥 SKIP CLICK LOCK FOR IMPORTANT BUTTONS
+  const importBtn = e.target.closest('#btnImportContacts');
+  const testerBtn = e.target.closest('#lkTesterBtn');
+  
+  if (testerBtn) return;
+  
+  if (clickLocked && !importBtn) {
     e.stopImmediatePropagation();
     e.preventDefault();
     return;
   }
 
-  clickLocked = true;
-
-  setTimeout(() => {
-    clickLocked = false;
-  }, 350); // sweet spot
+  if (!importBtn) {
+    clickLocked = true;
+    setTimeout(() => {
+      clickLocked = false;
+    }, 350);
+  }
 });
 
 /*
@@ -102,6 +107,39 @@ import('../services/notifications.js')
   .catch(e => console.log('🔔 notifications bootstrap skipped', e));
 
 console.log('[LifeKompas] app-init.js loaded');
+
+// ===== LANGUAGE INIT (CRITICAL FIX) =====
+document.addEventListener('DOMContentLoaded', () => {
+
+  const buttons = document.querySelectorAll('.lang-btn');
+
+  buttons.forEach(btn => {
+
+    btn.addEventListener('click', () => {
+
+      const lang = btn.dataset.lang;
+
+      if (!lang) return;
+
+      localStorage.setItem('lk_lang', lang);
+
+      // fallback global (ako postoji i18n)
+      if (window.setLang) {
+        try { window.setLang(lang); } catch {}
+      }
+
+      // screen transition
+      const langScreen = document.getElementById('screen-lang');
+      const menuScreen = document.getElementById('screen-menu');
+
+      if (langScreen) langScreen.classList.remove('active');
+      if (menuScreen) menuScreen.classList.add('active');
+
+    });
+
+  });
+
+});
 /* ===== LIFEKOMPAS TESTER MODE DISABLED DURING STABILIZATION =====
 setTimeout(() => {
 
@@ -264,8 +302,10 @@ document.addEventListener("visibilitychange", async () => {
         window.__temporalRerenderQueued = false;
 
         requestAnimationFrame(() => {
-          renderObligationsList?.();
-        });
+  requestAnimationFrame(() => {
+    renderObligationsList?.();
+  });
+});
 
       }
 
@@ -325,8 +365,10 @@ try {
           window.__temporalRerenderQueued = false;
 
           requestAnimationFrame(() => {
-            renderObligationsList?.();
-          });
+  requestAnimationFrame(() => {
+    renderObligationsList?.();
+  });
+});
 
         }
 

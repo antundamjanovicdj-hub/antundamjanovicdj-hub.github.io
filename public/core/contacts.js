@@ -8,7 +8,26 @@ import {
   deleteContact
 } from './services/db.js';
 
-const ContactsPlugin = window.Capacitor?.Plugins?.Contacts;
+let ContactsPlugin = null;
+
+if (window.Capacitor) {
+
+  // 🔥 @capgo plugin uses 'CapacitorContacts' name
+  if (window.Capacitor.registerPlugin) {
+    try {
+      ContactsPlugin = window.Capacitor.registerPlugin('CapacitorContacts');
+    } catch (e) {
+      console.warn('CapacitorContacts registerPlugin failed, trying fallback', e);
+    }
+  }
+
+  // FALLBACK: check both possible plugin names
+  if (!ContactsPlugin) {
+    ContactsPlugin = window.Capacitor?.Plugins?.CapacitorContacts || 
+                     window.Capacitor?.Plugins?.Contacts || null;
+  }
+
+}
 
 // ===== TRUST NOTIFICATION BRIDGE =====
 async function requestNotificationPermissionSafe() {
@@ -116,31 +135,25 @@ function initContacts() {
   // 🔒 LOCK IMPORT BUTTON
   const importBtn = document.getElementById('btnImportContacts');
 
-  if (importBtn) {
+if (importBtn) {
+    const isNative = window.Capacitor?.isNativePlatform?.();
 
-    importBtn.addEventListener('click', async () => {
-
-      if (importBtn.disabled) return;
-
+    // ❌ Web → disable (iOS i Android ostaju omogućeni)
+    if (!isNative) {
       importBtn.disabled = true;
-      importBtn.textContent = "Uvozim...";
-
-try {
-
-  await window.importDeviceContacts();
-
-} finally {
-
-  importBtn.disabled = false;
-  importBtn.textContent = "📥 Uvezi iz imenika";
-
-      }
-
-    });
-
-  }
+      importBtn.style.opacity = '0.5';
+      importBtn.textContent = "📥 Uvoz dostupan samo na mobitelu";
+      return;
+    }
+    
+    // ✅ iOS i Android: omogući gumb
+    importBtn.disabled = false;
+    importBtn.style.opacity = '1';
+    importBtn.textContent = "📥 Uvezi iz imenika";
+}
 
 }
+
 
 // ===== DIRECT ANDROID CONTACT IMPORT =====
 window.importDeviceContacts = async function () {
@@ -168,21 +181,55 @@ const loadingTimer = setTimeout(() => {
 }, 300);
 
   const perm = await ContactsPlugin.requestPermissions();
+console.log('🔐 Permission result:', JSON.stringify(perm));
 
-  if (!perm?.contacts || perm.contacts !== 'granted') {
-    alert(getContactMessages().noPermission);
-    return;
-  }
+// 🔥 @capgo plugin returns: {readContacts: "granted", writeContacts: "granted"}
+const isGranted = 
+  perm?.readContacts === 'granted' || 
+  perm?.contacts === 'granted' || 
+  perm?.status === 'granted' ||
+  perm === 'granted' ||
+  perm === true;
+
+if (!isGranted) {
+  console.warn('⚠️ Permission not granted:', perm);
+  alert(getContactMessages().noPermission || "Dozvola za kontakte nije dana.");
+  return;
+}
 
     // ===== LOAD CONTACTS =====
-const result = await ContactsPlugin.getContacts({
-  projection: {
-    name: true,
-    phones: true,
-    emails: true,
-    addresses: true
+let result;
+
+try {
+  // 🔥 iOS safe fields only
+  result = await ContactsPlugin.getContacts({
+    fields: [
+      'identifier',
+      'givenName',
+      'familyName',
+      'phoneNumbers',
+      'emailAddresses'
+    ]
+  });
+
+  console.log('📇 Contacts fetched:', result?.contacts?.length || 0, 'contacts');
+
+  // 🔍 DEBUG: Pokaži strukturu prvog kontakta
+  if (result?.contacts?.[0]) {
+    console.log('📇 First contact FULL structure:', JSON.stringify(result.contacts[0], null, 2));
   }
-});
+
+} catch (e) {
+  console.error('getContacts() error:', e);
+  
+  // Fallback: probaj bez ikakvih parametara
+  try {
+    console.log('🔄 Retrying getContacts() without fields...');
+    result = await ContactsPlugin.getContacts();
+  } catch (e2) {
+    throw e2;
+  }
+}
 
     if (!result || !result.contacts) {
       alert(getContactMessages().noContacts);
@@ -192,32 +239,82 @@ const result = await ContactsPlugin.getContacts({
   // povuci postojeće kontakte jednom (performance + trust)
 const existingContacts = await getContacts();
 
-for (const c of result.contacts) {
+// 🔥 cache postojećih telefona
+const seenPhones = new Set(
+  existingContacts
+    .map(c => (c.phone || '').replace(/[^\d]/g, ''))
+    .filter(Boolean)
+);
 
-  const firstName = c.name?.given || '';
-  const lastName = c.name?.family || '';
+console.log('🔍 START: Processing', result.contacts?.length || 0, 'contacts');
 
-  const rawPhone = c.phones?.length ? c.phones[0].number : '';
+for (let i = 0; i < result.contacts.length; i++) {
+  const c = result.contacts[i];
+  
+  console.log(`🔍 Contact #${i}:`, JSON.stringify(c));
 
-// normalize phone (removes spaces, dashes, brackets…)
-const phone = rawPhone.replace(/[^\d+]/g, '');
-  const email = c.emails?.length ? c.emails[0].address : '';
-  const address = c.addresses?.length ? c.addresses[0].street : '';
+  // 🔥 Telefon
+  const rawPhone = c.phoneNumbers?.[0]?.value || '';
+  const phone = rawPhone?.replace(/[^\d+]/g, '') || '';
+  
+  // 🔥 Email
+  const email = c.emailAddresses?.[0]?.value || '';
+  
+  // 🔥 Adresa
+  const address = c.postalAddresses?.[0]?.street || '';
 
-  if (!firstName && !lastName) continue;
+  console.log(`🔍 Contact #${i} parsed:`, { rawPhone, phone, email, address });
 
-  // 🔥 DUPLICATE CHECK
-  const alreadyExists = existingContacts.some(ec =>
-    (phone && ec.phone === phone) ||
-    (email && ec.email === email)
-  );
+  // 🔥 Preskoči ako nema NIŠTA
+  if (!phone && !email) {
+    console.log(`⚠️ Contact #${i} skipped: no phone or email`);
+    continue;
+  }
 
-  if (alreadyExists) continue;
+  // 🔥 Duplicate check
+  // 🔥 normalize phone helper
+function normalizePhone(p) {
+  return (p || '').replace(/[^\d]/g, '');
+}
 
+const normalizedPhone = normalizePhone(phone);
+
+// 🔥 koristi Set (instant + točan)
+if (normalizedPhone && seenPhones.has(normalizedPhone)) {
+  console.log(`⚠️ Contact #${i} skipped: duplicate (phone=${phone})`);
+  continue;
+}
+
+  // 🔥 PRVO pokušaj uzeti pravo ime iz kontakta
+// 🔥 pokušaj izvući ime iz displayName
+let firstName = '';
+let lastName = '';
+
+if (c.displayName) {
+  const parts = c.displayName.trim().split(' ');
+  firstName = parts[0] || '';
+  lastName = parts.slice(1).join(' ') || '';
+}
+
+// 🔥 prvo uzmi ime iz kontakta (iOS plugin)
+if (c.givenName && c.givenName.trim()) {
+  firstName = c.givenName.trim();
+}
+
+if (c.familyName && c.familyName.trim()) {
+  lastName = c.familyName.trim();
+}
+
+// fallback ako nema imena
+if (!firstName) {
+  firstName = phone || email || 'Kontakt';
+}
+
+  // 🔥 Kreiraj kontakt
   const newContact = {
-    id: Date.now() + Math.floor(Math.random() * 1000),
-    firstName,
-    lastName,
+  id: Date.now() + Math.floor(Math.random() * 1000),
+  firstName: firstName,
+  lastName: lastName,
     birthDate: '',
     birthdayNotify: false,
     address,
@@ -226,8 +323,19 @@ const phone = rawPhone.replace(/[^\d+]/g, '');
     photo: ''
   };
 
+  console.log('💾 Saving contact:', { firstName, phone, email });
+
   await addContact(newContact);
+
+  // 🔥 zapamti novododani telefon
+if (normalizedPhone) {
+  seenPhones.add(normalizedPhone);
 }
+  
+  console.log(`✅ Contact #${i} saved successfully`);
+}
+
+console.log('🔍 END: Processing complete');
 clearTimeout(loadingTimer);
 
 await loadContacts();
@@ -312,7 +420,7 @@ function renderContactsList() {
         </div>
         <div class="contact-name">
           ${c.firstName} ${c.lastName}
-        </div>
+      </div>
       </div>
     `;
 
@@ -744,14 +852,45 @@ document.addEventListener('screenShown', (e) => {
   }
 
   if (e.detail === 'screen-contacts') {
-    const searchInput = document.getElementById('searchContacts');
-    if (searchInput) {
-      searchInput.value = '';
+
+  const searchInput = document.getElementById('searchContacts');
+  if (searchInput) {
+    searchInput.value = '';
+  }
+
+  attachContactsListHandlers();
+  loadContacts();
+
+  // 🔥 FIX: bind import button svaki put kad se screen otvori
+  const importBtn = document.getElementById('btnImportContacts');
+
+  if (importBtn && !importBtn.dataset.bound) {
+
+  importBtn.dataset.bound = '1';
+
+  importBtn.addEventListener('click', async (e) => {
+
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
+    if (importBtn.disabled) return;
+
+    importBtn.disabled = true;
+    importBtn.textContent = "Uvozim...";
+
+    try {
+      await window.importDeviceContacts();
+    } finally {
+      importBtn.disabled = false;
+      importBtn.textContent = "📥 Uvezi iz imenika";
     }
 
-    attachContactsListHandlers();
-    loadContacts();
+  }, true); 
   }
+  }
+  
+  // 🔥 capture phase
 
   if (e.detail === 'screen-contact-details') {
     attachContactDetailsHandlers();

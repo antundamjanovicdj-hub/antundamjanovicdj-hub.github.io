@@ -4,9 +4,23 @@ import Temporal from '../temporal/index.js';
 
 let navigationLock = false;
 let navigationLockTimeout = null;
+let __LK_LAST_TAP__ = null;
+
+document.addEventListener('touchstart', (e) => {
+  __LK_LAST_TAP__ = e.target;
+}, { passive: true });
+
+document.addEventListener('click', (e) => {
+  __LK_LAST_TAP__ = e.target;
+}, { passive: true });
 
 function legacy_showScreen(screenId) {
-  if (navigationLock) {
+
+  // 🔥 FIX: Allow import flow to bypass nav lock by screen context
+  const currentScreen = document.querySelector('.screen.active')?.id;
+  const isImportFlow = screenId === 'screen-loading' && currentScreen === 'screen-contacts';
+
+  if (navigationLock && !isImportFlow) {
     console.debug('[NAV] Ignored tap (navigation lock):', screenId);
     return;
   }

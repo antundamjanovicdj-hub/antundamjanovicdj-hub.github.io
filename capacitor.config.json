@@ -6,7 +6,7 @@
 
   "ios": {
   "contentInset": "never",
-  "useSwiftPackageManager": false
+  "useSwiftPackageManager": true
 },
 
   "plugins": {
@@ -16,6 +16,10 @@
       "backgroundColor": "#8B4513",
       "androidScaleType": "CENTER_CROP",
       "iosResizeMode": "aspectFit"
+      },
+    "CapacitorContacts": {
+      "readContacts": true,
+      "writeContacts": true
     }
   }
 }

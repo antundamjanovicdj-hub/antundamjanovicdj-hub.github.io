@@ -44,6 +44,8 @@ async function cancelBirthdayNotificationSafe(id) {
 
 let contacts = [];
 let filteredContacts = [];
+let selectionMode = false;
+let selectedContacts = new Set();
 function getContactMessages() {
   const lang = (localStorage.getItem('userLang') || 'hr');
   return (I18N[lang].contacts && I18N[lang].contacts.messages)
@@ -57,15 +59,21 @@ function formatBirthDateByLang(input) {
 
   const lang = (localStorage.getItem('userLang') || 'hr').toLowerCase();
 
-  // očisti sve osim brojeva
-  const digits = input.replace(/\D/g, '');
+  // 🔥 split po točkama ili minusima
+  const parts = input.split(/[\.\-\/]/).filter(Boolean);
 
-  // mora imati 8 znamenki
-  if (digits.length !== 8) return input;
+  if (parts.length < 3) return input;
 
-  const d = digits.substring(0,2);
-  const m = digits.substring(2,4);
-  const y = digits.substring(4,8);
+  let d = parts[0];
+  let m = parts[1];
+  let y = parts[2];
+
+  // 🔥 normalize (dodaj 0 ako treba)
+  d = d.padStart(2, '0');
+  m = m.padStart(2, '0');
+
+  // ako godina nije 4 znamenke → ignore
+  if (y.length !== 4) return input;
 
   // jezici koji koriste ISO
   const isoLangs = ['en', 'zh', 'ja', 'ko'];
@@ -410,21 +418,48 @@ function renderContactsList() {
   // ===== LISTA KONTAKATA =====
   filteredContacts.forEach(c => {
     const card = document.createElement('div');
-    card.className = 'contact-card glass';
-    card.dataset.id = String(c.id);
+const isSelected = selectedContacts.has(String(c.id));
 
-    card.innerHTML = `
-      <div class="contact-card-inner">
-        <div class="contact-photo">
-          ${c.photo ? `<img src="${c.photo}">` : '👤'}
-        </div>
-        <div class="contact-name">
-          ${c.firstName} ${c.lastName}
-      </div>
-      </div>
-    `;
+card.className = `contact-card glass${isSelected ? ' selected' : ''}`;
+card.dataset.id = String(c.id);
 
-    card.addEventListener('click', () => openContactDetails(c.id));
+card.innerHTML = `
+  <div class="contact-card-inner">
+    <div class="contact-photo">
+      ${c.photo ? `<img src="${c.photo}">` : '👤'}
+    </div>
+    <div class="contact-name">
+      ${c.firstName} ${c.lastName}
+    </div>
+    ${isSelected ? `<div class="contact-selected-mark">✔️</div>` : ''}
+  </div>
+`;
+
+    card.addEventListener('click', () => {
+
+  if (selectionMode) {
+
+  const id = String(c.id);
+
+  if (selectedContacts.has(id)) {
+    selectedContacts.delete(id);
+  } else {
+    selectedContacts.add(id);
+  }
+
+  const btn = document.getElementById('btnDeleteSelectedContacts');
+  if (btn) {
+    btn.textContent = `Potvrdi brisanje (${selectedContacts.size})`;
+  }
+
+  renderContactsList();
+  return;
+}
+
+  openContactDetails(c.id);
+});
+
+// ❌ long press uklonjen (prelazimo na click-only selection model)
     list.appendChild(card);
   });
 }
@@ -440,6 +475,52 @@ function setupContactsEvents() {
       );
       renderContactsList();
     });
+  }
+
+  // 🔥 DELETE SELECTED CONTACTS
+  const deleteSelectedBtn = document.getElementById('btnDeleteSelectedContacts');
+
+  if (deleteSelectedBtn && !deleteSelectedBtn.dataset.bound) {
+
+    deleteSelectedBtn.dataset.bound = '1';
+
+    deleteSelectedBtn.addEventListener('click', async () => {
+
+  // 🔥 ulazak u selection mode
+  if (!selectionMode) {
+    selectionMode = true;
+    selectedContacts.clear();
+
+    deleteSelectedBtn.textContent = 'Potvrdi brisanje (0)';
+    return;
+  }
+
+  // 🔥 izlaz ako nema odabranih
+  if (selectionMode && selectedContacts.size === 0) {
+    selectionMode = false;
+    deleteSelectedBtn.textContent = 'Obriši odabrane';
+    return;
+  }
+
+  // 🔥 CONFIRM DELETE
+  const confirmed = confirm('Obrisati odabrane kontakte?');
+  if (!confirmed) return;
+
+  const ids = Array.from(selectedContacts);
+
+  for (const id of ids) {
+    await deleteContact(Number(id));
+  }
+
+  // 🔥 RESET STATE
+  selectedContacts.clear();
+  selectionMode = false;
+
+  deleteSelectedBtn.textContent = 'Obriši odabrane';
+
+  await loadContacts();
+});
+
   }
 }
 
@@ -643,11 +724,11 @@ function attachContactFormHandlers() {
 
       try {
         const image = await Capacitor.Plugins.Camera.getPhoto({
-          quality: 80,
-          allowEditing: false,
-          resultType: "dataUrl",
-          source: "PHOTOS"
-        });
+  quality: 80,
+  allowEditing: false,
+  resultType: "dataUrl",
+  source: "PROMPT"
+});
 
         document.getElementById('contactPhotoData').value = image.dataUrl;
       } catch (err) {
@@ -852,6 +933,13 @@ document.addEventListener('screenShown', (e) => {
   }
 
   if (e.detail === 'screen-contacts') {
+
+    // 🔥 RESET SELECTION MODE
+  selectionMode = false;
+selectedContacts.clear();
+
+  const deleteBtn = document.getElementById('btnDeleteSelectedContacts');
+if (deleteBtn) deleteBtn.style.display = 'block';
 
   const searchInput = document.getElementById('searchContacts');
   if (searchInput) {

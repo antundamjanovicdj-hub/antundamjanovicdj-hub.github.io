@@ -345,10 +345,15 @@
     <input type="tel" id="contactPhone" placeholder="">
 
     <!-- PHOTO PICKER -->
-    <button id="btnPickContactPhoto"></button>
-    <input type="hidden" id="contactPhotoData">
+    <button id="btnPickContactPhoto" class="btn-save">
+  📷 Odaberi sliku
+</button>
 
-    <button id="saveContact"></button>
+<input type="hidden" id="contactPhotoData">
+
+<button id="saveContact" class="btn-save">
+  💾 Spremi
+</button>
 
   </div>
 </div>
@@ -384,6 +389,10 @@
   <div class="contacts-search">
     <input type="text" id="searchContacts" placeholder="Search...">
   </div>
+
+  <button id="btnDeleteSelectedContacts" class="btn-save">
+  🗑️ Obriši odabrane
+</button>
 
   <!-- LIST -->
   <div id="contactsList" class="contacts-list"></div>

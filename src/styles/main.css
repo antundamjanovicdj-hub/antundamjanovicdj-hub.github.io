@@ -2658,3 +2658,30 @@ backdrop-filter: blur(10px);
   color: #ffffff;
   text-transform: capitalize;
 }
+
+/* 🔥 FORCE CONTACT FORM BUTTON STYLE */
+#btnPickContactPhoto,
+#saveContact {
+  width: 100%;
+  padding: 10px;
+  margin-top: 14px;
+
+  background: transparent !important;
+  border: none !important;
+  border-radius: 16px;
+
+  font-size: 16px;
+  font-weight: 700;
+
+  color: #ffffff !important;
+
+  box-shadow: 0 14px 32px rgba(0,0,0,0.45);
+
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+#btnPickContactPhoto:active,
+#saveContact:active {
+  transform: scale(0.96);
+}

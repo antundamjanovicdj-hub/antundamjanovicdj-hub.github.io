@@ -51,5 +51,11 @@
 	<string>LifeKompas treba pristup tvojim kontaktima kako bi mogao uvesti osobe koje želiš imati na jednom sigurnom mjestu.</string>
 	<key>NSCalendarsUsageDescription</key>
 	<string>LifeKompas treba pristup kalendaru za podsjetnike o rođendanima.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>LifeKompas treba pristup kameri za dodavanje slike kontakta.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>LifeKompas treba pristup fotografijama za odabir slike kontakta.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>LifeKompas treba spremiti sliku kontakta.</string>
 </dict>
 </plist>

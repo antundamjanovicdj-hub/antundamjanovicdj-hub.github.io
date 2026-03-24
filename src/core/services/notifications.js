@@ -111,6 +111,7 @@ await cancelObligationNotification(obligation);
         smallIcon: "ic_stat_icon_config_sample",
         importance: 5,
         visibility: 1,
+        badge: false,
 
         extra: { obligationId: obligation.id }
       }]
@@ -266,15 +267,38 @@ export async function scheduleBirthdayNotification(contact) {
 
   try {
     await LN.schedule({
-      notifications: [{
-        id,
-        title: "🎂 Rođendan",
-        body: `${contact.firstName || ''} ${contact.lastName || ''} danas slavi rođendan!`.trim(),
-        schedule: { at: nextBirthday },
-        sound: "default",
-        extra: { contactId: contact.id }
-      }]
-    });
+  notifications: [
+
+    // 🔥 PRVA (sigurna — za ovu godinu)
+    {
+      id,
+      title: "🎂 Rođendan",
+      body: `${contact.firstName || ''} ${contact.lastName || ''} danas slavi rođendan!`.trim(),
+      schedule: { at: nextBirthday },
+      sound: "default",
+      extra: { contactId: contact.id }
+    },
+
+    // 🔥 DRUGA (ponavljanje svake godine)
+    {
+      id: id + 100000, // drugi ID (mora biti različit)
+      title: "🎂 Rođendan",
+      body: `${contact.firstName || ''} ${contact.lastName || ''} danas slavi rođendan!`.trim(),
+      schedule: {
+        on: {
+          month: monthNum,
+          day: dayNum,
+          hour: hours,
+          minute: minutes
+        },
+        repeats: true
+      },
+      sound: "default",
+      extra: { contactId: contact.id }
+    }
+
+  ]
+});
   } catch (err) {
     console.error("Birthday notification schedule error:", err);
   }
@@ -347,14 +371,22 @@ window.cancelBirthdayNotification = cancelBirthdayNotification;
     // 👉 CONTACTS (future safe)
     if (data.contactId) {
 
-      const lang = localStorage.getItem('lk_lang');
-      if (lang) {
-        document.getElementById('screen-lang')?.classList.remove('active');
-        document.getElementById('screen-menu')?.classList.add('active');
-      }
+  const contactId = Number(data.contactId);
 
-      window.showScreen?.('screen-contacts');
-    }
+  const lang = localStorage.getItem('lk_lang');
+  if (lang) {
+    document.getElementById('screen-lang')?.classList.remove('active');
+    document.getElementById('screen-menu')?.classList.add('active');
+  }
+
+  // prvo otvori contacts screen
+  window.showScreen?.('screen-contacts');
+
+  // 🔥 zatim otvori točan kontakt (mali delay zbog rendera)
+  setTimeout(() => {
+    window.openContactDetails?.(contactId);
+  }, 500);
+}
 
   });
 

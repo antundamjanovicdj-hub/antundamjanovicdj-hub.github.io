@@ -20,7 +20,14 @@ export async function renderObligationsList_SAFE() {
     const obligations = await obligationDB.getAll();
 
     if (typeof window.renderObligationsList === "function") {
-      return window.renderObligationsList(obligations);
+      const result = window.renderObligationsList(obligations);
+
+// 🫀 CHECK YESTERDAY POPUP (after render)
+setTimeout(() => {
+  checkYesterdayUnfinished();
+}, 100);
+
+return result;
     }
 
     console.warn("[obligations] renderObligationsList not wired yet");
@@ -43,6 +50,18 @@ function renderFallbackState() {
 
 // ===== MAIN LIST RENDER =====
 export function renderObligationsList(obligations = []) {
+  // 🫀 force ALL view from notification
+if (window.__LK_FORCE_ALL_VIEW__) {
+  window.__LK_FORCE_ALL_VIEW__ = false;
+
+  if (typeof window.showListMode === "function") {
+    window.showListMode();
+  }
+}
+  // 🫀 skip unwanted re-render after notification
+if (window.__LK_FROM_NOTIFICATION__) {
+  window.__LK_FROM_NOTIFICATION__ = false;
+}
 
   // 🛡️ allow forced refresh to bypass lock
 if (window.__LK_RENDER_LOCK__ && !window.__LK_FORCE_RENDER__) return;
@@ -63,9 +82,12 @@ document.querySelectorAll('.temporal-pointer, #temporalPointer').forEach(el => e
   const safeObligations = Array.isArray(obligations) ? obligations : [];
 
   const lang = window.getLang?.() || 'hr';
-  const temporalStateRaw = Temporal.getState?.() || {};
+  let temporalState = Temporal.getState?.() || {};
 
-const temporalState = temporalStateRaw;
+  // 🫀 ALWAYS SYNC WITH LATEST TEMPORAL STATE
+if (window.__TEMPORAL_STATE__) {
+  temporalState = window.__TEMPORAL_STATE__;
+}
 
   container.innerHTML = renderAllSections(safeObligations, temporalState, lang);
 
@@ -155,7 +177,7 @@ export function buildSections(obligations, temporalState) {
   o.dateTime &&
   String(o.dateTime).match(/T\d{2}:\d{2}/) &&
   getISODateFromDateTime(o.dateTime) === today
-  ).sort((a, b) => {
+).sort((a, b) => {
 
   const timeDiff = new Date(a.dateTime) - new Date(b.dateTime);
 
@@ -1074,19 +1096,45 @@ export function updateNowIndicatorVisibility() {
 export function highlightNewObligation(id) {
   if (!id) return;
 
-  requestAnimationFrame(() => {
+  let attempts = 0;
+
+  function tryHighlight() {
     const el = document.querySelector(`.obligation-card[data-id="${id}"]`);
-    if (!el) return;
+
+    if (!el) {
+      if (attempts < 12) {
+        attempts++;
+        setTimeout(tryHighlight, 120);
+      }
+      return;
+    }
 
     el.scrollIntoView({ behavior: "smooth", block: "center" });
 
     setTimeout(() => {
+
+  // 🫀 FIRST LONG BLINK
+  el.classList.add("obligation-new");
+
+  setTimeout(() => {
+    el.classList.remove("obligation-new");
+
+    // 🫀 SECOND LONG BLINK
+    setTimeout(() => {
       el.classList.add("obligation-new");
+
       setTimeout(() => {
         el.classList.remove("obligation-new");
-      }, 2000);
-    }, 350);
-  });
+      }, 1400);
+
+    }, 300);
+
+  }, 1400);
+
+}, 200);
+  }
+
+  tryHighlight();
 }
 
 // ===== YESTERDAY UNFINISHED DIALOG =====
@@ -1094,17 +1142,70 @@ export async function checkYesterdayUnfinished() {
   // prevent multiple dialogs
 if (window.__LK_YESTERDAY_DIALOG_OPEN__) return;
 window.__LK_YESTERDAY_DIALOG_OPEN__ = true;
+
+// 🫀 FIX: show popup only once per day
+const todayKey = new Date().toISOString().slice(0, 10);
+const alreadyHandled = localStorage.getItem('lk_yesterday_handled');
+
+// 🫀 allow popup if NEW unhandled exist
+if (alreadyHandled === todayKey) {
+
+  const handledIds = JSON.parse(localStorage.getItem('lk_yesterday_handled_ids') || '[]');
+
+  const hasNewUnfinished = obligations.some(o => {
+    if (o.status === 'done') return false;
+    if (!o.dateTime) return false;
+
+    const obDate = getISODateFromDateTime(o.dateTime);
+
+    const now = new Date();
+    const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+
+    const yy = yesterday.getFullYear();
+    const mm = String(yesterday.getMonth() + 1).padStart(2, '0');
+    const dd = String(yesterday.getDate()).padStart(2, '0');
+
+    const yesterdayISO = `${yy}-${mm}-${dd}`;
+
+    if (obDate !== yesterdayISO) return false;
+
+    return !handledIds.includes(o.id);
+  });
+
+  if (!hasNewUnfinished) {
+    window.__LK_YESTERDAY_DIALOG_OPEN__ = false;
+    return;
+  }
+}
   const obligations = await obligationDB.getAll();
   const lang = window.getLang?.() || 'hr';
   const t = window.I18N?.[lang]?.yesterday || window.I18N?.hr?.yesterday;
 
-  const yesterdayUnfinished = obligations.filter(o => {
-    if (o.status === 'done') return false;
-    if (!o.dateTime) return false;
-    return isYesterday(o.dateTime);
-  });
+  // 🫀 STEP 1: sve jučerašnje nezavršene
+const yesterdayUnfinished = obligations.filter(o => {
 
-  if (yesterdayUnfinished.length === 0) {
+  if (o.status === 'done') return false;
+  if (!o.dateTime) return false;
+
+  const obDate = getISODateFromDateTime(o.dateTime);
+
+  const now = new Date();
+  const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+
+  const yy = yesterday.getFullYear();
+  const mm = String(yesterday.getMonth() + 1).padStart(2, '0');
+  const dd = String(yesterday.getDate()).padStart(2, '0');
+
+  const yesterdayISO = `${yy}-${mm}-${dd}`;
+
+  return obDate === yesterdayISO;
+});
+
+// 🫀 STEP 2: izbaci već obrađene
+const handledIds = JSON.parse(localStorage.getItem('lk_yesterday_handled_ids') || '[]');
+const unhandled = yesterdayUnfinished.filter(o => !handledIds.includes(o.id));
+
+  if (unhandled.length === 0) {
   window.__LK_YESTERDAY_DIALOG_OPEN__ = false;
   return;
 }
@@ -1125,21 +1226,48 @@ window.__LK_YESTERDAY_DIALOG_OPEN__ = true;
   document.body.appendChild(dialog);
 
   document.getElementById('moveToToday').addEventListener('click', async () => {
-    const today = todayISO();
-    for (const ob of yesterdayUnfinished) {
-      const oldTime = ob.dateTime.split('T')[1] || '09:00';
-      ob.dateTime = `${today}T${oldTime}`;
-      await obligationDB.add(ob);
-    }
+  const today = todayISO();
+
+  // 🫀 mark handled (ONCE)
+  const handled = new Set(JSON.parse(localStorage.getItem('lk_yesterday_handled_ids') || '[]'));
+  unhandled.forEach(o => handled.add(o.id));
+  localStorage.setItem('lk_yesterday_handled_ids', JSON.stringify([...handled]));
+
+  for (const ob of unhandled) {
+    const oldTime = ob.dateTime.split('T')[1] || '09:00';
+    ob.dateTime = `${today}T${oldTime}`;
+    await obligationDB.add(ob);
+  }
     dialog.remove();
 window.__LK_YESTERDAY_DIALOG_OPEN__ = false;
+
+// 🫀 mark as handled today
+localStorage.setItem('lk_yesterday_handled', new Date().toISOString().slice(0, 10));
     await getFreshTemporalState();
-    window.refreshCurrentObligationsView?.();
+window.refreshCurrentObligationsView?.();
+
+// 🫀 FIX: nakon popup odluke pokreni scheduling
+setTimeout(() => {
+  recoverReminders();
+}, 300);
   });
 
   document.getElementById('keepYesterday').addEventListener('click', () => {
     dialog.remove();
 window.__LK_YESTERDAY_DIALOG_OPEN__ = false;
+
+// 🫀 mark handled
+const handled = new Set(JSON.parse(localStorage.getItem('lk_yesterday_handled_ids') || '[]'));
+unhandled.forEach(o => handled.add(o.id));
+localStorage.setItem('lk_yesterday_handled_ids', JSON.stringify([...handled]));
+
+// 🫀 mark as handled today
+localStorage.setItem('lk_yesterday_handled', new Date().toISOString().slice(0, 10));
+
+// 🫀 FIX: scheduling i kad ostavi u jučer
+setTimeout(() => {
+  recoverReminders();
+}, 300);
   });
 }
 
@@ -1187,22 +1315,27 @@ export async function processRecurringObligation(obligation) {
 // ===== MOBILE LIFECYCLE =====
 export function setupMobileLifecycle() {
   document.addEventListener('visibilitychange', async () => {
-    if (document.visibilityState === 'visible') {
-  console.log('[Lifecycle] App resumed');
+  if (document.visibilityState === 'visible') {
+    console.log('[Lifecycle] App resumed');
 
-  recoverReminders();
+    recoverReminders();
 
-  const obligations = await obligationDB.getAll();
+    const obligations = await obligationDB.getAll();
 
-  await getFreshTemporalState();
+    await getFreshTemporalState();
 
-  // 🔥 render sa stvarnim podacima (fix za prazan ekran)
-  window.__LK_FORCE_RENDER__ = true;
-  window.renderObligationsList?.(obligations);
+    // 🫀 FIX: restore correct screen + header state
+    if (window.showScreen) {
+      window.showScreen('screen-obligations-list');
+    }
 
-  checkYesterdayUnfinished();
-}
-  });
+    // 🔥 render sa stvarnim podacima
+    window.__LK_FORCE_RENDER__ = true;
+    window.renderObligationsList?.(obligations);
+
+    checkYesterdayUnfinished();
+  }
+});
 
   if (window.Capacitor?.Plugins?.App) {
     window.Capacitor.Plugins.App.addListener('appStateChange', async (state) => {
@@ -1270,6 +1403,52 @@ export async function recoverReminders() {
   const obligations = await obligationDB.getAll();
   const now = Date.now();
 
+  // 🫀 FIX: ensure recurring obligations are generated on resume
+for (const ob of obligations) {
+
+  if (!ob.repeat) continue;
+  if (ob.status === "done") continue;
+  if (!ob.dateTime) continue;
+
+  const current = new Date(ob.dateTime);
+  const nowDate = new Date();
+
+  let shouldGenerate = false;
+
+  if (ob.repeat === "daily") {
+    shouldGenerate = current.toDateString() !== nowDate.toDateString();
+  }
+
+  if (ob.repeat === "weekly") {
+    const diffDays = Math.floor((nowDate - current) / (1000 * 60 * 60 * 24));
+    shouldGenerate = diffDays >= 7;
+  }
+
+  if (ob.repeat === "monthly") {
+    shouldGenerate =
+      current.getMonth() !== nowDate.getMonth() ||
+      current.getFullYear() !== nowDate.getFullYear();
+  }
+
+  if (!shouldGenerate) continue;
+
+  const freshAll = await obligationDB.getAll();
+
+const exists = freshAll.some(o =>
+  o.parentId === ob.id &&
+  o.status !== "done"
+);
+
+  if (!exists) {
+  const newOb = await processRecurringObligation(ob);
+
+  // 🫀 odmah zakazati reminder za novi repeat
+  if (newOb && window.scheduleReminder) {
+    window.scheduleReminder(newOb);
+  }
+}
+}
+
   for (const ob of obligations) {
 
     if (!ob.reminder) continue;
@@ -1279,7 +1458,21 @@ export async function recoverReminders() {
     const eventTime = new Date(ob.dateTime).getTime();
     const reminderTime = eventTime - (ob.reminder * 60000);
 
-    if (reminderTime <= now) continue;
+    if (reminderTime <= now) {
+
+  // 🫀 FIX: overdue → schedule odmah
+  if (eventTime > now) {
+    window.scheduleReminder(ob);
+  } else {
+    // 🔥 čak i ako je event prošao → obavijesti korisnika
+    window.scheduleReminder({
+      ...ob,
+      dateTime: new Date(Date.now() + 5000).toISOString().slice(0, 16)
+    });
+  }
+
+  continue;
+}
 
     const key = `${ob.id}-${ob.dateTime}`;
 

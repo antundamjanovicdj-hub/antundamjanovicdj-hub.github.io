@@ -68,18 +68,32 @@ await cancelObligationNotification(obligation);
   }
 
   const eventTime = eventDate.getTime();
-  const reminderMinutes = obligation.reminder ? parseInt(obligation.reminder, 10) : 0;
+const reminderMinutes = obligation.reminder ? parseInt(obligation.reminder, 10) : 0;
 
-  // 🔧 FIX: Handle NaN reminder
-  const safeReminderMinutes = isNaN(reminderMinutes) ? 0 : reminderMinutes;
-  const triggerTime = eventTime - safeReminderMinutes * 60 * 1000;
+// 🔧 FIX: Handle NaN reminder
+const safeReminderMinutes = isNaN(reminderMinutes) ? 0 : reminderMinutes;
 
-  // iOS/Android safety: ne schedule u prošlosti
-  // iOS safety window
-  if (triggerTime <= Date.now() + 60000) {
-    console.log("⛔ trigger too close — skip reschedule");
-    return;
-  }
+let triggerTime = eventTime - safeReminderMinutes * 60 * 1000;
+
+// iOS/Android safety:
+// ako je reminder već prošao ili je preblizu,
+// ali sama obveza još nije prošla → schedule uskoro
+if (triggerTime <= Date.now() + 60000) {
+
+  if (eventTime <= Date.now()) {
+
+  console.log("⚠️ overdue obligation — scheduling immediate notification");
+
+  triggerTime = Date.now() + 5000; // 5 sekundi
+
+}
+
+  triggerTime = Date.now() + 90000;
+  console.log("⏱️ trigger adjusted for late repeat scheduling", {
+    obligationId: obligation.id,
+    adjustedTriggerTime: triggerTime
+  });
+}
 
   // 🔧 FIX: Safe ID generation
   const id = safeNotificationId(obligation.id);
@@ -354,18 +368,22 @@ window.cancelBirthdayNotification = cancelBirthdayNotification;
       // open obligations screen
       window.showScreen?.('screen-obligations-list');
 
-      // scroll to obligation (malo delay za render)
+      // ✅ za današnju obvezu ostajemo u DAILY view
       setTimeout(() => {
+        window.showDailyMode?.();
+      }, 120);
 
+      // ✅ nakon što se ekran/daily view stabilizira → scroll + highlight
+      setTimeout(() => {
         const el = document.querySelector(
           `.obligation-card[data-id="${data.obligationId}"]`
         );
 
         if (el) {
           el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          window.highlightNewObligation?.(data.obligationId);
         }
-
-      }, 600);
+      }, 500);
     }
 
     // 👉 CONTACTS (future safe)

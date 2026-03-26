@@ -52,11 +52,15 @@ function renderFallbackState() {
 export function renderObligationsList(obligations = []) {
   // 🫀 force ALL view from notification
 if (window.__LK_FORCE_ALL_VIEW__) {
-  window.__LK_FORCE_ALL_VIEW__ = false;
 
   if (typeof window.showListMode === "function") {
     window.showListMode();
   }
+
+  // 🫀 reset tek nakon stabilizacije
+  setTimeout(() => {
+    window.__LK_FORCE_ALL_VIEW__ = false;
+  }, 800);
 }
   // 🫀 skip unwanted re-render after notification
 if (window.__LK_FROM_NOTIFICATION__) {
@@ -1143,6 +1147,9 @@ export async function checkYesterdayUnfinished() {
 if (window.__LK_YESTERDAY_DIALOG_OPEN__) return;
 window.__LK_YESTERDAY_DIALOG_OPEN__ = true;
 
+// 🫀 prvo učitaj obveze (CRITICAL FIX)
+const obligations = await obligationDB.getAll();
+
 // 🫀 FIX: show popup only once per day
 const todayKey = new Date().toISOString().slice(0, 10);
 const alreadyHandled = localStorage.getItem('lk_yesterday_handled');
@@ -1177,7 +1184,6 @@ if (alreadyHandled === todayKey) {
     return;
   }
 }
-  const obligations = await obligationDB.getAll();
   const lang = window.getLang?.() || 'hr';
   const t = window.I18N?.[lang]?.yesterday || window.I18N?.hr?.yesterday;
 

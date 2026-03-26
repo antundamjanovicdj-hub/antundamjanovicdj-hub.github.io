@@ -356,35 +356,59 @@ window.cancelBirthdayNotification = cancelBirthdayNotification;
     if (!data) return;
 
     // 👉 OBVEZE
-    if (data.obligationId) {
+if (data.obligationId) {
 
-      // skip language screen
-      const lang = localStorage.getItem('lk_lang');
-      if (lang) {
-        document.getElementById('screen-lang')?.classList.remove('active');
-        document.getElementById('screen-menu')?.classList.add('active');
-      }
+  // skip language screen
+  const lang = localStorage.getItem('lk_lang');
+  if (lang) {
+    document.getElementById('screen-lang')?.classList.remove('active');
+    document.getElementById('screen-menu')?.classList.add('active');
+  }
 
-      // open obligations screen
-      window.showScreen?.('screen-obligations-list');
+  // open obligations screen
+  window.showScreen?.('screen-obligations-list');
 
-      // ✅ za današnju obvezu ostajemo u DAILY view
-      setTimeout(() => {
-        window.showDailyMode?.();
-      }, 120);
+// 🫀 uvijek prvo daily (stabilno)
+setTimeout(() => {
+  window.showDailyMode?.();
+}, 120);
 
-      // ✅ nakon što se ekran/daily view stabilizira → scroll + highlight
-      setTimeout(() => {
-        const el = document.querySelector(
-          `.obligation-card[data-id="${data.obligationId}"]`
-        );
+// 🫀 pokušaj pronaći u DAILY
+setTimeout(async () => {
 
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          window.highlightNewObligation?.(data.obligationId);
-        }
-      }, 500);
+  let el = document.querySelector(
+    `.obligation-card[data-id="${data.obligationId}"]`
+  );
+
+  // ✅ ako postoji (danas)
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    window.highlightNewObligation?.(data.obligationId);
+    return;
+  }
+
+  // ❌ nije u daily → uzmi ALL direktno
+  const all = await window.obligationDB?.getAll?.();
+
+  window.__LK_FORCE_RENDER__ = true;
+  window.renderObligationsList?.(all);
+
+  // 🫀 čekaj render pa opet traži
+  setTimeout(() => {
+
+    el = document.querySelector(
+      `.obligation-card[data-id="${data.obligationId}"]`
+    );
+
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      window.highlightNewObligation?.(data.obligationId);
     }
+
+  }, 400);
+
+}, 500);
+}
 
     // 👉 CONTACTS (future safe)
     if (data.contactId) {

@@ -99,6 +99,13 @@ export function initApp() {
       window.showScreen = function (screenId) {
         console.log('[NAV]', screenId);
 
+        // 🛑 CLOSE FINANCE POPUP ON NAVIGATION
+const financePopup = document.getElementById('financeCostsPopup');
+if (financePopup) {
+  financePopup.classList.remove('animate');
+  financePopup.style.display = 'none';
+}
+
         // ===== HEADER TITLE =====
         const headerTitle = document.getElementById('headerTitle');
         if (headerTitle) {
@@ -398,12 +405,17 @@ document.addEventListener('click', async (e) => {
           return;
         }
         list.innerHTML = incomes.map(i => `
-          <div class="finance-item" data-id="${i.id}" style="position:relative;">
-            <div><strong>${i.amount} €</strong> – ${i.desc}</div>
-            <div>${new Date(i.date).toLocaleDateString('hr-HR')}</div>
-            <button class="finance-edit" data-id="${i.id}">✏️</button>
-            <button class="finance-delete" data-id="${i.id}" style="position:absolute; bottom:6px; right:6px; border:none; background:none; font-size:18px;">🗑️</button>
-          </div>`).join('');
+  <div class="finance-item" data-id="${i.id}">
+    <div class="finance-row">
+      <div><strong>${Number(i.amount).toFixed(2)} €</strong> – ${i.desc}</div>
+
+      <div class="finance-actions">
+        <button class="finance-edit" data-id="${i.id}">✏️</button>
+        <button class="finance-delete" data-id="${i.id}">🗑️</button>
+      </div>
+    </div>
+  </div>
+`).join('');
         list.querySelectorAll('.finance-delete').forEach(btn => {
           btn.addEventListener('click', async () => {
             const id = Number(btn.dataset.id);
@@ -563,7 +575,53 @@ document.addEventListener('click', async (e) => {
       if (backFinanceOverview) backFinanceOverview.addEventListener('click', () => showScreen('screen-finances-menu'));
 
       // FINANCES BUTTON
-      document.getElementById('btnFinances').addEventListener('click', () => showScreen('screen-finances-menu'));
+      document.getElementById('btnFinances').addEventListener('click', async () => {
+  showScreen('screen-finances-menu');
+  await renderFinanceSummary();
+});
+
+// ===== FINANCE SUMMARY (UX POLISH) =====
+async function renderFinanceSummary() {
+  const items = await getFinanceItems();
+
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+
+  // PRIHODI
+  const incomes = items.filter(i =>
+    i.type === 'income' &&
+    i.date &&
+    i.date.startsWith(`${year}-${month}`)
+  );
+
+  const totalIncome = incomes.reduce((sum, i) => sum + Number(i.amount), 0);
+
+  // TROŠKOVI
+  const fixed = items.filter(i => i.type === 'fixed');
+  const totalFixed = fixed.reduce((sum, i) => sum + Number(i.amount), 0);
+
+  const credits = items.filter(i => i.type === 'credit');
+  const totalCredits = credits.reduce((sum, i) => sum + Number(i.amount), 0);
+
+  const other = items.filter(i =>
+    i.type === 'otherCost' &&
+    i.date &&
+    i.date.startsWith(`${year}-${month}`)
+  );
+  const totalOther = other.reduce((sum, i) => sum + Number(i.amount), 0);
+
+  const incomeEl = document.getElementById('financeIncomeTotal');
+  const expenseEl = document.getElementById('financeExpenseTotal');
+  const balanceEl = document.getElementById('financeBalanceTotal');
+
+  const totalExpenses = totalFixed + totalCredits + totalOther;
+const balance = totalIncome - totalExpenses;
+
+if (incomeEl) incomeEl.textContent = `Prihodi ${totalIncome.toFixed(2)} €`;
+if (expenseEl) expenseEl.textContent = `Odbici ${totalExpenses.toFixed(2)} €`;
+if (balanceEl) balanceEl.textContent = `Stanje ${balance.toFixed(2)} €`;
+}
 
       // ===== CONTACTS BUTTON =====
       document.getElementById('btnContacts').addEventListener('click', () => {
@@ -599,11 +657,17 @@ document.addEventListener('click', async (e) => {
           return;
         }
         list.innerHTML = fixed.map(i => `
-          <div class="finance-item" data-id="${i.id}" style="position:relative;">
-            <div><strong>${i.amount} €</strong> – ${i.desc}</div>
-            <button class="finance-edit-fixed" data-id="${i.id}">✏️</button>
-            <button class="finance-delete-fixed" data-id="${i.id}" style="position:absolute; bottom:6px; right:6px; border:none; background:none; font-size:18px;">🗑️</button>
-          </div>`).join('');
+          <div class="finance-item" data-id="${i.id}">
+            <div class="finance-row">
+              <div><strong>${Number(i.amount).toFixed(2)} €</strong> – ${i.desc}</div>
+
+              <div class="finance-actions">
+                <button class="finance-edit-fixed" data-id="${i.id}">✏️</button>
+                <button class="finance-delete-fixed" data-id="${i.id}">🗑️</button>
+             </div>
+           </div>
+         </div>
+         `).join('');
         list.querySelectorAll('.finance-delete-fixed').forEach(btn => {
           btn.addEventListener('click', async () => {
             const id = Number(btn.dataset.id);
@@ -636,14 +700,22 @@ document.addEventListener('click', async (e) => {
           return;
         }
         list.innerHTML = credits.map(c => `
-          <div class="finance-item" data-id="${c.id}" style="position:relative;">
-            <div><strong>${c.amount} €</strong> – ${c.desc}</div>
-            <div>Početak: ${new Date(c.start).toLocaleDateString('hr-HR')}</div>
-            <div>Završetak: ${new Date(c.end).toLocaleDateString('hr-HR')}</div>
-            <div>Zadnja uplata: ${c.lastPaid ? new Date(c.lastPaid).toLocaleDateString('hr-HR') : '-'}</div>
-            <button class="finance-edit-credit" data-id="${c.id}">✏️</button>
-            <button class="finance-delete-credit" data-id="${c.id}" style="position:absolute; bottom:6px; right:6px; border:none; background:none; font-size:18px;">🗑️</button>
-          </div>`).join('');
+  <div class="finance-item" data-id="${c.id}">
+    <div class="finance-row">
+      <div>
+        <strong>${Number(c.amount).toFixed(2)} €</strong> – ${c.desc}
+        <div style="font-size:12px; opacity:0.7;">
+          ${new Date(c.start).toLocaleDateString('hr-HR')} → ${new Date(c.end).toLocaleDateString('hr-HR')}
+        </div>
+      </div>
+
+      <div class="finance-actions">
+        <button class="finance-edit-credit" data-id="${c.id}">✏️</button>
+        <button class="finance-delete-credit" data-id="${c.id}">🗑️</button>
+      </div>
+    </div>
+  </div>
+`).join('');
         list.querySelectorAll('.finance-delete-credit').forEach(btn => {
           btn.addEventListener('click', async () => {
             const id = Number(btn.dataset.id);
@@ -729,13 +801,22 @@ document.addEventListener('click', async (e) => {
           return;
         }
         list.innerHTML = items.map(i => `
-          <div class="finance-item" data-id="${i.id}" style="position:relative;">
-            <div><strong>${i.desc}</strong></div>
-            <div>€ ${Number(i.amount).toFixed(2)}</div>
-            <div>${i.date ? new Date(i.date).toLocaleDateString('hr-HR') : ''}</div>
-            <button class="finance-edit-other" data-id="${i.id}">✏️</button>
-            <button class="finance-delete-other" data-id="${i.id}" style="position:absolute; bottom:6px; right:6px; border:none; background:none; font-size:18px;">🗑️</button>
-          </div>`).join('');
+  <div class="finance-item" data-id="${i.id}">
+    <div class="finance-row">
+      <div>
+        <strong>${Number(i.amount).toFixed(2)} €</strong> – ${i.desc}
+        <div style="font-size:12px; opacity:0.7;">
+          ${i.date ? new Date(i.date).toLocaleDateString('hr-HR') : ''}
+        </div>
+      </div>
+
+      <div class="finance-actions">
+        <button class="finance-edit-other" data-id="${i.id}">✏️</button>
+        <button class="finance-delete-other" data-id="${i.id}">🗑️</button>
+      </div>
+    </div>
+  </div>
+`).join('');
         list.querySelectorAll('.finance-delete-other').forEach(btn => {
           btn.addEventListener('click', async () => {
             const id = Number(btn.dataset.id);
@@ -806,6 +887,53 @@ document.addEventListener('click', async (e) => {
           });
         }
       });
+
+      // ===== NEW FINANCES UX (SIMPLIFIED) =====
+
+// ➕ Dodaj transakciju → direktno otvori prihode (kao default entry)
+document.getElementById('btnAddTransaction')?.addEventListener('click', () => {
+  document.getElementById('btnIncomeScreen')?.click();
+});
+
+// 📂 Troškovi → vodi na mjesečne troškove (entry point)
+document.getElementById('btnAllCosts')?.addEventListener('click', () => {
+  const popup = document.getElementById('financeCostsPopup');
+  if (!popup) return;
+
+  popup.style.display = 'block';
+
+  requestAnimationFrame(() => {
+    popup.classList.add('animate');
+  });
+});
+
+// ===== FINANCE COSTS POPUP ACTIONS =====
+
+document.getElementById('btnGoFixed')?.addEventListener('click', () => {
+  closeFinancePopup();
+  document.getElementById('btnMonthlyCostsScreen')?.click();
+});
+
+document.getElementById('btnGoOther')?.addEventListener('click', () => {
+  closeFinancePopup();
+  document.getElementById('btnOtherCostsScreen')?.click();
+});
+
+document.getElementById('btnGoCredits')?.addEventListener('click', () => {
+  closeFinancePopup();
+  document.getElementById('btnCreditsScreen')?.click();
+});
+
+function closeFinancePopup() {
+  const popup = document.getElementById('financeCostsPopup');
+  if (!popup) return;
+
+  popup.classList.remove('animate');
+
+  setTimeout(() => {
+    popup.style.display = 'none';
+  }, 200);
+}
 
       // ===== FINANCES MENU BUTTON LINKS =====
       document.getElementById('btnIncomeScreen').addEventListener('click', async () => {

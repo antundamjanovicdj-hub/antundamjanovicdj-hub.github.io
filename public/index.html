@@ -88,14 +88,41 @@
 <!-- FINANCES MENU SCREEN -->
 <div id="screen-finances-menu" class="screen finance-background">
   <h2 class="screen-title">💰 Financije</h2>
+  <div id="financeSummary" class="finance-summary">
+  <div class="finance-summary-title">💰 Ovaj mjesec</div>
+  <div class="finance-summary-values">
+  <span id="financeIncomeTotal">+0 €</span>
+  <span id="financeExpenseTotal">Odbici 0 €</span>
+  <span id="financeBalanceTotal">Stanje 0 €</span>
+</div>
+</div>
 
   <div class="main-menu-buttons">
-    <button class="menu-item" id="btnIncomeScreen">💵 Unos prihoda</button>
-    <button class="menu-item" id="btnMonthlyCostsScreen">📅 Mjesečni troškovi</button>
-    <button class="menu-item" id="btnCreditsScreen">🏦 Krediti</button>
-    <button class="menu-item" id="btnOtherCostsScreen">🛒 Ostali troškovi</button>
-    <button class="menu-item" id="btnCostsOverview">📊 Pregled troškova</button>
-  </div>
+
+  <!-- PRIMARY -->
+  <button class="menu-item" id="btnAddTransaction">
+    ➕ Dodaj transakciju
+  </button>
+
+  <!-- SECONDARY -->
+  <button class="menu-item" id="btnAllCosts">
+    📂 Troškovi
+  </button>
+
+  <!-- VIEW -->
+  <button class="menu-item" id="btnCostsOverview">
+    📊 Pregled troškova
+  </button>
+
+</div>
+
+<!-- 🔽 HIDDEN ORIGINAL BUTTONS (logic stays alive) -->
+<div style="display:none;">
+  <button id="btnIncomeScreen"></button>
+  <button id="btnMonthlyCostsScreen"></button>
+  <button id="btnCreditsScreen"></button>
+  <button id="btnOtherCostsScreen"></button>
+</div>
 </div>
 <!-- FINANCE: INCOME SCREEN -->
 <div id="screen-finance-income" class="screen finance-background">
@@ -222,6 +249,15 @@
       <button class="balloon-btn" id="btnViewObligations">📅 Pregled obveza</button>
     </div>
   </div>
+
+  <!-- FINANCES COSTS POPUP -->
+<div id="financeCostsPopup" class="popup-balloon">
+  <div class="balloon-content">
+    <button class="balloon-btn" id="btnGoFixed">📅 Mjesečni troškovi</button>
+    <button class="balloon-btn" id="btnGoOther">🛒 Ostali troškovi</button>
+    <button class="balloon-btn" id="btnGoCredits">🏦 Krediti</button>
+  </div>
+</div>
 
   <!-- EKRAN: DODAVANJE/UREĐIVANJE OBVEZE -->
   <div id="screen-add-obligation" class="screen" data-autofocus="obligationTitle">

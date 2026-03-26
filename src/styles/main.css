@@ -279,27 +279,42 @@ html, body {
 }
 
 .balloon-content {
-  background: white;
-  border-radius: 20px;
-  padding: 16px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  border-radius: 18px;
+  padding: 14px;
+
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  border: 1px solid rgba(255,255,255,0.15);
 }
 
 .balloon-btn {
-  display: block;
-  width: 100%;
-  padding: 12px;
-  margin: 8px 0;
-  border: none;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+
   border-radius: 14px;
-  background: #ffcc80;
-  color: #0d3b25;
-  font-family: 'Caveat', cursive;
-  font-size: 1.2rem;
-  font-weight: 700;
-  cursor: pointer;
+  padding: 12px;
+
+  font-size: 15px;
+  font-weight: 600;
+
+  color: white;
+
   text-align: left;
-  transition: background 0.2s;
+
+  transition: all 0.2s ease;
+}
+
+.balloon-btn:active {
+  transform: scale(0.97);
+  background: rgba(255,255,255,0.18);
 }
 
 .balloon-btn:hover {
@@ -1257,7 +1272,7 @@ backdrop-filter: blur(10px);
 
   border-radius: 18px;
   background: rgba(255,255,255,0.16);
-  color: rgba(0,0,0,0.85);
+  color: rgba(255,255,255,0.92);
 
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -1289,7 +1304,18 @@ backdrop-filter: blur(10px);
 
 /* ===== FINANCES BACKGROUND ===== */
 .finance-background {
-  background: #f5f7fa;
+  position: relative;
+}
+
+.finance-background::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+
+  background: rgba(0,0,0,0.35); /* 👈 zatamnjenje */
+
+  pointer-events: none;
+  z-index: 0;
 }
 /* ===== FIX: space for back button on finance screens ===== */
 #screen-finance-income,
@@ -1300,6 +1326,73 @@ backdrop-filter: blur(10px);
   padding-top: 60px;
   box-sizing: border-box;
 }
+
+.finance-summary {
+  margin: 16px;
+  padding: 16px;
+
+  border-radius: 18px;
+
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+
+  text-align: center;
+
+  border: 1px solid rgba(255,255,255,0.15);
+
+  box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+}
+
+.finance-summary-title {
+  font-size: 15px;
+  opacity: 0.8;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: white;
+}
+
+.finance-summary-values {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+
+  font-size: 15px;   /* 👈 isto kao title */
+  font-weight: 600;
+}
+
+.finance-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.finance-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.finance-actions button {
+  border: none;
+  background: rgba(255,255,255,0.08);
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 14px;
+}
+
+#financeIncomeTotal {
+  color: #4cff9a;
+}
+
+#financeExpenseTotal {
+  color: white;
+  opacity: 0.9;
+}
+
+#financeBalanceTotal {
+  font-weight: 900;
+}
+
 /* ===== CONTACTS LIST LAYOUT ===== */
 
 .contact-card {
@@ -1818,9 +1911,7 @@ backdrop-filter: blur(10px);
 }
 /* ===== FINANCE AMOUNT HIGHLIGHT ===== */
 .finance-item strong {
-  font-size: 16px;
-  font-weight: 800;
-  color: #0d5e32;
+  color: white;
 }
 /* ===== FINANCES EMPTY STATE ===== */
 #screen-finance-income .empty-list,
@@ -2685,3 +2776,28 @@ backdrop-filter: blur(10px);
 #saveContact:active {
   transform: scale(0.96);
 }
+
+/* ===== FORCE FINANCE ROW LAYOUT FIX ===== */
+
+.finance-row {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  width: 100%;
+}
+
+.finance-actions {
+  display: flex !important;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.finance-actions button {
+  border: none !important;
+  background: rgba(0,0,0,0.25) !important;
+  color: white !important;
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-size: 14px;
+}
+

@@ -38,6 +38,7 @@ import {
 } from './services/db.js';
 
 import { initShoppingModule } from '../modules/shopping/shopping-init.js';
+import { initFinancesModule } from '../modules/finances/finances-init.js';
 
 import * as notifications from './services/notifications.js';
 
@@ -59,7 +60,16 @@ export function initApp() {
       window.__LIFEKOMPAS_EVENTS_BOUND__ = true;
 
       // 🛒 init shopping (EARLY BOOT)
-      initShoppingModule();
+initShoppingModule();
+
+// 💰 init finances (SAFE DELAY)
+setTimeout(() => {
+  try {
+    initFinancesModule();
+  } catch (e) {
+    console.warn('[LifeKompas] finances init failed (non-blocking)', e);
+  }
+}, 0);
 
       // ===== CRITICAL GLOBAL STATE =====
       window.screenHistory = [];
@@ -378,122 +388,6 @@ document.addEventListener('click', async (e) => {
       showScreen('screen-lang');
       setTimeout(bindLangButtons, 0);
 
-      // ===== SAVE INCOME =====
-      document.getElementById('saveIncome').addEventListener('click', async () => {
-        const amount = parseFloat(document.getElementById('incomeAmount').value);
-        const desc = document.getElementById('incomeDesc').value.trim();
-        const date = document.getElementById('incomeDate').value;
-        if (!amount || !date) return alert('Unesi iznos i datum');
-        const editId = document.getElementById('saveIncome').dataset.editId;
-        const isEdit = !!editId;
-        const item = {
-          id: isEdit ? Number(editId) : Date.now(),
-          type: 'income',
-          amount,
-          desc: desc || 'Prihod',
-          date
-        };
-        await addFinanceItem(item);
-        document.getElementById('incomeAmount').value = '';
-        document.getElementById('incomeDesc').value = '';
-        document.getElementById('incomeDate').value = '';
-        document.getElementById('saveIncome').removeAttribute('data-edit-id');
-        renderIncomeList();
-      });
-
-      // ===== RENDER INCOME LIST =====
-      async function renderIncomeList() {
-        const list = document.getElementById('incomeList');
-        if (!list) return;
-        const items = await getFinanceItems();
-        const incomes = items.filter(i => i.type === 'income');
-        incomes.sort((a, b) => b.id - a.id);
-        if (incomes.length === 0) {
-          list.innerHTML = `<div class="empty-list"><div style="font-size:26px; margin-bottom:6px;">💵</div><div style="font-weight:700;">Nema unesenih prihoda</div><div style="opacity:0.7; font-size:14px; margin-top:4px;">Dodaj prvi prihod pomoću ➕ u headeru.</div></div>`;
-          return;
-        }
-        list.innerHTML = incomes.map(i => `
-  <div class="finance-item" data-id="${i.id}">
-    <div class="finance-row">
-      <div><strong>${Number(i.amount).toFixed(2)} €</strong> – ${i.desc}</div>
-
-      <div class="finance-actions">
-        <button class="finance-edit" data-id="${i.id}">✏️</button>
-        <button class="finance-delete" data-id="${i.id}">🗑️</button>
-      </div>
-    </div>
-  </div>
-`).join('');
-        list.querySelectorAll('.finance-delete').forEach(btn => {
-          btn.addEventListener('click', async () => {
-            const id = Number(btn.dataset.id);
-            await deleteFinanceItem(id);
-            renderIncomeList();
-          });
-        });
-        list.querySelectorAll('.finance-edit').forEach(btn => {
-          btn.addEventListener('click', async () => {
-            const id = Number(btn.dataset.id);
-            const items = await getFinanceItems();
-            const item = items.find(x => x.id === id);
-            if (!item) return;
-            document.getElementById('incomeAmount').value = item.amount;
-            document.getElementById('incomeDesc').value = item.desc;
-            document.getElementById('incomeDate').value = item.date;
-            document.getElementById('saveIncome').dataset.editId = id;
-          });
-        });
-      }
-
-      // ===== SAVE FIXED =====
-      document.getElementById('saveFixed').addEventListener('click', async () => {
-        const desc = document.getElementById('fixedDesc').value.trim();
-        const amount = parseFloat(document.getElementById('fixedAmount').value);
-        if (!desc || !amount) return alert('Unesi naziv i iznos');
-        const editId = document.getElementById('saveFixed').dataset.editId;
-        const isEdit = !!editId;
-        const item = {
-          id: isEdit ? Number(editId) : Date.now(),
-          type: 'fixed',
-          desc,
-          amount
-        };
-        await addFinanceItem(item);
-        document.getElementById('fixedDesc').value = '';
-        document.getElementById('fixedAmount').value = '';
-        document.getElementById('saveFixed').removeAttribute('data-edit-id');
-        renderFixedList();
-      });
-
-      // ===== SAVE CREDIT =====
-      document.getElementById('saveCredit').addEventListener('click', async () => {
-        const desc = document.getElementById('creditDesc').value.trim();
-        const amount = parseFloat(document.getElementById('creditAmount').value);
-        const start = document.getElementById('creditStart').value;
-        const end = document.getElementById('creditEnd').value;
-        const lastPaid = document.getElementById('creditLastPaid').value;
-        if (!desc || !amount || !start || !end) return alert('Unesi sve podatke kredita');
-        const editId = document.getElementById('saveCredit').dataset.editId;
-        const isEdit = !!editId;
-        const item = {
-          id: isEdit ? Number(editId) : Date.now(),
-          type: 'credit',
-          desc,
-          amount,
-          start,
-          end,
-          lastPaid: lastPaid || null
-        };
-        await addFinanceItem(item);
-        document.getElementById('creditDesc').value = '';
-        document.getElementById('creditAmount').value = '';
-        document.getElementById('creditStart').value = '';
-        document.getElementById('creditEnd').value = '';
-        document.getElementById('creditLastPaid').value = '';
-        document.getElementById('saveCredit').removeAttribute('data-edit-id');
-        renderCreditList();
-      });
-
       // ===== BATTERY OPTIMIZATION =====
       checkBatteryOptimization();
 
@@ -582,55 +476,6 @@ document.addEventListener('click', async (e) => {
       const backFinanceOverview = document.getElementById('backFinanceOverview');
       if (backFinanceOverview) backFinanceOverview.addEventListener('click', () => showScreen('screen-finances-menu'));
 
-      // FINANCES BUTTON
-      document.getElementById('btnFinances').addEventListener('click', async () => {
-  showScreen('screen-finances-menu');
-  await renderFinanceSummary();
-});
-
-// ===== FINANCE SUMMARY (UX POLISH) =====
-async function renderFinanceSummary() {
-  const items = await getFinanceItems();
-
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-
-  // PRIHODI
-  const incomes = items.filter(i =>
-    i.type === 'income' &&
-    i.date &&
-    i.date.startsWith(`${year}-${month}`)
-  );
-
-  const totalIncome = incomes.reduce((sum, i) => sum + Number(i.amount), 0);
-
-  // TROŠKOVI
-  const fixed = items.filter(i => i.type === 'fixed');
-  const totalFixed = fixed.reduce((sum, i) => sum + Number(i.amount), 0);
-
-  const credits = items.filter(i => i.type === 'credit');
-  const totalCredits = credits.reduce((sum, i) => sum + Number(i.amount), 0);
-
-  const other = items.filter(i =>
-    i.type === 'otherCost' &&
-    i.date &&
-    i.date.startsWith(`${year}-${month}`)
-  );
-  const totalOther = other.reduce((sum, i) => sum + Number(i.amount), 0);
-
-  const incomeEl = document.getElementById('financeIncomeTotal');
-  const expenseEl = document.getElementById('financeExpenseTotal');
-  const balanceEl = document.getElementById('financeBalanceTotal');
-
-  const totalExpenses = totalFixed + totalCredits + totalOther;
-const balance = totalIncome - totalExpenses;
-
-if (incomeEl) incomeEl.textContent = `Prihodi ${totalIncome.toFixed(2)} €`;
-if (expenseEl) expenseEl.textContent = `Odbici ${totalExpenses.toFixed(2)} €`;
-if (balanceEl) balanceEl.textContent = `Stanje ${balance.toFixed(2)} €`;
-}
-
       // ===== CONTACTS BUTTON =====
       document.getElementById('btnContacts').addEventListener('click', () => {
         screenHistory.push('screen-menu');
@@ -653,216 +498,7 @@ if (balanceEl) balanceEl.textContent = `Stanje ${balance.toFixed(2)} €`;
       const backFin = document.getElementById('backFinancesMenu');
       if (backFin) backFin.addEventListener('click', () => showScreen('screen-menu'));
 
-      // ===== FINANCES: FIXED EXPENSES =====
-      async function renderFixedList() {
-        const list = document.getElementById('fixedList');
-        if (!list) return;
-        const items = await getFinanceItems();
-        const fixed = items.filter(i => i.type === 'fixed');
-        fixed.sort((a, b) => b.id - a.id);
-        if (fixed.length === 0) {
-          list.innerHTML = `<div class="empty-list"><div style="font-size:26px; margin-bottom:6px;">📅</div><div style="font-weight:700;">Nema mjesečnih troškova</div><div style="opacity:0.7; font-size:14px; margin-top:4px;">Dodaj trošak poput stanarine ili pretplate.</div></div>`;
-          return;
-        }
-        list.innerHTML = fixed.map(i => `
-          <div class="finance-item" data-id="${i.id}">
-            <div class="finance-row">
-              <div><strong>${Number(i.amount).toFixed(2)} €</strong> – ${i.desc}</div>
-
-              <div class="finance-actions">
-                <button class="finance-edit-fixed" data-id="${i.id}">✏️</button>
-                <button class="finance-delete-fixed" data-id="${i.id}">🗑️</button>
-             </div>
-           </div>
-         </div>
-         `).join('');
-        list.querySelectorAll('.finance-delete-fixed').forEach(btn => {
-          btn.addEventListener('click', async () => {
-            const id = Number(btn.dataset.id);
-            await deleteFinanceItem(id);
-            renderFixedList();
-          });
-        });
-        list.querySelectorAll('.finance-edit-fixed').forEach(btn => {
-          btn.addEventListener('click', async () => {
-            const id = Number(btn.dataset.id);
-            const items = await getFinanceItems();
-            const item = items.find(x => x.id === id);
-            if (!item) return;
-            document.getElementById('fixedDesc').value = item.desc;
-            document.getElementById('fixedAmount').value = item.amount;
-            document.getElementById('saveFixed').dataset.editId = id;
-          });
-        });
-      }
-
-      // ===== FINANCES: CREDITS =====
-      async function renderCreditList() {
-        const list = document.getElementById('creditList');
-        if (!list) return;
-        const items = await getFinanceItems();
-        const credits = items.filter(i => i.type === 'credit');
-        credits.sort((a, b) => b.id - a.id);
-        if (credits.length === 0) {
-          list.innerHTML = `<div class="empty-list"><div style="font-size:26px; margin-bottom:6px;">🏦</div><div style="font-weight:700;">Nema aktivnih kredita</div><div style="opacity:0.7; font-size:14px; margin-top:4px;">Ovdje će se prikazati rate kredita.</div></div>`;
-          return;
-        }
-        list.innerHTML = credits.map(c => `
-  <div class="finance-item" data-id="${c.id}">
-    <div class="finance-row">
-      <div>
-        <strong>${Number(c.amount).toFixed(2)} €</strong> – ${c.desc}
-        <div style="font-size:12px; opacity:0.7;">
-          ${new Date(c.start).toLocaleDateString('hr-HR')} → ${new Date(c.end).toLocaleDateString('hr-HR')}
-        </div>
-      </div>
-
-      <div class="finance-actions">
-        <button class="finance-edit-credit" data-id="${c.id}">✏️</button>
-        <button class="finance-delete-credit" data-id="${c.id}">🗑️</button>
-      </div>
-    </div>
-  </div>
-`).join('');
-        list.querySelectorAll('.finance-delete-credit').forEach(btn => {
-          btn.addEventListener('click', async () => {
-            const id = Number(btn.dataset.id);
-            await deleteFinanceItem(id);
-            renderCreditList();
-          });
-        });
-        list.querySelectorAll('.finance-edit-credit').forEach(btn => {
-          btn.addEventListener('click', async () => {
-            const id = Number(btn.dataset.id);
-            const items = await getFinanceItems();
-            const item = items.find(x => x.id === id);
-            if (!item) return;
-            document.getElementById('creditDesc').value = item.desc;
-            document.getElementById('creditAmount').value = item.amount;
-            document.getElementById('creditStart').value = item.start;
-            document.getElementById('creditEnd').value = item.end;
-            document.getElementById('creditLastPaid').value = item.lastPaid || '';
-            document.getElementById('saveCredit').dataset.editId = id;
-          });
-        });
-      }
-
-      // ===== FINANCES: MONTHLY CALCULATION =====
-      async function calculateMonth() {
-        const monthInput = document.getElementById('financeMonth').value;
-        if (!monthInput) return alert('Odaberi mjesec');
-        const [year, month] = monthInput.split('-');
-        const items = await getFinanceItems();
-        const incomes = items.filter(i => i.type === 'income' && i.date && i.date.startsWith(`${year}-${month}`));
-        const totalIncome = incomes.reduce((sum, i) => sum + Number(i.amount), 0);
-        const fixed = items.filter(i => i.type === 'fixed');
-        const totalFixed = fixed.reduce((sum, i) => sum + Number(i.amount), 0);
-        const credits = items.filter(i => i.type === 'credit');
-        let activeCredits = [], totalCredits = 0;
-        credits.forEach(c => {
-          if (!c.start || !c.end) return;
-          const startMonth = c.start.slice(0, 7), endMonth = c.end.slice(0, 7);
-          if (monthInput >= startMonth && monthInput <= endMonth) { totalCredits += Number(c.amount); activeCredits.push(c); }
-        });
-        const otherCosts = items.filter(i => i.type === 'otherCost' && i.date && i.date.startsWith(`${year}-${month}`));
-        const totalOther = otherCosts.reduce((sum, i) => sum + Number(i.amount), 0);
-        const result = totalIncome - totalFixed - totalCredits - totalOther;
-        const out = document.getElementById('monthResult');
-        const lang = document.documentElement.getAttribute('lang') || getLang();
-        let html = `
-          <div class="finance-item"><strong>${I18N[lang].finances.overview.sumIncome}:</strong> ${totalIncome.toFixed(2)} €</div>
-          <div class="finance-item"><strong>${I18N[lang].finances.overview.sumFixed}:</strong> ${totalFixed.toFixed(2)} €</div>
-          <div class="finance-item"><strong>${I18N[lang].finances.overview.sumCredits}:</strong> ${totalCredits.toFixed(2)} €</div>
-          <div class="finance-item"><strong>${I18N[lang].finances.overview.sumOther}:</strong> ${totalOther.toFixed(2)} €</div>
-          <div class="finance-item" style="font-weight:800;">${I18N[lang].finances.overview.sumResult}: ${result.toFixed(2)} €</div><hr>`;
-        if (incomes.length > 0) {
-          html += `<div class="finance-item" style="text-align:center; font-weight:800;">${I18N[lang].finances.overview.listIncome}</div>`;
-          incomes.forEach(i => { html += `<div class="finance-item">💵 ${i.desc} — ${Number(i.amount).toFixed(2)} €</div>`; });
-        }
-        if (fixed.length > 0) {
-          html += `<div class="finance-item" style="text-align:center; font-weight:800;">${I18N[lang].finances.overview.listFixed}</div>`;
-          fixed.forEach(f => { html += `<div class="finance-item">📅 ${f.desc} — ${Number(f.amount).toFixed(2)} €</div>`; });
-        }
-        if (activeCredits.length > 0) {
-          html += `<div class="finance-item" style="text-align:center; font-weight:800;">${I18N[lang].finances.overview.listCredits}</div>`;
-          activeCredits.forEach(c => { html += `<div class="finance-item">🏦 ${c.desc} — ${Number(c.amount).toFixed(2)} €</div>`; });
-        }
-        if (otherCosts.length > 0) {
-          html += `<div class="finance-item" style="text-align:center; font-weight:800;">${I18N[lang].finances.overview.listOther}</div>`;
-          otherCosts.forEach(o => { html += `<div class="finance-item">🛒 ${o.desc} — ${Number(o.amount).toFixed(2)} €</div>`; });
-        }
-        if (totalIncome === 0 && totalFixed === 0 && totalCredits === 0 && totalOther === 0) {
-          out.innerHTML = `<div class="empty-list"><div style="font-size:26px; margin-bottom:6px;">📊</div><div style="font-weight:700;">Nema podataka za odabrani mjesec</div><div style="opacity:0.7; font-size:14px; margin-top:4px;">Unesi prihode ili troškove da vidiš pregled.</div></div>`;
-          return;
-        }
-        out.innerHTML = html;
-      }
-      document.getElementById('btnCalculateMonth').addEventListener('click', calculateMonth);
-
       // ===== OTHER COSTS =====
-      async function renderOtherList() {
-        const list = document.getElementById('otherList');
-        if (!list) return;
-        const items = (await getFinanceItems()).filter(i => i.type === 'otherCost');
-        if (items.length === 0) {
-          list.innerHTML = `<div class="empty-list"><div style="font-size:26px; margin-bottom:6px;">🛒</div><div style="font-weight:700;">Nema ostalih troškova</div><div style="opacity:0.7; font-size:14px; margin-top:4px;">Ovdje dolaze jednokratni troškovi.</div></div>`;
-          return;
-        }
-        list.innerHTML = items.map(i => `
-  <div class="finance-item" data-id="${i.id}">
-    <div class="finance-row">
-      <div>
-        <strong>${Number(i.amount).toFixed(2)} €</strong> – ${i.desc}
-        <div style="font-size:12px; opacity:0.7;">
-          ${i.date ? new Date(i.date).toLocaleDateString('hr-HR') : ''}
-        </div>
-      </div>
-
-      <div class="finance-actions">
-        <button class="finance-edit-other" data-id="${i.id}">✏️</button>
-        <button class="finance-delete-other" data-id="${i.id}">🗑️</button>
-      </div>
-    </div>
-  </div>
-`).join('');
-        list.querySelectorAll('.finance-delete-other').forEach(btn => {
-          btn.addEventListener('click', async () => {
-            const id = Number(btn.dataset.id);
-            await deleteFinanceItem(id);
-            renderOtherList();
-          });
-        });
-        list.querySelectorAll('.finance-edit-other').forEach(btn => {
-          btn.addEventListener('click', async () => {
-            const id = Number(btn.dataset.id);
-            const items = await getFinanceItems();
-            const item = items.find(x => x.id === id);
-            if (!item) return;
-            document.getElementById('otherDesc').value = item.desc;
-            document.getElementById('otherAmount').value = item.amount;
-            document.getElementById('saveOther').dataset.editId = id;
-          });
-        });
-      }
-
-      document.getElementById('saveOther').addEventListener('click', async () => {
-        const desc = document.getElementById('otherDesc').value.trim();
-        const amount = document.getElementById('otherAmount').value;
-        const date = new Date().toISOString().split('T')[0];
-        if (!desc || !amount) return;
-        const editId = document.getElementById('saveOther').dataset.editId;
-        const isEdit = !!editId;
-        const item = { id: isEdit ? Number(editId) : Date.now(), type: 'otherCost', desc, amount, date, createdAt: Date.now() };
-        await addFinanceItem(item);
-        document.getElementById('otherDesc').value = '';
-        document.getElementById('otherAmount').value = '';
-        document.getElementById('saveOther').removeAttribute('data-edit-id');
-        renderOtherList();
-      });
-
-      const calcBtn = document.getElementById('calcMonth');
-      if (calcBtn) calcBtn.addEventListener('click', calculateMonth);
-
       document.getElementById('btnShopping').addEventListener('click', async () => {
         initShoppingModule();
         const lang = getLang();
@@ -942,33 +578,6 @@ function closeFinancePopup() {
     popup.style.display = 'none';
   }, 200);
 }
-
-      // ===== FINANCES MENU BUTTON LINKS =====
-      document.getElementById('btnIncomeScreen').addEventListener('click', async () => {
-        showScreen('screen-finance-income');
-        window.showScreen('screen-finance-income');
-        await renderIncomeList();
-      });
-      document.getElementById('btnMonthlyCostsScreen').addEventListener('click', async () => {
-        showScreen('screen-finance-fixed');
-        window.showScreen('screen-finance-fixed');
-        await renderFixedList();
-      });
-      document.getElementById('btnCreditsScreen').addEventListener('click', async () => {
-        showScreen('screen-finance-credits');
-        window.showScreen('screen-finance-credits');
-        await renderCreditList();
-      });
-      document.getElementById('btnOtherCostsScreen').addEventListener('click', async () => {
-        showScreen('screen-finance-other');
-        window.showScreen('screen-finance-other');
-        await renderOtherList();
-      });
-      document.getElementById('btnCostsOverview').addEventListener('click', () => {
-        const lang = getLang();
-        document.documentElement.setAttribute('lang', lang);
-        showScreen('screen-finance-overview');
-      });
 
       // SHOPPING INPUT - Enter to add item
       const shoppingInput = document.getElementById('shoppingInput');

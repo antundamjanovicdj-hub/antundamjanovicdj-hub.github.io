@@ -230,7 +230,7 @@ window.addEventListener('unhandledrejection', (event) => {
 });
 
 // ===== APP VERSION =====
-const APP_VERSION = "0.1.1-family-test";
+const APP_VERSION = "0.1.2-family-test";
 
 // ===== UX 1.6 – SCREEN HISTORY (GLOBAL) =====
 const screenHistory = [];

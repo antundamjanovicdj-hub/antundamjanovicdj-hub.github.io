@@ -97,6 +97,14 @@ export function initApp() {
 
       // jednostavna povijest ekrana
       window.showScreen = function (screenId) {
+
+  // 🛡️ PREVENT NAVIGATION DURING PHOTO PICK
+  if (window.__LK_PHOTO_PICK_ACTIVE__) {
+    console.log('[NAV BLOCKED - PHOTO PICK]', screenId);
+    return;
+  }
+
+  console.log('[NAV]', screenId);
         console.log('[NAV]', screenId);
 
         // 🛑 CLOSE FINANCE POPUP ON NAVIGATION
@@ -890,7 +898,7 @@ if (balanceEl) balanceEl.textContent = `Stanje ${balance.toFixed(2)} €`;
 
       // ===== NEW FINANCES UX (SIMPLIFIED) =====
 
-// ➕ Dodaj transakciju → direktno otvori prihode (kao default entry)
+// ➕ Dodaj prihod → direktno otvori prihode (kao default entry)
 document.getElementById('btnAddTransaction')?.addEventListener('click', () => {
   document.getElementById('btnIncomeScreen')?.click();
 });

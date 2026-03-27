@@ -712,6 +712,12 @@ function attachContactFormHandlers() {
   });
 
   bindOnce(btnPickContactPhoto, 'pick-photo', 'click', async () => {
+
+  // 🛡️ LOCK SCREEN (prevent navigation reset)
+  window.__LK_PHOTO_PICK_ACTIVE__ = true;
+
+  try {
+
     // Android / Capacitor
     if (window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.Camera) {
 
@@ -724,13 +730,14 @@ function attachContactFormHandlers() {
 
       try {
         const image = await Capacitor.Plugins.Camera.getPhoto({
-  quality: 80,
-  allowEditing: false,
-  resultType: "dataUrl",
-  source: "PROMPT"
-});
+          quality: 80,
+          allowEditing: false,
+          resultType: "dataUrl",
+          source: "PROMPT"
+        });
 
         document.getElementById('contactPhotoData').value = image.dataUrl;
+
       } catch (err) {
         console.warn("Camera permission denied or cancelled", err);
       }
@@ -753,7 +760,15 @@ function attachContactFormHandlers() {
       reader.readAsDataURL(file);
     };
     fileInput.click();
-  });
+
+  } finally {
+    // 🛡️ UNLOCK after small delay (important!)
+    setTimeout(() => {
+      window.__LK_PHOTO_PICK_ACTIVE__ = false;
+    }, 300);
+  }
+
+});
 
   bindOnce(saveContactBtn, 'save-contact', 'click', async () => {
 

@@ -10,23 +10,30 @@ import {
 
 let ContactsPlugin = null;
 
-if (window.Capacitor) {
+function getContactsPluginSafe() {
 
-  // 🔥 @capgo plugin uses 'CapacitorContacts' name
-  if (window.Capacitor.registerPlugin) {
-    try {
+  if (ContactsPlugin) return ContactsPlugin;
+
+  if (!window.Capacitor) return null;
+
+  try {
+    // 🔥 try registerPlugin first (@capgo)
+    if (window.Capacitor.registerPlugin) {
       ContactsPlugin = window.Capacitor.registerPlugin('CapacitorContacts');
-    } catch (e) {
-      console.warn('CapacitorContacts registerPlugin failed, trying fallback', e);
     }
+  } catch (e) {
+    console.warn('CapacitorContacts registerPlugin failed, trying fallback', e);
   }
 
-  // FALLBACK: check both possible plugin names
+  // 🔥 fallback
   if (!ContactsPlugin) {
-    ContactsPlugin = window.Capacitor?.Plugins?.CapacitorContacts || 
-                     window.Capacitor?.Plugins?.Contacts || null;
+    ContactsPlugin =
+      window.Capacitor?.Plugins?.CapacitorContacts ||
+      window.Capacitor?.Plugins?.Contacts ||
+      null;
   }
 
+  return ContactsPlugin;
 }
 
 // ===== TRUST NOTIFICATION BRIDGE =====
@@ -46,6 +53,45 @@ let contacts = [];
 let filteredContacts = [];
 let selectionMode = false;
 let selectedContacts = new Set();
+
+// 🔥 GLOBAL NAVIGATION GUARD (contacts details → contacts)
+(function () {
+
+  const originalShowScreen = window.showScreen;
+
+  if (!originalShowScreen) return;
+
+  window.showScreen = function (screenId) {
+
+    // ako pokušava otići na menu iz contact-details → vrati na contacts
+    if (
+      window.__LK_FROM_CONTACT_DETAILS__ &&
+      screenId !== 'screen-contact-details' &&
+      screenId !== 'screen-contacts'
+    ) {
+      window.__LK_FROM_CONTACT_DETAILS__ = false;
+      return originalShowScreen('screen-contacts');
+    }
+
+    // normal flow
+    if (screenId !== 'screen-contact-details') {
+      window.__LK_FROM_CONTACT_DETAILS__ = false;
+    }
+
+    return originalShowScreen(screenId);
+  };
+
+})();
+
+function resetSelectionState() {
+  selectionMode = false;
+  selectedContacts.clear();
+
+  const btn = document.getElementById('btnDeleteSelectedContacts');
+  if (btn) {
+    btn.textContent = 'Obriši odabrane';
+  }
+}
 function getContactMessages() {
   const lang = (localStorage.getItem('userLang') || 'hr');
   return (I18N[lang].contacts && I18N[lang].contacts.messages)
@@ -125,20 +171,16 @@ function initContacts() {
   setupContactsEvents();
 
   // BACK - from contact details
-  const backDetails = document.getElementById('backContactDetails');
-  if (backDetails) {
-    backDetails.addEventListener('click', () => {
-      showScreen('screen-contacts');
-    });
-  }
+const backDetails = document.getElementById('backContactDetails');
+bindOnce(backDetails, 'back-details', 'click', () => {
+  showScreen('screen-contacts');
+});
 
-  // BACK - from contact form
-  const backForm = document.getElementById('backContactForm');
-  if (backForm) {
-    backForm.addEventListener('click', () => {
-      showScreen('screen-contacts');
-    });
-  }
+// BACK - from contact form
+const backForm = document.getElementById('backContactForm');
+bindOnce(backForm, 'back-form-init', 'click', () => {
+  showScreen('screen-contacts');
+});
 
   // 🔒 LOCK IMPORT BUTTON
   const importBtn = document.getElementById('btnImportContacts');
@@ -167,7 +209,9 @@ if (importBtn) {
 window.importDeviceContacts = async function () {
 
   // prvo provjeri podršku
-  if (!ContactsPlugin) {
+  const plugin = getContactsPluginSafe();
+
+if (!plugin) {
     alert(getContactMessages().notSupported || "Uvoz kontakata nije podržan na ovom uređaju.");
     return;
   }
@@ -188,7 +232,7 @@ const loadingTimer = setTimeout(() => {
   loadingShown = true;
 }, 300);
 
-  const perm = await ContactsPlugin.requestPermissions();
+  const perm = await plugin.requestPermissions();
 console.log('🔐 Permission result:', JSON.stringify(perm));
 
 // 🔥 @capgo plugin returns: {readContacts: "granted", writeContacts: "granted"}
@@ -210,7 +254,7 @@ let result;
 
 try {
   // 🔥 iOS safe fields only
-  result = await ContactsPlugin.getContacts({
+  result = await plugin.getContacts({
     fields: [
       'identifier',
       'givenName',
@@ -233,7 +277,7 @@ try {
   // Fallback: probaj bez ikakvih parametara
   try {
     console.log('🔄 Retrying getContacts() without fields...');
-    result = await ContactsPlugin.getContacts();
+    result = await plugin.getContacts();
   } catch (e2) {
     throw e2;
   }
@@ -313,9 +357,9 @@ if (c.familyName && c.familyName.trim()) {
   lastName = c.familyName.trim();
 }
 
-// fallback ako nema imena
-if (!firstName) {
-  firstName = phone || email || 'Kontakt';
+// fallback ako nema imena (STRICT: no phone/email as name)
+if (!firstName || /^\+?\d+$/.test(firstName)) {
+  firstName = 'Kontakt';
 }
 
   // 🔥 Kreiraj kontakt
@@ -488,12 +532,12 @@ function setupContactsEvents() {
 
   // 🔥 ulazak u selection mode
   if (!selectionMode) {
-    selectionMode = true;
-    selectedContacts.clear();
+  resetSelectionState(); // clean start
+  selectionMode = true;
 
-    deleteSelectedBtn.textContent = 'Potvrdi brisanje (0)';
-    return;
-  }
+  deleteSelectedBtn.textContent = 'Potvrdi brisanje (0)';
+  return;
+}
 
   // 🔥 izlaz ako nema odabranih
   if (selectionMode && selectedContacts.size === 0) {
@@ -512,11 +556,8 @@ function setupContactsEvents() {
     await deleteContact(Number(id));
   }
 
-  // 🔥 RESET STATE
-  selectedContacts.clear();
-  selectionMode = false;
-
-  deleteSelectedBtn.textContent = 'Obriši odabrane';
+  // 🔥 RESET STATE (centralized)
+resetSelectionState();
 
   await loadContacts();
 });
@@ -647,6 +688,31 @@ document.getElementById('birthdayNotifyToggle').addEventListener('change', async
 
 });
 
+// 🔥 set return screen (navigation hint)
+window.__LK_RETURN_SCREEN__ = 'screen-contacts';
+
+// 🔥 push history state (so back stays inside contacts)
+history.pushState({ screen: 'contact-details' }, '');
+
+window.__LK_FROM_CONTACT_DETAILS__ = true;
+
+// 🔥 FORCE NAVIGATION STACK
+if (window.__LK_NAV_STACK__) {
+  window.__LK_NAV_STACK__.length = 0;
+  window.__LK_NAV_STACK__.push('screen-contacts');
+}
+
+// fallback (ako koristi drugi naziv)
+if (window.__NAV_STACK__) {
+  window.__NAV_STACK__.length = 0;
+  window.__NAV_STACK__.push('screen-contacts');
+}
+
+// 🔥 FIX: add proper back navigation
+if (window.screenHistory) {
+  window.screenHistory.push('screen-contacts');
+}
+
 showScreen('screen-contact-details');
   requestAnimationFrame(() => {
     attachContactDetailsHandlers();
@@ -669,6 +735,18 @@ function getNotificationsBridge() {
     cancelBirthday: cancelBirthdayNotificationSafe
   };
 }
+
+// 🔥 HANDLE BACK (history)
+window.addEventListener('popstate', (e) => {
+
+  const currentScreen = document.body?.dataset?.screen;
+
+  if (currentScreen === 'screen-contact-details') {
+    e.preventDefault();
+    showScreen('screen-contacts');
+  }
+
+});
 
 function resetContactFormFields() {
   document.getElementById('contactFirstName').value = '';
@@ -949,9 +1027,8 @@ document.addEventListener('screenShown', (e) => {
 
   if (e.detail === 'screen-contacts') {
 
-    // 🔥 RESET SELECTION MODE
-  selectionMode = false;
-selectedContacts.clear();
+    // 🔥 RESET SELECTION MODE (centralized)
+resetSelectionState();
 
   const deleteBtn = document.getElementById('btnDeleteSelectedContacts');
 if (deleteBtn) deleteBtn.style.display = 'block';
@@ -996,7 +1073,24 @@ if (deleteBtn) deleteBtn.style.display = 'block';
   // 🔥 capture phase
 
   if (e.detail === 'screen-contact-details') {
-    attachContactDetailsHandlers();
-  }
+  attachContactDetailsHandlers();
+
+  // 🔥 FORCE BACK TO CONTACTS (override engine)
+  requestAnimationFrame(() => {
+    const backBtn = document.querySelector('#btnBack, .btn-back, [data-back]');
+    if (!backBtn) return;
+
+    if (backBtn.dataset.lkContactsOverride === '1') return;
+    backBtn.dataset.lkContactsOverride = '1';
+
+    backBtn.addEventListener('click', (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      ev.stopImmediatePropagation();
+
+      showScreen('screen-contacts');
+    }, true);
+  });
+}
 
 });

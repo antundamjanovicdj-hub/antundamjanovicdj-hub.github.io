@@ -58,10 +58,10 @@ export function initFinancesModule() {
     incomeScreenBtn.dataset.bound = '1';
 
     incomeScreenBtn.addEventListener('click', async () => {
-      showScreen('screen-finance-income');
-      window.showScreen('screen-finance-income');
-      await renderIncomeList();
-    });
+  showScreen('screen-finance-income');
+  window.showScreen('screen-finance-income');
+  await renderIncomeList();
+});
   }
   const saveFixedBtn = document.getElementById('saveFixed');
 
@@ -201,30 +201,30 @@ if (otherScreenBtn && !otherScreenBtn.dataset.bound) {
   otherScreenBtn.dataset.bound = '1';
 
   otherScreenBtn.addEventListener('click', async () => {
-    showScreen('screen-finance-other');
-    window.showScreen('screen-finance-other');
-    await window.renderOtherList();
-  });
+  showScreen('screen-finance-other');
+  window.showScreen('screen-finance-other');
+  await window.renderOtherList();
+});
 }
 
 if (creditsScreenBtn && !creditsScreenBtn.dataset.bound) {
   creditsScreenBtn.dataset.bound = '1';
 
   creditsScreenBtn.addEventListener('click', async () => {
-    showScreen('screen-finance-credits');
-    window.showScreen('screen-finance-credits');
-    await window.renderCreditList();
-  });
+  showScreen('screen-finance-credits');
+  window.showScreen('screen-finance-credits');
+  await window.renderCreditList();
+});
 }
 
 if (monthlyCostsScreenBtn && !monthlyCostsScreenBtn.dataset.bound) {
   monthlyCostsScreenBtn.dataset.bound = '1';
 
   monthlyCostsScreenBtn.addEventListener('click', async () => {
-    showScreen('screen-finance-fixed');
-    window.showScreen('screen-finance-fixed');
-    await window.renderFixedList();
-  });
+  showScreen('screen-finance-fixed');
+  window.showScreen('screen-finance-fixed');
+  await window.renderFixedList();
+});
 }
 }
 

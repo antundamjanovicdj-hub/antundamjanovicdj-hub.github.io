@@ -147,7 +147,28 @@
   <div class="finance-form">
     <input type="text" id="fixedDesc" placeholder="Naziv fiksnog troška (npr. Stanarina)" maxlength="100" autocomplete="off">
     <input type="number" id="fixedAmount" placeholder="Iznos (€)" min="0" max="999999999" step="0.01" inputmode="decimal">
-    <button id="saveFixed">➕ Dodaj fiksni trošak</button>
+
+<div class="finance-period-row">
+
+  <div class="finance-field">
+    <label for="fixedPeriod">Period</label>
+    <select id="fixedPeriod">
+  <option value="1">Svaki mjesec</option>
+  <option value="2">Svaka 2 mjeseca</option>
+  <option value="3">Svaka 3 mjeseca</option>
+  <option value="6">2 puta godišnje</option>
+  <option value="12">1 put godišnje</option>
+</select>
+  </div>
+
+  <div class="finance-field">
+    <label for="fixedStart">Od mjeseca</label>
+    <input type="month" id="fixedStart">
+  </div>
+
+</div>
+
+<button id="saveFixed">➕ Dodaj fiksni trošak</button>
   </div>
 
   <div id="fixedList" class="finance-list"></div>

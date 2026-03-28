@@ -709,10 +709,6 @@ if (window.__NAV_STACK__) {
 }
 
 // 🔥 FIX: add proper back navigation
-if (window.screenHistory) {
-  window.screenHistory.push('screen-contacts');
-}
-
 showScreen('screen-contact-details');
   requestAnimationFrame(() => {
     attachContactDetailsHandlers();

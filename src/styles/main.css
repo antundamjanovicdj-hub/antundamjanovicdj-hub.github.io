@@ -1913,6 +1913,72 @@ backdrop-filter: blur(10px);
 .finance-item strong {
   color: white;
 }
+
+.finance-period-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+
+  width: 100%;
+  max-width: 100%;
+}
+
+.finance-field {
+  flex: 1;
+}
+
+.finance-field label {
+  display: block;
+  font-size: 12px;
+  opacity: 0.7;
+  margin-bottom: 4px;
+}
+
+/* 👇 OVO JE GLAVNI FIX ZA ŠIRINU */
+#fixedPeriod,
+#fixedStart {
+  width: 100%;
+  height: 48px;
+  font-size: 16px;
+
+  box-sizing: border-box; /* 👈 KLJUČNO */
+}
+
+#fixedStart {
+  -webkit-appearance: none;
+  appearance: none;
+
+  padding: 0 12px;
+
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.2);
+
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(10px);
+
+  color: #fff;
+}
+
+#fixedPeriod {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  padding: 0 40px 0 12px;
+
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.2);
+
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(10px);
+
+  color: #fff;
+  outline: none;
+
+  background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='20' viewBox='0 0 20 20' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M5 7l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
 /* ===== FINANCES EMPTY STATE ===== */
 #screen-finance-income .empty-list,
 #screen-finance-fixed .empty-list,

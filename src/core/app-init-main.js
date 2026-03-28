@@ -115,7 +115,15 @@ setTimeout(() => {
   }
 
   console.log('[NAV]', screenId);
-        console.log('[NAV]', screenId);
+console.log('[NAV]', screenId);
+
+// 🔥 AUTO HISTORY (FINAL FIX)
+const current = document.querySelector('.screen.active')?.id;
+
+// 🛡️ FIX: ne push-aj ako se vraćamo (BACK)
+if (current && current !== screenId && !window.__IS_GOING_BACK__) {
+  screenHistory.push(current);
+}
 
         // 🛑 CLOSE FINANCE POPUP ON NAVIGATION
 const financePopup = document.getElementById('financeCostsPopup');
@@ -181,34 +189,58 @@ if (financePopup) {
 
         switch (screenId) {
           // ===== FINANCES ➕ = SAVE (UX 1.6.x) =====
-          case 'screen-finance-income':
-            headerAction.classList.remove('hidden');
-            headerAction.onclick = () => {
-              const btn = document.getElementById('saveIncome');
-              if (btn) btn.click();
-            };
-            break;
-          case 'screen-finance-fixed':
-            headerAction.classList.remove('hidden');
-            headerAction.onclick = () => {
-              const btn = document.getElementById('saveFixed');
-              if (btn) btn.click();
-            };
-            break;
-          case 'screen-finance-credits':
-            headerAction.classList.remove('hidden');
-            headerAction.onclick = () => {
-              const btn = document.getElementById('saveCredit');
-              if (btn) btn.click();
-            };
-            break;
-          case 'screen-finance-other':
-            headerAction.classList.remove('hidden');
-            headerAction.onclick = () => {
-              const btn = document.getElementById('saveOther');
-              if (btn) btn.click();
-            };
-            break;
+          case 'screen-finance-income': {
+          requestAnimationFrame(() => {
+          const headerAction = document.getElementById('headerAction');
+          if (headerAction) {
+          headerAction.classList.remove('hidden');
+          headerAction.onclick = () => {
+          const btn = document.getElementById('saveIncome');
+          if (btn) btn.click();
+        };
+        }
+       });
+        break;
+       }
+          case 'screen-finance-fixed': {
+          requestAnimationFrame(() => {
+          const headerAction = document.getElementById('headerAction');
+          if (headerAction) {
+          headerAction.classList.remove('hidden');
+          headerAction.onclick = () => {
+          const btn = document.getElementById('saveFixed');
+          if (btn) btn.click();
+          };
+         }
+         });
+        break;
+        }
+          case 'screen-finance-credits': {
+          requestAnimationFrame(() => {
+          const headerAction = document.getElementById('headerAction');
+          if (headerAction) {
+          headerAction.classList.remove('hidden');
+          headerAction.onclick = () => {
+          const btn = document.getElementById('saveCredit');
+          if (btn) btn.click();
+         };
+         }
+         });
+          break;
+        }
+          case 'screen-finance-other': {
+          requestAnimationFrame(() => {
+          const headerAction = document.getElementById('headerAction');
+          if (headerAction) {
+          headerAction.classList.remove('hidden');
+          headerAction.onclick = () => {
+          const btn = document.getElementById('saveOther');
+          if (btn) btn.click();
+         };
+        }
+       });
+        break;
+      }
           case 'screen-finance-overview':
           case 'screen-finances-menu':
             // ➕ se NE prikazuje
@@ -346,20 +378,27 @@ requestAnimationFrame(() => {
 
       // klik na BACK
       if (headerBack) {
-        headerBack.addEventListener('click', () => {
-          const current = document.querySelector('.screen.active')?.id;
-          const prev = screenHistory.pop();
-          if (current === 'screen-menu') {
-            showScreen('screen-lang');
-            return;
-          }
-          if (prev) {
-            showScreen(prev);
-          } else {
-            showScreen('screen-menu');
-          }
-        });
-      }
+  headerBack.addEventListener('click', () => {
+    window.__IS_GOING_BACK__ = true;
+
+    const current = document.querySelector('.screen.active')?.id;
+    const prev = screenHistory.pop();
+
+    if (current === 'screen-menu') {
+      showScreen('screen-lang');
+      window.__IS_GOING_BACK__ = false;
+      return;
+    }
+
+    if (prev) {
+      showScreen(prev);
+    } else {
+      showScreen('screen-menu');
+    }
+
+    window.__IS_GOING_BACK__ = false;
+  });
+}
 
       // ===== ENGINE GLOBAL CLICK DELEGATION =====
 document.addEventListener('click', async (e) => {
@@ -478,9 +517,7 @@ document.addEventListener('click', async (e) => {
 
       // ===== CONTACTS BUTTON =====
       document.getElementById('btnContacts').addEventListener('click', () => {
-        screenHistory.push('screen-menu');
         showScreen('screen-contacts');
-        if (window.showScreen) window.showScreen('screen-contacts');
         loadContacts();
         const lang = getLang();
         const c = I18N[lang].contacts || I18N.en.contacts;
@@ -609,7 +646,6 @@ function closeFinancePopup() {
 
       // OBVEZE → DIREKTNO PREGLED
       document.getElementById('btnObligations').addEventListener('click', () => {
-  screenHistory.push('screen-menu');
   showScreen('screen-obligations-list');
   showListMode();
 
@@ -1108,7 +1144,6 @@ if (cancelBtn) {
 
       // PREGLED OBVEZA
       document.getElementById('btnViewObligations').addEventListener('click', () => {
-        screenHistory.push('screen-menu');
         const popup = document.getElementById('obligationsPopup');
         popup.classList.remove('animate');
         setTimeout(() => popup.style.display = 'none', 300);

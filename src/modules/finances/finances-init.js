@@ -13,9 +13,10 @@ export function initFinancesModule() {
     btn.dataset.bound = '1';
 
     btn.addEventListener('click', async () => {
-      showScreen('screen-finances-menu');
-      await renderFinanceSummary();
-    });
+  screenHistory.push('screen-menu'); // 👈 KLJUČNO
+  showScreen('screen-finances-menu');
+  await renderFinanceSummary();
+});
   }
 
   const saveIncomeBtn = document.getElementById('saveIncome');
@@ -48,7 +49,8 @@ export function initFinancesModule() {
       document.getElementById('incomeDate').value = '';
       saveIncomeBtn.removeAttribute('data-edit-id');
 
-      renderIncomeList();
+      await renderIncomeList();
+      await renderFinanceSummary();
     });
   }
 
@@ -58,8 +60,8 @@ export function initFinancesModule() {
     incomeScreenBtn.dataset.bound = '1';
 
     incomeScreenBtn.addEventListener('click', async () => {
+  window.__LAST_FINANCE_SCREEN__ = 'screen-finances-menu';
   showScreen('screen-finance-income');
-  window.showScreen('screen-finance-income');
   await renderIncomeList();
 });
   }
@@ -77,20 +79,29 @@ if (saveFixedBtn && !saveFixedBtn.dataset.bound) {
     const editId = saveFixedBtn.dataset.editId;
     const isEdit = !!editId;
 
-    const item = {
-      id: isEdit ? Number(editId) : Date.now(),
-      type: 'fixed',
-      desc,
-      amount
-    };
+    const periodInput = document.getElementById('fixedPeriod');
+const period = periodInput ? Number(periodInput.value) : 1;
+const startInput = document.getElementById('fixedStart');
+const start = startInput ? startInput.value : null;
+
+const item = {
+  id: isEdit ? Number(editId) : Date.now(),
+  type: 'fixed',
+  desc,
+  amount,
+  period: period || 1,
+  start: start || null
+};
+console.log('FIXED SAVE:', item);
 
     await addFinanceItem(item);
 
-    document.getElementById('fixedDesc').value = '';
-    document.getElementById('fixedAmount').value = '';
-    saveFixedBtn.removeAttribute('data-edit-id');
+document.getElementById('fixedDesc').value = '';
+document.getElementById('fixedAmount').value = '';
+saveFixedBtn.removeAttribute('data-edit-id');
 
-    window.renderFixedList();
+await window.renderFixedList();
+await renderFinanceSummary();
   });
 }
 
@@ -124,14 +135,15 @@ if (saveCreditBtn && !saveCreditBtn.dataset.bound) {
 
     await addFinanceItem(item);
 
-    document.getElementById('creditDesc').value = '';
-    document.getElementById('creditAmount').value = '';
-    document.getElementById('creditStart').value = '';
-    document.getElementById('creditEnd').value = '';
-    document.getElementById('creditLastPaid').value = '';
-    saveCreditBtn.removeAttribute('data-edit-id');
+document.getElementById('creditDesc').value = '';
+document.getElementById('creditAmount').value = '';
+document.getElementById('creditStart').value = '';
+document.getElementById('creditEnd').value = '';
+document.getElementById('creditLastPaid').value = '';
+saveCreditBtn.removeAttribute('data-edit-id');
 
-    window.renderCreditList();
+await window.renderCreditList();
+await renderFinanceSummary();
   });
 }
 
@@ -162,11 +174,12 @@ if (saveOtherBtn && !saveOtherBtn.dataset.bound) {
 
     await addFinanceItem(item);
 
-    document.getElementById('otherDesc').value = '';
-    document.getElementById('otherAmount').value = '';
-    saveOtherBtn.removeAttribute('data-edit-id');
+document.getElementById('otherDesc').value = '';
+document.getElementById('otherAmount').value = '';
+saveOtherBtn.removeAttribute('data-edit-id');
 
-    window.renderOtherList();
+await window.renderOtherList();
+await renderFinanceSummary();
   });
 }
 
@@ -191,18 +204,19 @@ if (overviewBtn && !overviewBtn.dataset.bound) {
   overviewBtn.dataset.bound = '1';
 
   overviewBtn.addEventListener('click', () => {
-    const lang = getLang();
-    document.documentElement.setAttribute('lang', lang);
-    showScreen('screen-finance-overview');
-  });
+  window.__LAST_FINANCE_SCREEN__ = 'screen-finances-menu';
+  const lang = getLang();
+  document.documentElement.setAttribute('lang', lang);
+  showScreen('screen-finance-overview');
+});
 }
 
 if (otherScreenBtn && !otherScreenBtn.dataset.bound) {
   otherScreenBtn.dataset.bound = '1';
 
   otherScreenBtn.addEventListener('click', async () => {
+  window.__LAST_FINANCE_SCREEN__ = 'screen-finances-menu';
   showScreen('screen-finance-other');
-  window.showScreen('screen-finance-other');
   await window.renderOtherList();
 });
 }
@@ -211,8 +225,8 @@ if (creditsScreenBtn && !creditsScreenBtn.dataset.bound) {
   creditsScreenBtn.dataset.bound = '1';
 
   creditsScreenBtn.addEventListener('click', async () => {
+  window.__LAST_FINANCE_SCREEN__ = 'screen-finances-menu';
   showScreen('screen-finance-credits');
-  window.showScreen('screen-finance-credits');
   await window.renderCreditList();
 });
 }
@@ -222,7 +236,10 @@ if (monthlyCostsScreenBtn && !monthlyCostsScreenBtn.dataset.bound) {
 
   monthlyCostsScreenBtn.addEventListener('click', async () => {
   showScreen('screen-finance-fixed');
-  window.showScreen('screen-finance-fixed');
+
+  // 👇 nakon što engine odradi push
+  screenHistory = ['screen-finances-menu'];
+
   await window.renderFixedList();
 });
 }
@@ -245,7 +262,37 @@ async function renderFinanceSummary() {
   const totalIncome = incomes.reduce((sum, i) => sum + Number(i.amount), 0);
 
   const fixed = items.filter(i => i.type === 'fixed');
-  const totalFixed = fixed.reduce((sum, i) => sum + Number(i.amount), 0);
+
+let totalFixed = 0;
+
+fixed.forEach(f => {
+  const period = Number(f.period || 1);
+
+  if (!f.start) {
+    totalFixed += Number(f.amount);
+    return;
+  }
+
+  let startStr = f.start;
+
+  if (startStr && startStr.length > 7) {
+    startStr = startStr.slice(0, 7);
+  }
+
+  const now = new Date();
+  const currYear = now.getFullYear();
+  const currMonth = now.getMonth() + 1;
+
+  const [startYear, startMonth] = startStr.split('-').map(Number);
+
+  const monthsDiff =
+    (currYear - startYear) * 12 +
+    (currMonth - startMonth);
+
+  if (monthsDiff >= 0 && monthsDiff % period === 0) {
+    totalFixed += Number(f.amount);
+  }
+});
 
   const credits = items.filter(i => i.type === 'credit');
   const totalCredits = credits.reduce((sum, i) => sum + Number(i.amount), 0);
@@ -299,7 +346,8 @@ async function renderIncomeList() {
     btn.addEventListener('click', async () => {
       const id = Number(btn.dataset.id);
       await deleteFinanceItem(id);
-      renderIncomeList();
+      await renderIncomeList();
+      await renderFinanceSummary();
     });
   });
 
@@ -345,12 +393,13 @@ window.renderFixedList = async function () {
          `).join('');
 
   list.querySelectorAll('.finance-delete-fixed').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const id = Number(btn.dataset.id);
-      await deleteFinanceItem(id);
-      window.renderFixedList();
-    });
+  btn.addEventListener('click', async () => {
+    const id = Number(btn.dataset.id);
+    await deleteFinanceItem(id);
+    await window.renderFixedList();
+    await renderFinanceSummary();
   });
+});
 
   list.querySelectorAll('.finance-edit-fixed').forEach(btn => {
     btn.addEventListener('click', async () => {
@@ -401,7 +450,8 @@ window.renderCreditList = async function () {
     btn.addEventListener('click', async () => {
       const id = Number(btn.dataset.id);
       await deleteFinanceItem(id);
-      window.renderCreditList();
+      await window.renderCreditList();
+      await renderFinanceSummary();
     });
   });
 
@@ -455,12 +505,13 @@ window.renderOtherList = async function () {
 `).join('');
 
   list.querySelectorAll('.finance-delete-other').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const id = Number(btn.dataset.id);
-      await deleteFinanceItem(id);
-      window.renderOtherList();
-    });
+  btn.addEventListener('click', async () => {
+    const id = Number(btn.dataset.id);
+    await deleteFinanceItem(id);
+    await window.renderOtherList();
+    await renderFinanceSummary();
   });
+});
 
   list.querySelectorAll('.finance-edit-other').forEach(btn => {
     btn.addEventListener('click', async () => {
@@ -493,7 +544,45 @@ window.calculateMonth = async function () {
   const totalIncome = incomes.reduce((sum, i) => sum + Number(i.amount), 0);
 
   const fixed = items.filter(i => i.type === 'fixed');
-  const totalFixed = fixed.reduce((sum, i) => sum + Number(i.amount), 0);
+
+let activeFixed = [];
+let totalFixed = 0;
+
+fixed.forEach(f => {
+  const period = Number(f.period || 1);
+
+  // backward compatibility
+  if (!f.start) {
+    totalFixed += Number(f.amount);
+    activeFixed.push(f);
+    return;
+  }
+
+  let startStr = f.start;
+
+  if (startStr && startStr.length > 7) {
+    startStr = startStr.slice(0, 7);
+  }
+
+  const [startYear, startMonth] = startStr.split('-').map(Number);
+const [currYear, currMonth] = monthInput.split('-').map(Number);
+
+const monthsDiff =
+  (currYear - startYear) * 12 +
+  (currMonth - startMonth);
+
+console.log('DEBUG:', {
+  start: startStr,
+  current: monthInput,
+  period,
+  monthsDiff
+});
+
+  if (monthsDiff >= 0 && monthsDiff % period === 0) {
+    totalFixed += Number(f.amount);
+    activeFixed.push(f);
+  }
+});
 
   const credits = items.filter(i => i.type === 'credit');
 
@@ -541,12 +630,12 @@ window.calculateMonth = async function () {
     });
   }
 
-  if (fixed.length > 0) {
-    html += `<div class="finance-item" style="text-align:center; font-weight:800;">Fiksni troškovi</div>`;
-    fixed.forEach(f => {
-      html += `<div class="finance-item">📅 ${f.desc} — ${Number(f.amount).toFixed(2)} €</div>`;
-    });
-  }
+  if (activeFixed.length > 0) {
+  html += `<div class="finance-item" style="text-align:center; font-weight:800;">Fiksni troškovi</div>`;
+  activeFixed.forEach(f => {
+    html += `<div class="finance-item">📅 ${f.desc} — ${Number(f.amount).toFixed(2)} €</div>`;
+  });
+}
 
   if (activeCredits.length > 0) {
     html += `<div class="finance-item" style="text-align:center; font-weight:800;">Aktivni krediti</div>`;

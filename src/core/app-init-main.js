@@ -39,6 +39,7 @@ import {
 
 import { initShoppingModule } from '../modules/shopping/shopping-init.js';
 import { initFinancesModule } from '../modules/finances/finances-init.js';
+import { initDiaryModule } from '../modules/diary/diary-init.js';
 
 import * as notifications from './services/notifications.js';
 
@@ -61,6 +62,9 @@ export function initApp() {
 
       // 🛒 init shopping (EARLY BOOT)
 initShoppingModule();
+
+// 📓 init diary (EARLY BOOT - safe)
+initDiaryModule();
 
 // 💰 init finances (SAFE DELAY)
 setTimeout(() => {
@@ -529,6 +533,11 @@ document.addEventListener('click', async (e) => {
         if (btnAddContact && c) btnAddContact.textContent = c.add;
         const searchContacts = document.getElementById('searchContacts');
         if (searchContacts && c) searchContacts.placeholder = c.search;
+      });
+
+      // 📓 DIARY
+      document.getElementById('btnDiary').addEventListener('click', () => {
+        showScreen('screen-diary');
       });
 
       // BACK - FINANCES MENU

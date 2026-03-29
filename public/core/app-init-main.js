@@ -40,6 +40,7 @@ import {
 import { initShoppingModule } from '../modules/shopping/shopping-init.js';
 import { initFinancesModule } from '../modules/finances/finances-init.js';
 import { initDiaryModule } from '../modules/diary/diary-init.js';
+import { initWorklogModule } from '../modules/worklog/worklog-init.js';
 
 import * as notifications from './services/notifications.js';
 
@@ -65,6 +66,9 @@ initShoppingModule();
 
 // 📓 init diary (EARLY BOOT - safe)
 initDiaryModule();
+
+// 🛠 init worklog (EARLY BOOT - safe)
+initWorklogModule();
 
 // 💰 init finances (SAFE DELAY)
 setTimeout(() => {
@@ -544,6 +548,11 @@ document.addEventListener('click', async (e) => {
       // 📓 DIARY
       document.getElementById('btnDiary').addEventListener('click', () => {
         showScreen('screen-diary');
+      });
+
+      // 🛠 WORK LOG
+      document.getElementById('btnWorklog').addEventListener('click', () => {
+        showScreen('screen-worklog');
       });
 
       // BACK - FINANCES MENU

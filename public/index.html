@@ -82,6 +82,7 @@
       <button class="menu-item" id="btnFinances">💰 Financije</button>
       <button class="menu-item" id="btnHealth">❤️ Zdravlje</button>
       <button class="menu-item" id="btnDiary">📓 Dnevnik</button>
+      <button class="menu-item" id="btnWorklog">🛠 Evidencija rada</button>
     </div>
   </div>
 
@@ -311,6 +312,54 @@
 </div>
 
 </div>
+
+</div>
+
+<!-- WORK LOG SCREEN -->
+<div id="screen-worklog" class="screen">
+
+  <h2 class="screen-title">🛠 Evidencija rada</h2>
+
+  <div style="padding:16px">
+
+    <!-- DATE -->
+    <div style="margin-bottom:12px">
+      <label style="color:white;">Datum</label>
+      <input type="date" id="worklogDate" style="width:100%; padding:10px; border-radius:10px;">
+    </div>
+
+    <!-- START -->
+    <div style="margin-bottom:12px">
+      <label style="color:white;">Početak</label>
+      <input type="time" id="worklogStart" style="width:100%; padding:10px; border-radius:10px;">
+    </div>
+
+    <!-- END -->
+    <div style="margin-bottom:12px">
+      <label style="color:white;">Završetak</label>
+      <input type="time" id="worklogEnd" style="width:100%; padding:10px; border-radius:10px;">
+    </div>
+
+    <!-- LOCATION -->
+    <div style="margin-bottom:16px">
+      <label style="color:white;">Mjesto rada</label>
+      <input type="text" id="worklogLocation" placeholder="npr. gradilište"
+        style="width:100%; padding:10px; border-radius:10px;">
+    </div>
+
+    <!-- SAVE -->
+    <button id="saveWorklog" class="btn-save">
+      💾 Spremi
+    </button>
+
+    <!-- LIST -->
+    <div id="worklogList" style="
+      margin-top:20px;
+      max-height:40vh;
+      overflow-y:auto;
+    "></div>
+
+  </div>
 
 </div>
 

@@ -19,9 +19,18 @@ export function initDiaryModule() {
   document.addEventListener('screenShown', (e) => {
     if (e.detail !== 'screen-diary') return;
 
+    // 🔧 FORCE HEADER TITLE
+const headerTitle = document.getElementById('headerTitle');
+if (headerTitle) {
+  headerTitle.textContent = 'Dnevnik';
+}
+
 // 🔄 RESET selection mode on enter
 window.__DIARY_SELECTION_MODE__ = false;
 window.__SELECTED_DIARY__.clear();
+
+// 🔧 HARD RESET mood state
+selectedMood = null;
 
 const bulkDeleteBtn = document.getElementById('btnDeleteSelectedDiary');
 if (bulkDeleteBtn) {
@@ -32,44 +41,37 @@ if (bulkDeleteBtn) {
 renderDiaryList();
 
     const moodContainer = document.getElementById('diaryMood');
-    if (!moodContainer) return;
+    const noteInput = document.getElementById('diaryNote');
+if (!moodContainer) return;
 
-    const moods = moodContainer.querySelectorAll('span');
+const moods = moodContainer.querySelectorAll('span');
 
-    // 🔄 RESET MOOD UI
+// 🔄 RESET MOOD UI ON SCREEN ENTER
 selectedMood = null;
 
 moods.forEach(m => {
   m.style.opacity = '1';
 });
 
-    // 💾 SAVE
+// 💾 SAVE
 const saveBtn = document.getElementById('saveDiary');
 
 if (saveBtn && !saveBtn.dataset.bound) {
-
   saveBtn.dataset.bound = '1';
 
   saveBtn.addEventListener('click', async () => {
-
-    if (!selectedMood) {
-      alert('Odaberi kako si se osjećao');
-      return;
-    }
-
     const note = document.getElementById('diaryNote')?.value || '';
 
     const entry = {
       id: Date.now(),
       type: 'diary',
       date: getLocalISODate(),
-      mood: selectedMood,
+      mood: selectedMood || null,
       note,
       createdAt: Date.now()
     };
 
     try {
-
       // 🧠 koristimo postojeći DB pattern
       await obligationDB.add(entry);
 
@@ -77,9 +79,14 @@ if (saveBtn && !saveBtn.dataset.bound) {
       renderDiaryList();
 
       // 🔄 reset UI
-      document.getElementById('diaryNote').value = '';
+      if (noteInput) {
+        noteInput.value = '';
+      }
 
-      moods.forEach(m => m.style.opacity = '1');
+      moods.forEach(m => {
+        m.style.opacity = '1';
+      });
+
       selectedMood = null;
 
       // 🔔 feedback
@@ -90,9 +97,7 @@ if (saveBtn && !saveBtn.dataset.bound) {
     } catch (e) {
       console.error('[Diary] save error', e);
     }
-
   });
-
 }
 
     moods.forEach(el => {
@@ -151,16 +156,10 @@ if (bulkBtn && !bulkBtn.dataset.bound) {
 
     try {
 
-      const all = await obligationDB.getAll();
-      const updated = all.filter(i => !ids.includes(i.id));
-
-      for (const item of all) {
-        await obligationDB.delete(item.id);
-      }
-
-      for (const item of updated) {
-        await obligationDB.add(item);
-      }
+      // 🔧 DELETE ONLY SELECTED (fast & safe)
+      for (const id of ids) {
+      await obligationDB.delete(id);
+    }
 
       window.__DIARY_SELECTION_MODE__ = false;
       window.__SELECTED_DIARY__.clear();
@@ -240,10 +239,13 @@ async function renderDiaryList() {
 
   container.innerHTML = entries.map(e => {
 
-  const emoji =
-    e.mood === 'good' ? '🙂' :
-    e.mood === 'neutral' ? '😐' :
-    '🙁';
+  let emoji = '';
+
+  if (e.mood === 'good') emoji = '🙂';
+  if (e.mood === 'neutral') emoji = '😐';
+  if (e.mood === 'bad') emoji = '🙁';
+
+  if (!e.mood) emoji = '';
 
   const isSelected = window.__SELECTED_DIARY__?.has(e.id);
 
@@ -252,17 +254,20 @@ async function renderDiaryList() {
          data-id="${e.id}"
          style="
            padding:12px;
-           border-bottom:1px solid rgba(0,0,0,0.1);
+           border-bottom:1px solid rgba(0,0,0,0.25);
            ${isSelected ? 'background:rgba(0,0,0,0.05);' : ''}
          ">
 
       <div style="display:flex; justify-content:space-between; align-items:center">
 
         <div>
-          <div style="font-size:20px">${emoji}</div>
-          ${e.note ? `<div>${e.note}</div>` : ''}
-          <div style="font-size:12px; opacity:0.6">${e.date}</div>
-        </div>
+      <div style="display:flex; gap:8px; align-items:center; font-size:14px; opacity:0.8;">
+        ${emoji ? `<span style="font-size:20px">${emoji}</span>` : ''}
+        <span style="color:white; opacity:0.8;">${formatDate(e.date)}</span>
+      </div>
+
+  ${e.note ? `<div style="margin-top:6px; color:white;">${e.note}</div>` : ''}
+</div>
 
         ${window.__DIARY_SELECTION_MODE__ ? `
           <div style="font-size:20px">
@@ -308,4 +313,11 @@ if (window.__DIARY_SELECTION_MODE__) {
 });
 
 }
+}
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+
+  const [year, month, day] = dateStr.split('-');
+
+  return `${day}.${month}.${year.slice(2)}`;
 }

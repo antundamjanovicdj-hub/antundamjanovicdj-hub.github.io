@@ -263,6 +263,50 @@
     </div>
   </div>
 
+  <!-- DIARY SCREEN -->
+<div id="screen-diary" class="screen">
+
+  <h2 class="screen-title">📓 Dnevnik</h2>
+
+  <div style="padding:16px">
+
+    <!-- MOOD -->
+    <div style="margin-bottom:16px">
+      <div style="margin-bottom:8px; color:white;">Kako si se osjećao danas?</div>
+
+      <div id="diaryMood" style="display:flex; gap:12px; font-size:28px">
+        <span data-mood="good">🙂</span>
+        <span data-mood="neutral">😐</span>
+        <span data-mood="bad">🙁</span>
+      </div>
+    </div>
+
+    <!-- NOTE -->
+    <div style="margin-bottom:16px">
+      <div id="diaryEditLabel" style="display:none; color:#fff; margin-bottom:6px;">
+  ✏️ Uređuješ zapis
+    </div>
+      <textarea
+        id="diaryNote"
+        placeholder="Kratka bilješka..."
+        style="width:100%; padding:10px; border-radius:10px; border:1px solid rgba(0,0,0,0.4); min-height:120px; resize:vertical;"
+      ></textarea>
+    </div>
+
+    <!-- SAVE -->
+    <button id="saveDiary" class="btn-save">
+      💾 Spremi
+    </button>
+    <button id="btnDeleteSelectedDiary" class="btn-save" style="margin-top:10px;">
+  🗑️ Obriši odabrano
+    </button>
+    <!-- LISTA -->
+    <div id="diaryList" style="margin-top:20px"></div>
+
+  </div>
+
+</div>
+
   <!-- POPUP ZA OBVEZE -->
   <div id="obligationsPopup" class="popup-balloon">
     <div class="balloon-content">

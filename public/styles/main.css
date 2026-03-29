@@ -544,11 +544,11 @@ html, body {
 
 .btn-save {
   width: 100%;
-  padding: 10px;
+  padding: 12px;
   margin-top: 14px;
 
-  background: transparent;
-  border: none;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.2);
   border-radius: 16px;
 
   font-size: 16px;
@@ -556,10 +556,18 @@ html, body {
 
   color: #ffffff;
 
-  box-shadow: 0 14px 32px rgba(0,0,0,0.45);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.35);
 
   cursor: pointer;
-  transition: transform 0.15s ease;
+  transition: transform 0.15s ease, background 0.2s ease;
+}
+
+.btn-save:active {
+  transform: scale(0.96);
+}
+
+.btn-save:hover {
+  background: rgba(255,255,255,0.1);
 }
 
 .btn-save:active {

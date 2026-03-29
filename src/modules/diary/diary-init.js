@@ -38,6 +38,21 @@ export function initDiaryModule() {
       noteInput.value = '';
     }
 
+    // 🔥 AUTO GROW INIT
+if (noteInput && !noteInput.dataset.autogrow) {
+  noteInput.dataset.autogrow = '1';
+
+  const autoGrow = () => {
+    noteInput.style.height = 'auto';
+    noteInput.style.height = noteInput.scrollHeight + 'px';
+  };
+
+  noteInput.addEventListener('input', autoGrow);
+
+  // inicijalno
+  autoGrow();
+}
+
     const editLabel = document.getElementById('diaryEditLabel');
     if (editLabel) {
       editLabel.style.display = 'none';
@@ -128,7 +143,8 @@ export function initDiaryModule() {
           // 🔄 RESET UI
           if (noteInput) {
           noteInput.value = '';
-         }
+          noteInput.style.height = 'auto';
+        }
 
           moods.forEach(m => {
             m.style.opacity = '1';
@@ -352,10 +368,22 @@ async function renderDiaryList() {
 </div>
 
         ${window.__DIARY_SELECTION_MODE__ ? `
-          <div style="font-size:20px">
-            ${isSelected ? '✔️' : '⬜'}
-          </div>
-        ` : ''}
+  <div style="
+    width:22px;
+    height:22px;
+    border-radius:6px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:14px;
+    font-weight:bold;
+    background:${isSelected ? '#4CAF50' : 'transparent'};
+    border:2px solid ${isSelected ? '#4CAF50' : 'rgba(255,255,255,0.4)'};
+    color:white;
+  ">
+    ${isSelected ? '✓' : ''}
+  </div>
+` : ''}
 
       </div>
     </div>

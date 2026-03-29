@@ -2,7 +2,7 @@
 <html lang="hr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
@@ -319,37 +319,92 @@
 <div id="screen-worklog" class="screen">
 
   <h2 class="screen-title">🛠 Evidencija rada</h2>
+  <div id="worklogEditLabel" style="display:none; color:#00ff9c; margin:10px 0;">
+  ✏️ Uređuješ zapis
+ </div>
 
-  <div style="padding:16px">
+  <div style="padding:16px; width:100%; box-sizing:border-box; overflow:hidden;">
 
     <!-- DATE -->
     <div style="margin-bottom:12px">
       <label style="color:white;">Datum</label>
-      <input type="date" id="worklogDate" style="width:100%; padding:10px; border-radius:10px;">
+      <input type="date" id="worklogDate" style="
+     display:block;
+     width:100%;
+     max-width:100%;
+     padding:10px;
+     border-radius:10px;
+     box-sizing:border-box;
+     -webkit-appearance:none;
+     appearance:none;
+     height:44px;
+     font-size:16px;
+    ">
     </div>
 
     <!-- START -->
     <div style="margin-bottom:12px">
       <label style="color:white;">Početak</label>
-      <input type="time" id="worklogStart" style="width:100%; padding:10px; border-radius:10px;">
+      <input type="time" id="worklogStart" style="
+      display:block;
+      width:100%;
+      max-width:100%;
+      padding:10px;
+      border-radius:10px;
+      box-sizing:border-box;
+      -webkit-appearance:none;
+      appearance:none;
+      height:44px;
+      font-size:16px;
+     ">
     </div>
 
     <!-- END -->
     <div style="margin-bottom:12px">
       <label style="color:white;">Završetak</label>
-      <input type="time" id="worklogEnd" style="width:100%; padding:10px; border-radius:10px;">
+      <input type="time" id="worklogEnd" style="
+      display:block;
+      width:100%;
+      max-width:100%;
+      padding:10px;
+      border-radius:10px;
+      box-sizing:border-box;
+      -webkit-appearance:none;
+      appearance:none;
+      height:44px;
+      font-size:16px;
+     ">
     </div>
 
     <!-- LOCATION -->
     <div style="margin-bottom:16px">
       <label style="color:white;">Mjesto rada</label>
       <input type="text" id="worklogLocation" placeholder="npr. gradilište"
-        style="width:100%; padding:10px; border-radius:10px;">
+  style="
+    display:block;
+    width:100%;
+    max-width:100%;
+    padding:12px;
+    border-radius:10px;
+    box-sizing:border-box;
+    -webkit-appearance:none;
+    appearance:none;
+    height:48px;
+    font-size:18px;
+  ">
     </div>
 
     <!-- SAVE -->
     <button id="saveWorklog" class="btn-save">
       💾 Spremi
+    </button>
+
+    <button id="cancelEditWorklog" class="btn-save" style="margin-top:10px; display:none; background:rgba(255,255,255,0.1); color:white;">
+     ❌ Odustani od uređivanja
+    </button>
+
+    <button id="btnDeleteSelectedWorklog" class="btn-save" style="margin-top:10px;">
+      🗑️ Obriši odabrano
     </button>
 
     <!-- LIST -->

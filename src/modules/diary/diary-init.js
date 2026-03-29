@@ -14,6 +14,7 @@ export function initDiaryModule() {
 
   // 🧠 LOCAL STATE
   let selectedMood = null;
+  window.__SELECTED_DIARY_MOOD__ = null;
 
   // 🔄 BIND NA SCREEN SHOW
   document.addEventListener('screenShown', (e) => {
@@ -30,6 +31,7 @@ export function initDiaryModule() {
     window.__SELECTED_DIARY__.clear();
     window.__EDITING_DIARY_ID__ = null;
     selectedMood = null;
+    window.__SELECTED_DIARY_MOOD__ = null;
 
     const noteInput = document.getElementById('diaryNote');
     if (noteInput) {
@@ -75,13 +77,13 @@ export function initDiaryModule() {
         const editingId = window.__EDITING_DIARY_ID__ || null;
 
         const entry = {
-          id: editingId || Date.now(),
-          type: 'diary',
-          date: getLocalISODate(),
-          mood: selectedMood || null,
-          note,
-          createdAt: editingId ? undefined : Date.now()
-        };
+        id: editingId || Date.now(),
+        type: 'diary',
+        date: getLocalISODate(),
+        mood: window.__SELECTED_DIARY_MOOD__ || null,
+        note,
+        createdAt: Date.now()
+       };
 
         try {
           if (editingId) {
@@ -91,18 +93,49 @@ export function initDiaryModule() {
           await obligationDB.add(entry);
 
           console.log('[Diary] saved:', entry);
+          const savedId = entry.id;
+          const isEdit = !!editingId;
+
           renderDiaryList();
+
+          const listEl = document.getElementById('diaryListWrapper');
+
+          if (listEl) {
+          requestAnimationFrame(() => {
+          const el = document.querySelector(`.diary-item[data-id="${savedId}"]`);
+          if (!el) return;
+
+          el.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      });
+     }
+
+         // 🔥 HIGHLIGHT NEW ITEM
+         requestAnimationFrame(() => {
+         const el = document.querySelector(`.diary-item[data-id="${savedId}"]`);
+         if (!el) return;
+
+         el.style.transition = 'background 0.3s ease';
+         el.style.background = 'rgba(255,255,255,0.15)';
+
+         setTimeout(() => {
+         el.style.background = '';
+        }, 600);
+       });
 
           // 🔄 RESET UI
           if (noteInput) {
-            noteInput.value = '';
-          }
+          noteInput.value = '';
+         }
 
           moods.forEach(m => {
             m.style.opacity = '1';
           });
 
           selectedMood = null;
+          window.__SELECTED_DIARY_MOOD__ = null;
           window.__EDITING_DIARY_ID__ = null;
 
           const label = document.getElementById('diaryEditLabel');
@@ -128,6 +161,7 @@ export function initDiaryModule() {
 
       el.addEventListener('click', () => {
         selectedMood = el.dataset.mood;
+        window.__SELECTED_DIARY_MOOD__ = el.dataset.mood;
 
         moods.forEach(m => {
           m.style.opacity = '0.4';
@@ -149,29 +183,31 @@ export function initDiaryModule() {
 
         // ➡️ ENTER SELECTION MODE
         if (!window.__DIARY_SELECTION_MODE__) {
-          window.__DIARY_SELECTION_MODE__ = true;
-          window.__SELECTED_DIARY__.clear();
-          window.__EDITING_DIARY_ID__ = null;
+        window.__DIARY_SELECTION_MODE__ = true;
+        window.__SELECTED_DIARY__.clear();
 
-          if (noteInput) {
-            noteInput.value = '';
-          }
+        // 🔥 HARD RESET EDIT STATE
+        window.__EDITING_DIARY_ID__ = null;
+        window.__SELECTED_DIARY_MOOD__ = null;
+        selectedMood = null;
 
-          moods.forEach(m => {
-            m.style.opacity = '1';
-          });
+        if (noteInput) {
+        noteInput.value = '';
+       }
 
-          selectedMood = null;
+        moods.forEach(m => {
+        m.style.opacity = '1';
+      });
 
-          const label = document.getElementById('diaryEditLabel');
-          if (label) {
-            label.style.display = 'none';
-          }
+       const label = document.getElementById('diaryEditLabel');
+       if (label) {
+       label.style.display = 'none';
+      }
 
-          bulkBtn.textContent = 'Potvrdi brisanje (0)';
-          renderDiaryList();
-          return;
-        }
+       bulkBtn.textContent = 'Potvrdi brisanje (0)';
+       renderDiaryList();
+       return;
+      }
 
         // ➡️ DELETE
         const ids = Array.from(window.__SELECTED_DIARY__);
@@ -400,12 +436,24 @@ async function openDiaryEdit(id) {
       if (m.dataset.mood === entry.mood) {
         m.style.opacity = '1';
       }
+      window.__SELECTED_DIARY_MOOD__ = entry.mood || null;
     });
 
     // 🧠 store editing ID
     window.__EDITING_DIARY_ID__ = id;
     const label = document.getElementById('diaryEditLabel');
     if (label) label.style.display = 'block';
+
+    // 🔥 SCROLL TO EDIT ITEM
+    requestAnimationFrame(() => {
+    const el = document.querySelector(`.diary-item[data-id="${id}"]`);
+    if (!el) return;
+
+    el.scrollIntoView({
+    behavior: 'smooth',
+    block: 'center'
+  });
+});
 
   } catch (e) {
     console.error('[Diary] edit load error', e);

@@ -153,9 +153,15 @@ if (financePopup) {
             'screen-finance-fixed': 'Fiksni troškovi',
             'screen-finance-credits': 'Krediti',
             'screen-finance-other': 'Ostalo',
-            'screen-finance-overview': 'Pregled'
+            'screen-finance-overview': 'Pregled',
+            'screen-diary': 'Dnevnik'
           };
           headerTitle.textContent = titles[screenId] || 'LifeKompas';
+
+          // 🔧 FIX: diary title
+          if (screenId === 'screen-diary') {
+          headerTitle.textContent = 'Dnevnik';
+         }
         }
 
         // ===== MENU ANIMATION FIX =====

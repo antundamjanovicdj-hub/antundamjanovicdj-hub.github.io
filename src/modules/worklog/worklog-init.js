@@ -48,6 +48,7 @@ export function initWorklogModule() {
     const start = document.getElementById('worklogStart').value;
     const end = document.getElementById('worklogEnd').value;
     const location = document.getElementById('worklogLocation').value.trim();
+    const breakMinutes = Number(document.getElementById('worklogBreak')?.value || 0);
 
     // 🛡️ VALIDACIJA
     if (!date || !start || !end) {
@@ -64,7 +65,20 @@ export function initWorklogModule() {
     const [sh, sm] = start.split(':').map(Number);
     const [eh, em] = end.split(':').map(Number);
 
-    const duration = (eh * 60 + em) - (sh * 60 + sm);
+    const rawDuration = (eh * 60 + em) - (sh * 60 + sm);
+
+    // 🛡️ VALIDACIJA BREAK
+    if (breakMinutes < 0) {
+    alert('Pauza ne može biti negativna');
+    return;
+  }
+
+    if (breakMinutes > rawDuration) {
+    alert('Pauza ne može biti veća od radnog vremena');
+    return;
+  }
+
+   const duration = rawDuration - breakMinutes;
 
     const editingId = window.__EDITING_WORKLOG_ID__ || null;
 
@@ -74,6 +88,7 @@ const entry = {
   startTime: start,
   endTime: end,
   location,
+  breakMinutes,
   duration,
   createdAt: new Date().toISOString()
 };
@@ -116,10 +131,12 @@ const dateInput = document.getElementById('worklogDate');
 const startInput = document.getElementById('worklogStart');
 const endInput = document.getElementById('worklogEnd');
 const locationInput = document.getElementById('worklogLocation');
+const breakInput = document.getElementById('worklogBreak');
 
 if (startInput) startInput.value = '';
 if (endInput) endInput.value = '';
 if (locationInput) locationInput.value = '';
+if (breakInput) breakInput.value = '';
 
 // 🔧 vrati datum na danas
 if (dateInput) {
@@ -147,10 +164,12 @@ if (cancelBtn && !cancelBtn.dataset.bound) {
     const startInput = document.getElementById('worklogStart');
     const endInput = document.getElementById('worklogEnd');
     const locationInput = document.getElementById('worklogLocation');
+    const breakInput = document.getElementById('worklogBreak');
 
     if (startInput) startInput.value = '';
     if (endInput) endInput.value = '';
     if (locationInput) locationInput.value = '';
+    if (breakInput) breakInput.value = '';
 
     // 🔧 RESET DATE
     const dateInput = document.getElementById('worklogDate');
@@ -189,10 +208,12 @@ document.addEventListener('click', (e) => {
     const startInput = document.getElementById('worklogStart');
     const endInput = document.getElementById('worklogEnd');
     const locationInput = document.getElementById('worklogLocation');
+    const breakInput = document.getElementById('worklogBreak');
 
     if (startInput) startInput.value = '';
     if (endInput) endInput.value = '';
     if (locationInput) locationInput.value = '';
+    if (breakInput) breakInput.value = '';
 
     // 🔧 RESET DATE
     const dateInput = document.getElementById('worklogDate');
@@ -309,7 +330,11 @@ function renderWorklogList() {
   container.innerHTML = data.map(item => {
 
     const hours = Math.floor(item.duration / 60);
-    const minutes = item.duration % 60;
+const minutes = item.duration % 60;
+
+const breakText = (typeof item.breakMinutes === 'number' && item.breakMinutes > 0)
+  ? ` (-${item.breakMinutes} min)`
+  : '';
 
     return `
   <div class="diary-item worklog-item"
@@ -332,7 +357,7 @@ function renderWorklogList() {
         </div>
 
         <div style="color:white;">
-          🕓 ${item.startTime} - ${item.endTime}
+         🕓 ${item.startTime} - ${item.endTime}${breakText}
         </div>
 
         ${item.location ? `
@@ -429,11 +454,17 @@ function openWorklogEdit(id) {
     const startInput = document.getElementById('worklogStart');
     const endInput = document.getElementById('worklogEnd');
     const locationInput = document.getElementById('worklogLocation');
+    const breakInput = document.getElementById('worklogBreak');
 
     if (dateInput) dateInput.value = entry.date || '';
     if (startInput) startInput.value = entry.startTime || '';
     if (endInput) endInput.value = entry.endTime || '';
     if (locationInput) locationInput.value = entry.location || '';
+    if (breakInput) {
+  breakInput.value = typeof entry.breakMinutes === 'number'
+    ? entry.breakMinutes
+    : 0;
+}
 
     // 🧠 STORE EDITING ID
     window.__EDITING_WORKLOG_ID__ = entry.id;

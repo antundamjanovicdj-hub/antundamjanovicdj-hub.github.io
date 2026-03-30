@@ -455,10 +455,13 @@ function openWorklogEdit(id) {
       const el = document.querySelector(`.worklog-item[data-id="${id}"]`);
       if (!el) return;
 
-      el.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center'
-      });
+      const list = document.getElementById('worklogList');
+    if (list && el) {
+    list.scrollTo({
+    top: el.offsetTop - list.offsetTop - 20,
+    behavior: 'smooth'
+  });
+}
     });
 
   } catch (e) {
